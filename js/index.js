@@ -24,7 +24,7 @@ formEl.addEventListener("submit", async function(e) {
     }else {
         moviesContainerEl.innerHTML = `
             <div class="not-found-container">
-               <p class="not-found">Unable To Find What You’re Looking For.<br>Please Try Another Search.
+               <p class="not-found">Unable To Find What You’re Looking For<br>Please Try Another Search.
             </div>
         `
     }
