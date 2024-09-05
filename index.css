@@ -13,6 +13,7 @@ body {
 
 /* Typography */
 h1,
+form > button,
 .ratings {
     font-weight: bold;
 }
@@ -45,32 +46,46 @@ h1 {
     font-size: 0.55rem;
 }
 
-#watchlist-container > i,
-#watchlist-container > h2 {
+form > input,
+form > button {
+    font-family: "Nunito", sans-serif;
+}
+
+#movies-container > i,
+#movies-container > h2,
+.not-found {
     color: #bbb;
 }
 
 /* Layout */
+form > input,
+form > button {
+    border: 1px solid #bbb;
+}
+
 .header-container,
 .top-container,
-#watchlist-container,
+#movies-container,
 .movie {
     width: 100%;
 }
 
 .header-container a,
-.top-container {
+.top-container,
+form > button:hover {
     color: #ffffff;
 }
 
 .header-container a,
+form > input,
 .ratings {
     margin: 0;
 }
 
 .header-container,
 .top-container,
-#watchlist-container,
+form,
+#movies-container,
 .movie,
 .movie-details-container,
 .movie-title,
@@ -80,6 +95,7 @@ h1 {
 }
 
 .top-container,
+form,
 .movie,
 .movie-title,
 .info {
@@ -87,7 +103,7 @@ h1 {
 }
 
 .header-container,
-#watchlist-container,
+#movies-container,
 .movie-details-container,
 .movie-details-container,
 .info-container {
@@ -96,20 +112,21 @@ h1 {
 
 .header-container,
 .top-container,
-#watchlist-container,
+#movies-container,
 .movie-title {
     align-items: center;
 }
 
 .header-container,
-#watchlist-container,
+form,
+#movies-container,
 .movie-title,
 .info-container {
     justify-content: center;
 }
 
 .header-container {
-    background: linear-gradient(rgba(12, 23, 19, 0.2), rgba(12, 23, 19, 0.2)), url("../img/header.jpg");
+    background: linear-gradient(rgba(12, 23, 19, 0.2), rgba(12, 23, 19, 0.2)), url("./img/header.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: 10% 20%;
@@ -131,12 +148,65 @@ h1 {
     justify-content: space-around;
 }
 
-#watchlist-container {
+form {
+    position: absolute;
+    bottom: 68%;
+}
+
+form > input {
+    border-right: none;
+    width: 60vw;
+    padding: 10px 15px;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+}
+
+form > input:focus {
+   outline: none;
+}
+
+form > button {
+    border-left: none;
+    padding: 0 20px;
+    margin-left: 0;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+form > button:hover {
+    background-color: #DC143C;
+    transition: .3s ease;
+}
+
+#movies-container {
     margin-top: 2em;
     gap: 1em;
 }
 
-#watchlist-container > i {
+.not-found-container {
+    display: flex;
+    text-align: center;
+}
+
+.not-found-container p {
+    margin-top: 2em;
+    font-weight: 600;
+}
+
+.added {
+    background-color: #313131;
+    color: #ffffff;
+    position: fixed;
+    top: 70%;
+    left: 40%;
+    width: 150px;
+    padding-bottom: 10px;
+    padding-top: 7px;
+    text-align: center;
+    border-radius: 5px;
+}
+
+#movies-container > i {
     margin-top: 1em;
     font-size: 10rem;
 }
@@ -150,6 +220,7 @@ h1 {
     width: 100px;
     height: 150px;
 }
+
 
 .movie-title {
     align-self: flex-start;
@@ -168,7 +239,7 @@ h1 {
     gap: 0.5em;
 }
 
-.watchlist:hover {
+.watchlist:hover{
     cursor: pointer;
     text-decoration: 1px solid #DC143C underline;
     color: #DC143C;
@@ -177,15 +248,23 @@ h1 {
 
 /* Media query */
 @media(min-width: 530px) {
-    #watchlist-container {
+    #movies-container {
         width: 90%;
         margin: 2em auto 0;
+    }
+
+    form > input {
+        width: 50vw;
     }
 }
 
 @media(min-width: 870px) {
-    #watchlist-container {
+    #movies-container {
         width: 50%;
+    }
+
+    form > input {
+        width: 30vw;
     }
 
     .movie-title h2 {
@@ -203,6 +282,11 @@ h1 {
     
     .ratings {
         font-size: 1.2rem;
+    }
+
+    .added {
+        top: 70%;
+        left: 45%;
     }
 }
 
