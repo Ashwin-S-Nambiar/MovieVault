@@ -126,7 +126,7 @@ form,
 }
 
 .header-container {
-    background: linear-gradient(rgba(12, 23, 19, 0.2), rgba(12, 23, 19, 0.2)), url("/img/header.jpg");
+    background: linear-gradient(rgba(12, 23, 19, 0.2), rgba(12, 23, 19, 0.2)), url("../img/header.jpg");
     background-size: cover;
     background-repeat: no-repeat;
     background-position: 10% 20%;
