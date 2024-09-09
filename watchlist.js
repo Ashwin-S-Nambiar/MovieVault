@@ -1,6 +1,7 @@
 let watchlistArr = []
 
 const watchListEl = document.getElementById("watchlist-container")
+const addedMsgEl = document.getElementById('added-msg')
 
 watchListEl.addEventListener('click', (e) => {
     if(e.target.dataset.removeMovie) {
@@ -11,6 +12,12 @@ watchListEl.addEventListener('click', (e) => {
                 watchlistArr.splice(movieToRemove, 1)
                 localStorage.setItem("id", JSON.stringify(watchlistArr))
                 getMoviesFromLocalStorage()
+                addedMsgEl.classList.toggle("added")
+                addedMsgEl.innerText = 'Film Removed From Your Watchlist'
+                setTimeout(() => {
+                    addedMsgEl.classList.toggle("added")
+                    addedMsgEl.innerText = ""
+                }, 3000)
             }
         })
         if(watchlistArr.length === 0) {
