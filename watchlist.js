@@ -58,7 +58,7 @@ function renderHtml(arr) {
                         <div id="info" class="info">
                             <p>${Runtime}</p>
                             <p>${Genre}</p>
-                            <p class="watchlist fa-solid fa-circle-minus" data-remove-movie="${imdbID}"> Watchlist</p>
+                            <p class="watchlist fa-solid fa-circle-minus" data-remove-movie="${imdbID}"> Remove From Watchlist</p>
                         </div>
 
                         <div class="plot">
