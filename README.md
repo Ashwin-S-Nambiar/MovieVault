@@ -1,6 +1,6 @@
 # 🎬 Movie Watchlist
 
-Live: https://movie-watchlist-fawn-three.vercel.app/
+**Live: https://movie-watchlist-fawn-three.vercel.app/**
 
 ***Helps you to find films you like and add it to a watchlist. Uses [OMDB API](https://www.omdbapi.com/) to find movies based on search.***
 
