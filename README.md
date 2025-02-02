@@ -24,6 +24,6 @@
 ![movie-watchlist-watchlist html-2](https://github.com/user-attachments/assets/64952bfe-98e8-42b4-9352-16055ae10e3d)
 
 ## 🧔‍♂️ Author
-**Ashwin S Nambair**
+**Ashwin S Nambiar**
 
 
