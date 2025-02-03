@@ -30,19 +30,23 @@ MovieVault is a user-friendly web application designed to help film enthusiasts 
 To run the application locally, follow these steps:
 
 1. **Clone the Repository:**
+
    ```bash
    git clone https://github.com/your-username/movie-vault.git
    cd movie-watchlist
 2. **Install Dependencies:** Ensure you have **Node.js** installed. Then, install the required packages:
+
    ```bash
    npm install
 3. **Obtain OMDb API Key:**   
      - Visit the OMDb API website to request a free API key.
      - Create a `.env` file in the root directory and add your API key:
+
         ```
         VITE_API_KEY=your_api_key_here
         ```
 4. **Start the Development Server:** 
+
    ```bash
     npm run dev
     ```
@@ -53,14 +57,17 @@ To run the application locally, follow these steps:
 
 1. Fork the repository.
 2. Create a new branch:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 3. Make your changes and commit them:
+
    ```bash
    git commit -m 'Add some feature'
    ```   
 4. Push to the branch:
+
    ```bash   
    git push origin feature/your-feature-name
    ```
