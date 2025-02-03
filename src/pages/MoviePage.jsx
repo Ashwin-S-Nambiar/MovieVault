@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ArrowLeft,
   Star,
   Plus,
   Minus,
@@ -99,7 +98,7 @@ const MoviePage = () => {
               animate={{ opacity: 1, scale: 1 }}
               src={movie.Poster !== 'N/A' ? movie.Poster : '/api/placeholder/300/450'}
               alt={movie.Title}
-              className="w-64 rounded-xl shadow-2xl shadow-red-500/10 border-2 border-gray-700/50"
+              className="-mt-5 w-64 rounded-xl shadow-2xl shadow-red-500/10 border-2 border-gray-700/50"
             />
 
             {/* Basic Info */}
