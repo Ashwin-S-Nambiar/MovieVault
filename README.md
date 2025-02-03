@@ -32,7 +32,7 @@ To run the application locally, follow these steps:
 1. **Clone the Repository:**
 
    ```bash
-   git clone https://github.com/your-username/movie-vault.git
+   git clone https://github.com/Ashwin-S-Nambiar/MovieVault.git
    cd movie-watchlist
 2. **Install Dependencies:** Ensure you have **Node.js** installed. Then, install the required packages:
 
