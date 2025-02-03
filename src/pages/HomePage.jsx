@@ -16,6 +16,7 @@ const HomePage = () => {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const searchRef = useRef(null);
   
+  const API_KEY = import.meta.env.VITE_API_KEY;
   const [watchlist, setWatchlist] = useState(() => {
     const saved = localStorage.getItem('movie-watchlist');
     return saved ? JSON.parse(saved) : [];
@@ -41,7 +42,7 @@ const HomePage = () => {
 
       setLoading(true);
       try {
-        const response = await fetch(`https://www.omdbapi.com/?apikey=e631858d&s=${debouncedSearch}`);
+        const response = await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&s=${debouncedSearch}`);        
         const data = await response.json();
         
         if (data.Response === "True") {
@@ -67,7 +68,7 @@ const HomePage = () => {
   const handleMovieSelect = async (movie) => {
     setLoading(true);
     try {
-      const response = await fetch(`https://www.omdbapi.com/?apikey=e631858d&i=${movie.imdbID}`);
+      const response = await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&i=${movie.imdbID}`);
       const detailedMovie = await response.json();
       
       setSelectedMovies(prev => [detailedMovie, ...prev]);
