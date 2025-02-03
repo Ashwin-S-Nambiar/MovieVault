@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+/* Base scrollbar styling */
+  /* Webkit (Chrome, Safari) Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px; /* Adjust width as needed */
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: rgba(31, 41, 55, 0.5); /* Equivalent to bg-gray-800/50 */
+    border-radius: 10px; /* Rounded track */
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: #4b5563; /* Equivalent to bg-gray-600 */
+    border-radius: 9999px; /* Fully rounded */
+    border: 2px solid rgba(31, 41, 55, 0.5); /* Equivalent to border-gray-800/50 */
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: #6b7280; /* Equivalent to bg-gray-500 */
+  }
+  
+  /* For Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #4b5563 rgba(31, 41, 55, 0.5);
+  }  
