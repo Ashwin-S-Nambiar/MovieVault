@@ -1,59 +1,72 @@
-# 🎬 MovieVault
+# MovieVault 🎬
 
-**Live:** [https://movie-watchlist-fawn-three.vercel.app/](https://movie-watchlist-fawn-three.vercel.app/)
+<div align="center">
 
-**Description:**  
-MovieVault is a user-friendly web application designed to help film enthusiasts discover movies and curate a personalized watchlist. By leveraging the [OMDb API](https://www.omdbapi.com/), users can search for films, view detailed information, and manage their watchlist efficiently.
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 
-## 🚀 Features
+A user-friendly web application to discover movies and curate a personalized watchlist using the OMDb API.
 
-- **Search Functionality:** Quickly find movies by title using the integrated search feature.
-- **Detailed Movie Information:** Access comprehensive details including plot summaries, release year, genre, and more.
-- **Personalized Watchlist:** Add or remove movies from your watchlist to keep track of what you plan to watch.
-- **Responsive Design:** Enjoy a seamless experience across various devices, thanks to a fully responsive layout.
-- **Smooth Animations:** Experience fluid transitions and animations powered by Framer Motion.
+[Features](#-features) • [Tech Stack](#-tech-stack) • [Installation](#-installation) • [Contributing](#-contributing) • [Screenshots](#-screenshots) • [Live](#-live) • [Author](#-author)
 
-## 🛠️ Tech Stack
+</div>
 
-- **Frontend:**
-  - [React](https://reactjs.org/): A JavaScript library for building user interfaces.
-  - [React Router](https://reactrouter.com/): Declarative routing for React applications.
-  - [Tailwind CSS](https://tailwindcss.com/): A utility-first CSS framework for rapid UI development.
-  - [Framer Motion](https://www.framer.com/motion/): A library for animations and gestures in React.
-  - [Vite](https://vitejs.dev/): A fast build tool and development server for modern web projects.
+## ✨ Features
 
-- **API:**
-  - [OMDb API](https://www.omdbapi.com/): A RESTful web service to obtain movie information.
+- 🔍 **Search Functionality** - Quickly find movies by title.
+- 📽️ **Detailed Movie Information** - Access plot summaries, release year, genre, and more.
+- 📝 **Personalized Watchlist** - Add or remove movies to keep track of what to watch.
+- 📱 **Responsive Design** - Fully adaptive across all devices.
+- 🎨 **Smooth Animations** - Fluid transitions powered by Framer Motion.
 
-## 🛠️ Installation and Running Locally
+## 🛠 Tech Stack
 
-To run the application locally, follow these steps:
+### Frontend
+- **[React](https://reactjs.org/)** - UI component development
+- **[React Router](https://reactrouter.com/)** - Declarative routing
+- **[TailwindCSS](https://tailwindcss.com/)** - Utility-first CSS framework
+- **[Framer Motion](https://www.framer.com/motion/)** - Animations and gestures
+- **[Vite](https://vitejs.dev/)** - Fast build tool and development server
 
-1. **Clone the Repository:**
+### API
+- **[OMDb API](https://www.omdbapi.com/)** - RESTful web service to obtain movie information
+
+## 🚀 Installation
+
+1. **Clone the repository**
 
    ```bash
    git clone https://github.com/Ashwin-S-Nambiar/MovieVault.git
-   cd movie-watchlist
-2. **Install Dependencies:** Ensure you have **Node.js** installed. Then, install the required packages:
+   cd MovieVault
+   ```
+
+2. **Install dependencies**
 
    ```bash
    npm install
-3. **Obtain OMDb API Key:**   
-     - Visit the OMDb API website to request a free API key.
-     - Create a `.env` file in the root directory and add your API key:
+   ```
 
-        ```
-        VITE_API_KEY=your_api_key_here
-        ```
-4. **Start the Development Server:** 
+3. **Obtain OMDb API Key**  
+   - Visit [OMDb API](https://www.omdbapi.com/) to request a free API key.
+   - Create a `.env` file in the root directory and add your API key:
+
+     ```
+     VITE_API_KEY=your_api_key_here
+     ```
+
+4. **Start the development server**
 
    ```bash
-    npm run dev
-    ```
+   npm run dev
+   ```
    **The application will be accessible at `http://localhost:5173`.**
 
-## 🤝 Contributing 
-**Contributions are welcome! To contribute:**
+## 🤝 Contributing
+
+Contributions are welcome! To contribute:
 
 1. Fork the repository.
 2. Create a new branch:
@@ -61,48 +74,64 @@ To run the application locally, follow these steps:
    ```bash
    git checkout -b feature/your-feature-name
    ```
+
 3. Make your changes and commit them:
 
    ```bash
    git commit -m 'Add some feature'
    ```   
+
 4. Push to the branch:
 
    ```bash   
    git push origin feature/your-feature-name
    ```
+
 5. Open a Pull Request to the main branch.
 
 ## 📸 Screenshots
-<div align="center">
-    <h3>Landing Page / HomePage</h3>
-    <img src="./public/screenshots/LandingPage.png" alt="Landing Page" />
-</div>
-<div align="center">
-    <h3>Search Results</h3>
-    <img src="./public/screenshots/SearchResults.png" alt="Search Results" />
-</div>
-<div align="center">
-    <h3>Selecting a Result</h3>
-    <img src="./public/screenshots/SearchResultPress.png" alt="Selecting a Result" />
-</div>
-<div align="center">
-    <h3>Watchlist Page</h3>
-    <img src="./public/screenshots/WatchList.png" alt="Watchlist Page" />
-</div>
-<div align="center">
-    <h3>Movie Details Page</h3>
-    <img src="./public/screenshots/MovieDetailsPage.png" alt="Movie Details Page" />
-</div>
-<div align="center">
-    <h3>Adding to Watchlist</h3>
-    <img src="./public/screenshots/AddToWatchlist.png" alt="Adding to Watchlist" />
-</div>
-<div align="center">
-    <h3>404 Page</h3>
-    <img src="./public/screenshots/PageNotFound.png" alt="Page Not Found" />
+
+<div align="center"> 
+   
+   ### Landing Page / HomePage
+   ![Landing Page](./public/screenshots/LandingPage.png)
+
+   ### Search Results
+   ![Search Results](./public/screenshots/SearchResults.png)
+
+   ### Selecting a Result
+   ![Selecting a Result](./public/screenshots/SearchResultPress.png)
+
+   ### Watchlist Page
+   ![Watchlist Page](./public/screenshots/WatchList.png)
+
+   ### Movie Details Page
+   ![Movie Details Page](./public/screenshots/MovieDetailsPage.png)
+
+   ### Adding to Watchlist
+   ![Adding to Watchlist](./public/screenshots/AddToWatchlist.png)
+
+   ### 404 Page
+   ![Page Not Found](./public/screenshots/PageNotFound.png)
+
 </div>
 
+## 🌍 Live
 
-## 🧑‍💻 Author
-**[Ashwin S Nambiar](https://ashwin-s-nambiar.is-a.dev/)**
+<div align="center">
+   
+   [![Visit](https://img.shields.io/badge/Visit_Site-000?style=for-the-badge&logo=vercel&logoColor=white)](https://movie-watchlist-fawn-three.vercel.app/)
+
+</div>
+
+## 👤 Author
+
+### Ashwin S Nambiar
+- Portfolio: [ashwin-s-nambiar.is-a.dev](https://ashwin-s-nambiar.is-a.dev/)
+- GitHub: [@Ashwin-S-Nambiar](https://github.com/Ashwin-S-Nambiar)
+
+---
+
+<div align="center">
+Made with ❤️ by Ashwin S Nambiar
+</div>
