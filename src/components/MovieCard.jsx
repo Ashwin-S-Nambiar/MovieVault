@@ -25,7 +25,7 @@ const MovieCard = ({ movie, onWatchlistToggle, isInWatchlist }) => {
       exit={{ opacity: 0, y: -20 }}
       className="group relative overflow-hidden rounded-xl bg-gradient-to-br from-gray-800/80 to-gray-900/80 backdrop-blur-lg border border-gray-700/50 hover:border-red-500/50 transition-all duration-500 hover:shadow-xl hover:shadow-red-500/10"
     >
-      <div className="flex flex-col md:flex-row gap-6 p-6">
+      <div className="flex flex-col md:flex-row gap-6 p-6 cursor-pointer">
         <div className="relative">
           <img 
             src={movie.Poster !== 'N/A' ? movie.Poster : '/api/placeholder/200/300'}

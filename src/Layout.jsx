@@ -72,7 +72,7 @@ const Layout = () => {
 
       <footer className="mt-0 py-8">
         <div className="container mx-auto px-4 text-center text-gray-400">
-          <p>&copy; All Rights Reserved, <a className= 'text-red-400 hover:text-amber-50 transition-all duration-300' href="https://ashwin-s-nambiar.is-a.dev/">Ashwin</a>.</p>
+          <p>&copy; All Rights Reserved, <a className= 'text-red-400 hover:text-amber-50 transition-all duration-300' href="https://ashwin-s-nambiar.is-a.dev/">Ashwin S Nambiar</a>.</p>
         </div>
       </footer>
     </div>
