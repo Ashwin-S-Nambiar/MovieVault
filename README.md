@@ -8,7 +8,7 @@
 ![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 
-A user-friendly web application to discover movies and curate a personalized watchlist using the OMDb API.
+A user-friendly web application to discover movies, curate a personalized watchlist and read movie descriptions using the OMDb API.
 
 [Features](#-features) • [Tech Stack](#-tech-stack) • [Installation](#-installation) • [Contributing](#-contributing) • [Screenshots](#-screenshots) • [Live](#-live) • [Author](#-author)
 
