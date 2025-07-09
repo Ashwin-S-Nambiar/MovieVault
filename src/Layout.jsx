@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { Film, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
