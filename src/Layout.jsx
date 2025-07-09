@@ -1,7 +1,7 @@
-import React from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { Film, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
+import ApiStatusIndicator from './components/ApiStatusIndicator';
 
 const Layout = () => {
   const location = useLocation();
@@ -9,6 +9,7 @@ const Layout = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100">
+      <ApiStatusIndicator />
       <header className="relative h-[40vh] overflow-hidden">
         <div className="absolute inset-0 bg-[url('/api/placeholder/1920/1080')] bg-cover bg-center opacity-50" />
         <div className="absolute inset-0 bg-gradient-to-b from-gray-900/0 via-gray-900/50 to-gray-900" />
