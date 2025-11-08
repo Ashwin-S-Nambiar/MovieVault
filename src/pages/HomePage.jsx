@@ -45,7 +45,6 @@ const HomePage = () => {
         const data = await searchMovies(debouncedSearch);
         
         if (data.results && data.results.length > 0) {
-          // Convert TMDB results to OMDB-like format
           const formattedResults = data.results
             .slice(0, 5)
             .map(movie => convertTmdbToOmdbFormat(movie));
@@ -72,7 +71,6 @@ const HomePage = () => {
   const handleMovieSelect = async (movie) => {
     setLoading(true);
     try {
-      // Fetch full movie details from TMDB
       const tmdbDetails = await getMovieDetails(movie.imdbID);
       const detailedMovie = convertTmdbToOmdbFormat(tmdbDetails, true);
       
@@ -103,63 +101,98 @@ const HomePage = () => {
   };
 
   return (
-    <main className="container mx-auto px-4">
-      <div ref={searchRef} className="relative w-full max-w-2xl mx-auto mb-12">
-        <div className="relative">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setDropdownVisible(true);
-            }}
-            onFocus={() => setDropdownVisible(true)}
-            placeholder="Search for movies..."
-            className="w-full px-6 py-4 pl-12 rounded-xl bg-gray-800/50 border border-gray-700/50 focus:border-red-500/50 text-gray-100 placeholder-gray-500 focus:outline-none transition-all duration-300 backdrop-blur-xl"
-          />
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-          {loading && (
-            <Loader2 className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-red-500 animate-spin" />
-          )}
-        </div>
-        
-        <SearchDropdown
-          results={searchResults}
-          loading={loading}
-          onSelect={handleMovieSelect}
-          visible={dropdownVisible && (loading || searchResults.length > 0)}
-        />
-      </div>
+    <main>
+      {/* Hero Section with Search */}
+      <section className="relative bg-linear-to-b from-[#242938] to-[#1A1F2B] py-10 sm:py-16">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center max-w-3xl mx-auto mb-12"
+          >
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <span style={{ fontFamily: 'var(--font-sans)' }} className="text-sm font-medium text-[#9CA3AF] uppercase tracking-wider">
+                Discover Your Next Favorite
+              </span>
+            </div>
+            <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-h1)', lineHeight: 'var(--lh-h1)' }} className="font-semibold text-white mb-6">
+              Find Your Next Movie
+            </h1>
+            <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--fs-body)', lineHeight: 'var(--lh-body)' }} className="text-[#9CA3AF] max-w-2xl mx-auto">
+              Search and explore thousands of movies. Build your perfect watchlist and never forget what you want to watch.
+            </p>
+          </motion.div>
 
-      <div className="space-y-6">
-        <AnimatePresence>
-          {selectedMovies.length === 0 && !loading && (
-            <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex flex-col items-center gap-6 py-6"
-            >
-              <Film className="w-24 h-24 text-red-500/50" />
-              <h2 className="text-2xl font-medium text-gray-400">
-                Start exploring amazing films!
-              </h2>
-              <p className="text-gray-500 text-center max-w-md">
-                Search for your favorite movies above and build your perfect watchlist.
-              </p>
-            </motion.div>
-          )}
-
-          {selectedMovies.map((movie) => (
-            <MovieCard 
-              key={movie.imdbID}
-              movie={movie}
-              onWatchlistToggle={handleWatchlistToggle}
-              isInWatchlist={watchlist.some(m => m.imdbID === movie.imdbID)}
+          {/* Search Bar */}
+          <motion.div 
+            ref={searchRef}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="relative w-full max-w-3xl mx-auto"
+          >
+            <div className="relative">
+              <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#9CA3AF]" />
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setDropdownVisible(true);
+                }}
+                onFocus={() => setDropdownVisible(true)}
+                placeholder="Search for movies..."
+                style={{ fontFamily: 'var(--font-sans)' }}
+                className="w-full px-6 py-5 pl-14 pr-14 rounded-2xl bg-[#2D3446] border border-white/10 focus:border-[#FF6B6B]/50 text-white placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#FF6B6B]/20 transition-all duration-300 text-lg shadow-xl"
+              />
+              {loading && (
+                <Loader2 className="absolute right-6 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#FF6B6B] animate-spin" />
+              )}
+            </div>
+            
+            <SearchDropdown
+              results={searchResults}
+              loading={loading}
+              onSelect={handleMovieSelect}
+              visible={dropdownVisible && (loading || searchResults.length > 0)}
             />
-          ))}
-        </AnimatePresence>
-      </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Results Section */}
+      <section>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <AnimatePresence mode="wait">
+            {selectedMovies.length === 0 && !loading ? (
+          <></>
+            ) : (
+              <motion.div
+                key="results"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                {selectedMovies.length > 0 && (
+                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-h2)' }} className="font-semibold text-white mb-8">
+                    Search Results
+                  </h2>
+                )}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {selectedMovies.map((movie) => (
+                    <MovieCard 
+                      key={movie.imdbID}
+                      movie={movie}
+                      onWatchlistToggle={handleWatchlistToggle}
+                      isInWatchlist={watchlist.some(m => m.imdbID === movie.imdbID)}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </section>
 
       <AnimatePresence>
         {toast.show && <Toast message={toast.message} type={toast.type} />}

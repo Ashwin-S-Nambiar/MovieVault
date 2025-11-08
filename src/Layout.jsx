@@ -1,79 +1,110 @@
 import { Link, useLocation, Outlet } from 'react-router-dom';
-import { Film, Search } from 'lucide-react';
+import { Film, Bookmark, Search } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import ApiStatusIndicator from './components/ApiStatusIndicator';
 
 const Layout = () => {
   const location = useLocation();
   const isWatchlist = location.pathname === '/watchlist';
+  const [watchlistCount, setWatchlistCount] = useState(0);
+
+  useEffect(() => {
+    const updateWatchlistCount = () => {
+      const saved = localStorage.getItem('movie-watchlist');
+      const watchlist = saved ? JSON.parse(saved) : [];
+      setWatchlistCount(watchlist.length);
+    };
+
+    updateWatchlistCount();
+    window.addEventListener('storage', updateWatchlistCount);
+    
+    // Poll for changes since localStorage events don't fire in same tab
+    const interval = setInterval(updateWatchlistCount, 500);
+    
+    return () => {
+      window.removeEventListener('storage', updateWatchlistCount);
+      clearInterval(interval);
+    };
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100">
+    <div className="min-h-screen bg-[#1A1F2B] text-[#F5F6FA] flex flex-col">
       <ApiStatusIndicator />
-      <header className="relative h-[40vh] overflow-hidden">
-        <div className="absolute inset-0 bg-[url('/api/placeholder/1920/1080')] bg-cover bg-center opacity-50" />
-        <div className="absolute inset-0 bg-gradient-to-b from-gray-900/0 via-gray-900/50 to-gray-900" />
-        
-        <nav className="absolute top-0 left-0 right-0 p-6">
-          <div className="container mx-auto flex justify-between items-center">
+      
+      {/* Minimal Top Navigation */}
+      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#1A1F2B]/80 backdrop-blur-xl border-b border-white/5">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            {/* Logo/Brand */}
             <Link 
               to="/"
-              className="text-2xl font-bold text-white hover:text-red-500 transition-colors duration-300 flex items-center gap-2"
+              className="flex items-center gap-2 group"
             >
-              <Film className="w-6 h-6" />
-              MovieVault
+              <Film className="w-6 h-6 text-[#FF6B6B] transition-transform duration-300 group-hover:scale-110" />
+              <span style={{ fontFamily: 'var(--font-display)' }} className="text-xl font-semibold text-white">
+                MovieVault
+              </span>
             </Link>
             
-            <Link 
-              to={isWatchlist ? "/" : "/watchlist"}
-              className={`px-4 py-2 rounded-lg z-10 hover:-translate-y-2 transition-all duration-300 flex items-center gap-2 ${
-                isWatchlist
-                  ? 'bg-red-500 text-white hover:bg-red-600'
-                  : 'bg-gray-800/50 hover:bg-gray-700/50 outline backdrop-blur-sm'
-              }`}
-            >
-              {isWatchlist ? (
-                <>
-                  <Search className="w-4 h-4" />
-                  Search Movies
-                </>
-              ) : (
-                <>
-                  <Film className="w-4 h-4" />
-                  My Watchlist
-                </>
-              )}
-            </Link>
+            {/* Navigation Links */}
+            <div className="flex items-center gap-4">
+              <Link 
+                to="/"
+                className={`hidden sm:flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
+                  !isWatchlist
+                    ? 'text-[#FF6B6B] bg-[#FF6B6B]/10'
+                    : 'text-[#9CA3AF] hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Search className="w-4 h-4" />
+                <span style={{ fontFamily: 'var(--font-sans)' }} className="text-sm font-medium">Search</span>
+              </Link>
+              
+              <Link 
+                to="/watchlist"
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 relative ${
+                  isWatchlist
+                    ? 'text-[#FF6B6B] bg-[#FF6B6B]/10'
+                    : 'text-[#9CA3AF] hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Bookmark className="w-4 h-4" />
+                <span style={{ fontFamily: 'var(--font-sans)' }} className="text-sm font-medium">Watchlist</span>
+                {watchlistCount > 0 && (
+                  <motion.span 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute -top-1 -right-1 bg-[#FF6B6B] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
+                  >
+                    {watchlistCount > 99 ? '99+' : watchlistCount}
+                  </motion.span>
+                )}
+              </Link>
+            </div>
           </div>
-        </nav>
-        
-        <div className="relative h-full flex flex-col items-center justify-center px-4">
-          <motion.div 
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            className="text-center"
-          >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              {isWatchlist ? "My Watchlist" : "Discover Amazing Films"}
-            </h1>
-            <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-              {isWatchlist 
-                ? "Keep track of all the movies you want to watch" 
-                : "Search and explore thousands of movies to add to your collection"
-              }
-            </p>
-          </motion.div>
         </div>
-      </header>
+      </nav>
 
-      <div className="relative">
-        <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-gray-900 to-transparent pointer-events-none" />
+      {/* Main Content Area */}
+      <div className="pt-16 grow">
         <Outlet />
       </div>
 
-      <footer className="mt-0 py-8">
-        <div className="container mx-auto px-4 text-center text-gray-400">
-          <p>&copy; All Rights Reserved, <a className= 'text-red-400 hover:text-amber-50 transition-all duration-300' href="https://ashwin.co.in">Ashwin S Nambiar</a>.</p>
+      {/* Footer */}
+      <footer className="mt-16 py-8 border-t border-white/5">
+        <div className="container mx-auto px-4 text-center">
+          <p className="text-sm text-[#9CA3AF]">
+            &copy; {new Date().getFullYear()} All Rights Reserved,{' '}
+            <a 
+              className="text-[#FF6B6B] hover:text-[#FF5252] transition-colors duration-300 font-medium" 
+              href="https://ashwin.co.in"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ashwin S Nambiar
+            </a>
+          </p>
         </div>
       </footer>
     </div>

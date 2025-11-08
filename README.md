@@ -1,4 +1,4 @@
-# MovieVault 🎬
+# MovieVault
 
 <div align="center">
 
@@ -8,33 +8,62 @@
 ![Framer Motion](https://img.shields.io/badge/Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 
-A user-friendly web application to discover movies, curate a personalized watchlist and read movie descriptions using the TMDB API.
+A modern, minimal movie discovery app with a beautiful dark interface. Search thousands of movies, view detailed information, and build your perfect watchlist.
 
-[Features](#-features) • [Tech Stack](#-tech-stack) • [Installation](#-installation) • [Contributing](#-contributing) • [Screenshots](#-screenshots) • [Live](#-live) • [Author](#-author)
+[Features](#-features) • [Design](#-design) • [Tech Stack](#-tech-stack) • [Installation](#-installation) • [Contributing](#-contributing) • [Screenshots](#-screenshots) • [Live](#-live) • [Author](#-author)
 
 </div>
 
 ## ✨ Features
 
-- 🔍 **Search Functionality** - Quickly find movies by title.
-- 📽️ **Detailed Movie Information** - Access plot summaries, release year, genre, and more.
-- 📝 **Personalized Watchlist** - Add or remove movies to keep track of what to watch.
-- 📱 **Responsive Design** - Fully adaptive across all devices.
-- 🎨 **Smooth Animations** - Fluid transitions powered by Framer Motion.
+- **Smart Search** - Quickly discover movies with real-time search and suggestions
+- **Rich Details** - View comprehensive movie information including plot, cast, ratings, and more
+- **Personal Watchlist** - Save movies you want to watch with easy add/remove functionality
+- **Modern Design** - Clean, minimal interface with dark theme and smooth animations
+- **Fully Responsive** - Seamless experience across mobile, tablet, and desktop
+- **Beautiful UI** - High-quality movie posters with elegant card layouts
+- **Fast & Smooth** - Powered by Vite with optimized performance
+- **Accessible** - WCAG compliant with keyboard navigation support
 
-## 🛠 Tech Stack
+## Design
+
+MovieVault features a completely redesigned modern interface built with these principles:
+
+- **Minimal & Focused** - Clean layout that prioritizes content discovery
+- **Dark Navy Theme** - Comfortable viewing experience with `#1A1F2B` background
+- **Typography System** - Inter for UI, Poppins for headings with proper hierarchy
+- **Coral Accent** - Warm `#FF6B6B` accent color for interactive elements
+- **Generous Whitespace** - Reduces cognitive load and feels premium
+- **Subtle Animations** - Framer Motion for smooth, non-intrusive transitions
+- **Card-Based Layouts** - Modern grid system that scales beautifully
+
+See [DESIGN.md](./DESIGN.md) for the complete design system documentation.
+
+## Tech Stack
 
 ### Frontend
-- **[React](https://reactjs.org/)** - UI component development
-- **[React Router](https://reactrouter.com/)** - Declarative routing
-- **[TailwindCSS](https://tailwindcss.com/)** - Utility-first CSS framework
-- **[Motion](https://motion.dev/)** - Animations and gestures
-- **[Vite](https://vitejs.dev/)** - Fast build tool and development server
+- **[React 19](https://reactjs.org/)** - Latest React with enhanced performance
+- **[React Router v7](https://reactrouter.com/)** - Client-side routing with nested routes
+- **[Tailwind CSS v4](https://tailwindcss.com/)** - Utility-first CSS with custom design tokens
+- **[Framer Motion](https://motion.dev/)** - Smooth animations and micro-interactions
+- **[Vite](https://vitejs.dev/)** - Lightning-fast build tool and dev server
+- **[Lucide React](https://lucide.dev/)** - Beautiful, consistent icons
 
-### API
-- **[TMDB API](https://www.themoviedb.org/documentation/api)** - RESTful web service to obtain movie information
+### API & Data
+- **[TMDB API](https://www.themoviedb.org/documentation/api)** - Comprehensive movie database
+- **LocalStorage** - Persistent watchlist storage
 
-## 🚀 Installation
+### Development Tools
+- **ESLint** - Code quality and consistency
+- **use-debounce** - Optimized search performance
+
+## Installation
+
+### Prerequisites
+- Node.js 18+ and npm/yarn
+- TMDB API Key (free)
+
+### Setup
 
 1. **Clone the repository**
 
@@ -49,48 +78,53 @@ A user-friendly web application to discover movies, curate a personalized watchl
    npm install
    ```
 
-3. **Obtain TMDB API Key**  
-   - Visit [TMDB API Settings](https://www.themoviedb.org/settings/api) to request a free API key.
-   - You'll need to create a TMDB account first if you don't have one.
-   - Create a `.env` file in the root directory and add your API key:
+3. **Configure API Key**
+   
+   - Sign up at [TMDB](https://www.themoviedb.org/signup)
+   - Get your API key from [API Settings](https://www.themoviedb.org/settings/api)
+   - Create `.env` file in the root:
 
-     ```
+     ```env
      VITE_TMDB_API_KEY=your_api_key_here
      ```
 
-4. **Start the development server**
+4. **Start development server**
 
    ```bash
    npm run dev
    ```
-   **The application will be accessible at `http://localhost:5173`.**
+   
+   Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-## 🤝 Contributing
-
-Contributions are welcome! To contribute:
-
-1. Fork the repository.
-2. Create a new branch:
+5. **Build for production**
 
    ```bash
-   git checkout -b feature/your-feature-name
+   npm run build
+   npm run preview  # Preview production build
    ```
 
-3. Make your changes and commit them:
+## Contributing
 
+Contributions are welcome! Here's how you can help:
+
+1. **Fork the repository**
+2. **Create a feature branch**
    ```bash
-   git commit -m 'Add some feature'
+   git checkout -b feature/amazing-feature
+   ```
+3. **Commit your changes**
+   ```bash
+   git commit -m 'Add amazing feature'
    ```   
-
-4. Push to the branch:
-
+4. **Push to the branch**
    ```bash   
-   git push origin feature/your-feature-name
+   git push origin feature/amazing-feature
    ```
+5. **Open a Pull Request**
 
-5. Open a Pull Request to the main branch.
+Please ensure your code follows the existing style and includes appropriate comments.
 
-## 📸 Screenshots
+## Screenshots
 
 <div align="center"> 
    
@@ -117,22 +151,30 @@ Contributions are welcome! To contribute:
 
 </div>
 
-## 🌍 Live
+## Live Demo
 
 <div align="center">
    
-   [![Visit](https://img.shields.io/badge/Visit_Site-000?style=for-the-badge&logo=vercel&logoColor=white)](https://movie-watchlist-fawn-three.vercel.app/)
+   [![Visit Site](https://img.shields.io/badge/Visit_Site-000?style=for-the-badge&logo=vercel&logoColor=white)](https://movie-watchlist-fawn-three.vercel.app/)
+
+   Experience MovieVault live on Vercel
 
 </div>
 
-## 👤 Author
+## Author
 
-### Ashwin S Nambiar
+**Ashwin S Nambiar**
+
 - Portfolio: [ashwin.co.in](https://ashwin.co.in)
 - GitHub: [@Ashwin-S-Nambiar](https://github.com/Ashwin-S-Nambiar)
+- Contact: Through portfolio website
 
 ---
 
 <div align="center">
-Made with ❤️ by Ashwin S Nambiar
+
+### ⭐ Star this repo if you find it useful!
+
+Made with ❤️ and ☕ by Ashwin S Nambiar
+
 </div>
