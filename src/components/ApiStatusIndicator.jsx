@@ -59,7 +59,7 @@ const ApiStatusIndicator = () => {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
-          className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 rounded-full backdrop-blur-md bg-gray-900/80 border ${config.borderColor} shadow-lg`}
+          className={`fixed top-20 left-1/2 transform -translate-x-1/2 z-60 px-4 py-2 rounded-full backdrop-blur-md bg-gray-900/90 border ${config.borderColor} shadow-lg`}
         >
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${config.color} ${apiStatus === 'up' ? 'animate-pulse' : ''}`} />
