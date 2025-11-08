@@ -8,7 +8,7 @@
 ![Framer Motion](https://img.shields.io/badge/Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 
-A user-friendly web application to discover movies, curate a personalized watchlist and read movie descriptions using the OMDb API.
+A user-friendly web application to discover movies, curate a personalized watchlist and read movie descriptions using the TMDB API.
 
 [Features](#-features) • [Tech Stack](#-tech-stack) • [Installation](#-installation) • [Contributing](#-contributing) • [Screenshots](#-screenshots) • [Live](#-live) • [Author](#-author)
 
@@ -32,7 +32,7 @@ A user-friendly web application to discover movies, curate a personalized watchl
 - **[Vite](https://vitejs.dev/)** - Fast build tool and development server
 
 ### API
-- **[OMDb API](https://www.omdbapi.com/)** - RESTful web service to obtain movie information
+- **[TMDB API](https://www.themoviedb.org/documentation/api)** - RESTful web service to obtain movie information
 
 ## 🚀 Installation
 
@@ -49,12 +49,13 @@ A user-friendly web application to discover movies, curate a personalized watchl
    npm install
    ```
 
-3. **Obtain OMDb API Key**  
-   - Visit [OMDb API](https://www.omdbapi.com/) to request a free API key.
+3. **Obtain TMDB API Key**  
+   - Visit [TMDB API Settings](https://www.themoviedb.org/settings/api) to request a free API key.
+   - You'll need to create a TMDB account first if you don't have one.
    - Create a `.env` file in the root directory and add your API key:
 
      ```
-     VITE_API_KEY=your_api_key_here
+     VITE_TMDB_API_KEY=your_api_key_here
      ```
 
 4. **Start the development server**

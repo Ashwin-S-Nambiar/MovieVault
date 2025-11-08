@@ -5,6 +5,7 @@ import { useDebounce } from 'use-debounce';
 import Toast from '../components/Toast';
 import SearchDropdown from '../components/SearchDropdown';
 import MovieCard from '../components/MovieCard';
+import { searchMovies, getMovieDetails, convertTmdbToOmdbFormat } from '../utils/tmdbApi';
 
 const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -16,7 +17,6 @@ const HomePage = () => {
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const searchRef = useRef(null);
   
-  const API_KEY = import.meta.env.VITE_API_KEY;
   const [watchlist, setWatchlist] = useState(() => {
     const saved = localStorage.getItem('movie-watchlist');
     return saved ? JSON.parse(saved) : [];
@@ -42,16 +42,20 @@ const HomePage = () => {
 
       setLoading(true);
       try {
-        const response = await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&s=${debouncedSearch}`);        
-        const data = await response.json();
+        const data = await searchMovies(debouncedSearch);
         
-        if (data.Response === "True") {
-          setSearchResults(data.Search.slice(0, 5));
+        if (data.results && data.results.length > 0) {
+          // Convert TMDB results to OMDB-like format
+          const formattedResults = data.results
+            .slice(0, 5)
+            .map(movie => convertTmdbToOmdbFormat(movie));
+          setSearchResults(formattedResults);
         } else {
           setSearchResults([]);
         }
       } catch (error) {
         console.error(error);
+        showToast('Failed to search movies', 'error');
       } finally {
         setLoading(false);
       }
@@ -68,8 +72,9 @@ const HomePage = () => {
   const handleMovieSelect = async (movie) => {
     setLoading(true);
     try {
-      const response = await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&i=${movie.imdbID}`);
-      const detailedMovie = await response.json();
+      // Fetch full movie details from TMDB
+      const tmdbDetails = await getMovieDetails(movie.imdbID);
+      const detailedMovie = convertTmdbToOmdbFormat(tmdbDetails, true);
       
       setSelectedMovies(prev => [detailedMovie, ...prev]);
       setSearchTerm('');

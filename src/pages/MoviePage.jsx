@@ -15,12 +15,12 @@ import {
   Pencil
 } from 'lucide-react';
 import Toast  from '../components/Toast';
+import { getMovieDetails, convertTmdbToOmdbFormat } from '../utils/tmdbApi';
 
 const MoviePage = () => {
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
   const [loading, setLoading] = useState(true);
-  const API_KEY = import.meta.env.VITE_API_KEY;
   const [watchlist, setWatchlist] = useState(() => {
     const saved = localStorage.getItem('movie-watchlist');
     return saved ? JSON.parse(saved) : [];
@@ -30,9 +30,9 @@ const MoviePage = () => {
   useEffect(() => {
     const fetchMovieDetails = async () => {
       try {
-        const response = await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&i=${id}&plot=full`);
-        const data = await response.json();
-        setMovie(data);
+        const tmdbMovie = await getMovieDetails(id);
+        const formattedMovie = convertTmdbToOmdbFormat(tmdbMovie, true);
+        setMovie(formattedMovie);
       } catch (error) {
         console.error('Error fetching movie details:', error);
       } finally {

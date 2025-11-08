@@ -1,57 +1,42 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { checkApiStatus } from '../utils/tmdbApi';
 
 const ApiStatusIndicator = () => {
   const [apiStatus, setApiStatus] = useState('checking');
   const [isVisible, setIsVisible] = useState(true);
-  
-  const API_KEY = import.meta.env.VITE_API_KEY;
 
   useEffect(() => {
-    const checkApiStatus = async () => {
+    const checkStatus = async () => {
       try {
-        const response = await fetch(`https://www.omdbapi.com/?apikey=${API_KEY}&s=test`, {
-          method: 'GET',
-          timeout: 5000
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          // Check if API returned valid response structure
-          if (data.Response !== undefined) {
-            setApiStatus('up');
-          } else {
-            setApiStatus('down');
-          }
-        } else {
-          setApiStatus('down');
-        }
+        const isUp = await checkApiStatus();
+        setApiStatus(isUp ? 'up' : 'down');
       } catch {
         setApiStatus('down');
       }
     };
 
-    checkApiStatus();
+    checkStatus();
     
     // Check API status every 30 seconds
-    const interval = setInterval(checkApiStatus, 30000);
+    const interval = setInterval(checkStatus, 30000);
     
     return () => clearInterval(interval);
-  }, [API_KEY]);
+  }, []);
 
   const getStatusConfig = () => {
     switch (apiStatus) {
       case 'up':
         return {
           color: 'bg-green-500',
-          text: 'OMDB API is Up',
+          text: 'TMDB API is Up',
           textColor: 'text-green-400',
           borderColor: 'border-green-500/20'
         };
       case 'down':
         return {
           color: 'bg-red-500',
-          text: 'OMDB API is Down',
+          text: 'TMDB API is Down',
           textColor: 'text-red-400',
           borderColor: 'border-red-500/20'
         };
