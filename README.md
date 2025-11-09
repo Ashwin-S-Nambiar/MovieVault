@@ -129,25 +129,19 @@ Please ensure your code follows the existing style and includes appropriate comm
 <div align="center"> 
    
    ### Landing Page / HomePage
-   ![Landing Page](./public/screenshots/LandingPage.png)
+   ![Landing Page](./public/screenshots/MovieVault.webp)
 
    ### Search Results
-   ![Search Results](./public/screenshots/SearchResults.png)
-
-   ### Selecting a Result
-   ![Selecting a Result](./public/screenshots/SearchResultPress.png)
-
-   ### Watchlist Page
-   ![Watchlist Page](./public/screenshots/WatchList.png)
+   ![Search Results](./public/screenshots/MovieVault-1.webp)
 
    ### Movie Details Page
-   ![Movie Details Page](./public/screenshots/MovieDetailsPage.png)
+   ![Movie Details Page](./public/screenshots/MovieVault-2.webp)
 
-   ### Adding to Watchlist
-   ![Adding to Watchlist](./public/screenshots/AddToWatchlist.png)
+   ### Watchlist Page
+   ![Watchlist Page](./public/screenshots/MovieVault-3.webp)
 
    ### 404 Page
-   ![Page Not Found](./public/screenshots/PageNotFound.png)
+   ![Page Not Found](./public/screenshots/MovieVault-4.webp)
 
 </div>
 
