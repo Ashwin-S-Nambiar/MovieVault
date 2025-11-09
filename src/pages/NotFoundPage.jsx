@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 
 const NotFoundPage = () => {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-gray-100 px-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#1A1F2B] text-gray-100 px-4">
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
