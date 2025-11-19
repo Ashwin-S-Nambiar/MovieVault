@@ -37,8 +37,6 @@ MovieVault features a completely redesigned modern interface built with these pr
 - **Subtle Animations** - Framer Motion for smooth, non-intrusive transitions
 - **Card-Based Layouts** - Modern grid system that scales beautifully
 
-See [DESIGN.md](./DESIGN.md) for the complete design system documentation.
-
 ## Tech Stack
 
 ### Frontend
@@ -154,14 +152,6 @@ Please ensure your code follows the existing style and includes appropriate comm
    Experience MovieVault live on Vercel
 
 </div>
-
-## Author
-
-**Ashwin S Nambiar**
-
-- Portfolio: [ashwin.co.in](https://ashwin.co.in)
-- GitHub: [@Ashwin-S-Nambiar](https://github.com/Ashwin-S-Nambiar)
-- Contact: Through portfolio website
 
 ---
 
