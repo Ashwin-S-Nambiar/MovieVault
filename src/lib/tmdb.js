@@ -1,4 +1,11 @@
-import { reportFailure, reportRetry, reportSuccess } from './health';
+import {
+  isDown,
+  reportFailure,
+  reportRetry,
+  reportSuccess,
+  retryFailed,
+  startReconnect,
+} from './health';
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -36,8 +43,9 @@ function buildUrl(path, params = {}) {
 
 async function fetchWithRetry(url) {
   let lastError;
+  const attempts = isDown() ? 1 : MAX_ATTEMPTS;
 
-  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+  for (let attempt = 0; attempt < attempts; attempt++) {
     if (attempt > 0) {
       reportRetry();
       await wait(400 * 2.5 ** (attempt - 1) + Math.random() * 150);
@@ -66,6 +74,18 @@ async function fetchWithRetry(url) {
   reportFailure(lastError);
   throw lastError;
 }
+
+export async function reconnect() {
+  if (!API_KEY || !startReconnect()) return;
+  try {
+    await fetchWithRetry(buildUrl('/configuration'));
+    retryFailed();
+  } catch {}
+}
+
+window.addEventListener('online', () => {
+  if (isDown()) reconnect();
+});
 
 export function tmdb(path, params, { signal } = {}) {
   if (!API_KEY) {

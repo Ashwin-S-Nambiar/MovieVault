@@ -17,7 +17,7 @@ import TitleCard from '../components/TitleCard';
 import Topbar, { ServicesButton } from '../components/Topbar';
 import { discover, prefetchTitle, trending } from '../lib/catalog';
 import { TYPE_LABEL, titleHref, watchStatus } from '../lib/format';
-import { claimHero, markHero } from '../lib/hero';
+import { launchHero } from '../lib/hero';
 import { useDebouncedValue, useReducedMotion } from '../lib/hooks';
 import { usePageMeta } from '../lib/meta';
 import { useRegion, useServices } from '../lib/prefs';
@@ -75,15 +75,16 @@ function Caption({ item, failed, onHover }) {
               state={{ item }}
               viewTransition
               className="btn btn-solid"
-              onClick={() => {
-                markHero(item.key, 'reel');
-                claimHero(
+              onClick={(event) =>
+                launchHero(
                   document.querySelector(
-                    '.reel-item[data-active="true"] .case-front',
+                    '.reel-item[data-active="true"] .case',
                   ),
-                  { transient: true },
-                );
-              }}
+                  item,
+                  'reel',
+                  event,
+                )
+              }
             >
               View details
             </Link>

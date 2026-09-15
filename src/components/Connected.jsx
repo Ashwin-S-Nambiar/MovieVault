@@ -7,7 +7,7 @@ import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { getConnected } from '../lib/catalog';
 import { TYPE_LABEL, titleHref } from '../lib/format';
-import { claimHero, isHero, markHero, takeHero } from '../lib/hero';
+import { isHero, launchHero, takeHero } from '../lib/hero';
 import { trackEdges } from '../lib/hooks';
 import { useQuery } from '../lib/useQuery';
 import { Poster } from './Case';
@@ -22,12 +22,13 @@ const heroProps = (item) => ({
   to: titleHref(item),
   state: { item },
   viewTransition: true,
-  onClick: (event) => {
-    claimHero(event.currentTarget.querySelector('.poster'), {
-      transient: true,
-    });
-    markHero(item.key, 'connected');
-  },
+  onClick: (event) =>
+    launchHero(
+      event.currentTarget.querySelector('.poster'),
+      item,
+      'connected',
+      event,
+    ),
 });
 
 const centerCurrent = (strip) => {

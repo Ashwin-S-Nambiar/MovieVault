@@ -30,7 +30,8 @@ function ApiStatusRow() {
   const health = useHealth();
   const tone = !health.online
     ? 'offline'
-    : health.retrying > 0 && health.status !== 'up'
+    : health.status === 'checking' ||
+        (health.retrying > 0 && health.status !== 'up')
       ? 'retrying'
       : health.status;
   const text = {

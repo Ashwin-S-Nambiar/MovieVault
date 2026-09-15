@@ -16,7 +16,7 @@ import {
   prefetchTitle,
 } from '../lib/catalog';
 import { longDate, TYPE_LABEL, titleHref } from '../lib/format';
-import { claimHero, isHero, markHero, takeHero } from '../lib/hero';
+import { isHero, launchHero, takeHero } from '../lib/hero';
 import { backdropImage, usePageMeta } from '../lib/meta';
 import { img } from '../lib/tmdb';
 import { toast } from '../lib/ui';
@@ -230,14 +230,14 @@ export default function Universe() {
                   state={{ item: released[0] }}
                   className="btn btn-solid"
                   viewTransition
-                  onClick={() => {
-                    const firstPoster =
-                      document.querySelector('.tl-item .poster');
-                    if (firstPoster) {
-                      claimHero(firstPoster, { transient: true });
-                    }
-                    markHero(released[0].key, 'timeline');
-                  }}
+                  onClick={(event) =>
+                    launchHero(
+                      document.querySelector('.tl-item .poster'),
+                      released[0],
+                      'timeline',
+                      event,
+                    )
+                  }
                 >
                   Start from the beginning
                 </Link>
@@ -259,14 +259,15 @@ export default function Universe() {
             {parts.map((p) => {
               const upcoming = !p.date || p.date > now;
               const isSaved = saved.has(p.key);
-              const onTitleClick = (e) => {
-                const itemEl = e.currentTarget.closest('.tl-item');
-                const poster = itemEl?.querySelector('.poster');
-                if (poster) {
-                  claimHero(poster, { transient: true });
-                }
-                markHero(p.key, 'timeline');
-              };
+              const onTitleClick = (event) =>
+                launchHero(
+                  event.currentTarget
+                    .closest('.tl-item')
+                    ?.querySelector('.poster'),
+                  p,
+                  'timeline',
+                  event,
+                );
               return (
                 <li key={p.key}>
                   <div

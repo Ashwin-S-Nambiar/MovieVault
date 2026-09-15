@@ -11,16 +11,25 @@ export const healthStore = createStore({
   epoch: 0,
 });
 
+export const isDown = () => healthStore.get().status === 'down';
+
+export function startReconnect() {
+  const { status } = healthStore.get();
+  if (status === 'checking' || status === 'missing-key') return false;
+  healthStore.set((s) => ({ ...s, status: 'checking', retrying: 0 }));
+  return true;
+}
+
 export function retryFailed() {
-  healthStore.set((s) => ({
-    ...s,
-    status: s.status === 'down' ? 'idle' : s.status,
-    epoch: s.epoch + 1,
-  }));
+  healthStore.set((s) => ({ ...s, epoch: s.epoch + 1 }));
 }
 
 export function reportRetry() {
-  healthStore.set((s) => ({ ...s, retrying: s.retrying + 1 }));
+  healthStore.set((s) =>
+    s.status === 'down' || s.status === 'checking'
+      ? s
+      : { ...s, retrying: s.retrying + 1 },
+  );
 }
 
 export function reportSuccess(ms) {

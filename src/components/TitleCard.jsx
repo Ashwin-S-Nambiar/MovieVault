@@ -3,7 +3,7 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { prefetchTitle } from '../lib/catalog';
 import { TYPE_LABEL, titleHref } from '../lib/format';
-import { claimHero, isHero, markHero, takeHero } from '../lib/hero';
+import { isHero, launchHero, takeHero } from '../lib/hero';
 import { Disc, Poster } from './Case';
 import { LazyProviders } from './Providers';
 
@@ -68,9 +68,8 @@ export default function TitleCard({
           if (event.pointerType === 'mouse') setPeeked(true);
           prefetchTitle(item);
         }}
-        onClick={() => {
-          claimHero(posterRef.current, { transient: true });
-          markHero(item.key, 'card');
+        onClick={(event) => {
+          launchHero(posterRef.current, item, 'card', event);
           onOpen?.(item);
         }}
       >

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { retryFailed, useHealth } from '../lib/health';
+import { useHealth } from '../lib/health';
+import { reconnect } from '../lib/tmdb';
 
 function describe(status, online, retrying) {
   if (status === 'missing-key') {
@@ -12,7 +13,7 @@ function describe(status, online, retrying) {
   if (status === 'down') {
     return { tone: 'down', text: "TMDB isn't responding", retry: true };
   }
-  if (retrying) {
+  if (status === 'checking' || retrying) {
     return { tone: 'retrying', text: 'Reconnecting to TMDB', spinner: true };
   }
   return null;
@@ -62,7 +63,7 @@ export default function StatusPill() {
       )}
       <span className="status-text">{view?.text}</span>
       {view?.retry && (
-        <button type="button" className="btn" onClick={retryFailed}>
+        <button type="button" className="btn" onClick={reconnect}>
           Retry
         </button>
       )}

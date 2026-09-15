@@ -10,6 +10,7 @@ import { watchStatus } from '../lib/format';
 import { useInView } from '../lib/hooks';
 import { useRegion, useServices } from '../lib/prefs';
 import { img } from '../lib/tmdb';
+import { useReconnect } from '../lib/useQuery';
 
 export function ProviderStack({ providers, max = 3, size, onClick, label }) {
   const shown = providers.slice(0, max);
@@ -42,13 +43,18 @@ export function useStreaming(item, enabled = true) {
   const region = useRegion();
   const services = useServices();
   const [rows, setRows] = useState(null);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
   const type = item?.type;
   const id = item?.id;
+  useReconnect(failed, () => setAttempt((n) => n + 1));
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: attempt re-runs the fetch
   useEffect(() => {
     if (!type || !id || !enabled) return;
     const controller = new AbortController();
     setRows(null);
+    setFailed(false);
     getProviders(type, id, { signal: controller.signal })
       .then((data) => {
         const { mine, others, streaming } = providerRows(
@@ -67,9 +73,11 @@ export function useStreaming(item, enabled = true) {
           ],
         });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!controller.signal.aborted) setFailed(true);
+      });
     return () => controller.abort();
-  }, [type, id, region, services, enabled]);
+  }, [type, id, region, services, enabled, attempt]);
 
   return rows;
 }

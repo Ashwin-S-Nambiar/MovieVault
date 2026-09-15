@@ -31,6 +31,19 @@ const fresh = (key) => {
   return hit && Date.now() - hit.at < TTL ? hit : null;
 };
 
+export function useReconnect(failed, retry) {
+  const epoch = useStore(healthStore, (s) => s.epoch);
+  const seen = useRef(epoch);
+  const latest = useRef({ failed, retry });
+  latest.current = { failed, retry };
+
+  useEffect(() => {
+    if (epoch === seen.current) return;
+    seen.current = epoch;
+    if (latest.current.failed) latest.current.retry();
+  }, [epoch]);
+}
+
 export function useQuery(key, fetcher, { enabled = true } = {}) {
   const [state, setState] = useState(() => {
     const hit = enabled ? fresh(key) : null;
@@ -41,11 +54,10 @@ export function useQuery(key, fetcher, { enabled = true } = {}) {
     };
   });
   const [attempt, setAttempt] = useState(0);
-  const epoch = useStore(healthStore, (s) => s.epoch);
   const fetcherRef = useRef(fetcher);
   fetcherRef.current = fetcher;
-  const failed = Boolean(state.error);
-  const retryEpoch = failed ? epoch : 0;
+  const retry = () => setAttempt((n) => n + 1);
+  useReconnect(Boolean(state.error), retry);
 
   useEffect(() => {
     if (!enabled) {
@@ -53,7 +65,7 @@ export function useQuery(key, fetcher, { enabled = true } = {}) {
       return;
     }
     const hit = fresh(key);
-    if (hit && attempt === 0 && !retryEpoch) {
+    if (hit && attempt === 0) {
       setState((s) =>
         s.data === hit.data && !s.loading
           ? s
@@ -77,7 +89,7 @@ export function useQuery(key, fetcher, { enabled = true } = {}) {
         }
       });
     return () => controller.abort();
-  }, [key, enabled, attempt, retryEpoch]);
+  }, [key, enabled, attempt]);
 
-  return { ...state, retry: () => setAttempt((n) => n + 1) };
+  return { ...state, retry };
 }

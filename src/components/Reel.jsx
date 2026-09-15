@@ -1,6 +1,6 @@
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { claimHero, markHero, takeHero } from '../lib/hero';
+import { launchHero, takeHero } from '../lib/hero';
 import { useReducedMotion } from '../lib/hooks';
 import Case from './Case';
 
@@ -349,15 +349,11 @@ export default function Reel({
     interact();
     if (index === activeRef.current && pos.current === target.current) {
       const item = items[index];
-      const el = itemRefs.current[index];
-      markHero(item.key, 'reel');
-      const go = () => {
-        claimHero(frontRefs.current[index], { transient: true });
+      if (
+        !launchHero(frontRefs.current[index]?.closest('.case'), item, 'reel')
+      ) {
         onOpen(item);
-      };
-      if (reducedRef.current || !el) return go();
-      el.dataset.opening = 'true';
-      setTimeout(go, 300);
+      }
     } else {
       goTo(index);
     }

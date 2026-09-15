@@ -15,7 +15,7 @@ export default function NotFound() {
       </p>
       <div className="detail-actions">
         <Link to="/" className="btn btn-solid">
-          Back to the reel
+          Back to home
         </Link>
         <Link to="/search" className="btn">
           Search

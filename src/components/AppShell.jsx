@@ -1,5 +1,5 @@
 import { IconSearch } from '@tabler/icons-react';
-import { useContext, useEffect } from 'react';
+import { useContext, useEffect, useLayoutEffect } from 'react';
 import {
   Link,
   Outlet,
@@ -8,6 +8,8 @@ import {
   useLocation,
   useNavigate,
 } from 'react-router';
+import { enterHero, setHeroNavigate } from '../lib/hero';
+import Flight from './Flight';
 import ServicesSheet from './ServicesSheet';
 import StatusPill from './StatusPill';
 import Toaster from './Toaster';
@@ -41,6 +43,15 @@ export default function AppShell() {
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
+  useLayoutEffect(() => {
+    setHeroNavigate(navigate);
+  }, [navigate]);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs on route change
+  useLayoutEffect(() => {
+    enterHero();
+  }, [pathname]);
+
   useEffect(() => {
     const onKey = (event) => {
       const typing = event.target.closest?.(
@@ -67,6 +78,7 @@ export default function AppShell() {
       {DOCKED.test(pathname) && <SearchDock />}
       <StatusPill />
       <Toaster />
+      <Flight />
       <ServicesSheet />
       <ScrollRestoration />
     </>

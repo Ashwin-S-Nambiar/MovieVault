@@ -1,44 +1,28 @@
 import { useLayoutEffect, useRef } from 'react';
-import { claimHero } from '../lib/hero';
+import { arriveHero } from '../lib/hero';
 import { img } from '../lib/tmdb';
 import { Art } from './Case';
 
 export default function OpenCase({
   item,
-  open,
+  open = false,
   overview,
-  hero = true,
+  hero = false,
   loading = false,
-  closing = false,
   style,
 }) {
-  const trayRef = useRef(null);
-  const frontRef = useRef(null);
+  const ref = useRef(null);
+  const key = item?.key;
 
   useLayoutEffect(() => {
-    if (!hero) return;
-    const tray = trayRef.current;
-    if (open) {
-      claimHero(tray);
-      return;
-    }
-    claimHero(frontRef.current);
-    tray.style.viewTransitionName = 'hero-tray';
-    return () => {
-      tray.style.viewTransitionName = '';
-    };
-  }, [hero, open]);
+    if (hero && key) arriveHero(ref.current, key);
+  }, [hero, key]);
 
   const poster = img(item?.poster, 'w500');
 
   return (
-    <div
-      className="ocase"
-      data-open={open}
-      data-closing={closing}
-      style={style}
-    >
-      <div ref={trayRef} className="ocase-tray">
+    <div ref={ref} className="ocase" data-open={open} style={style}>
+      <div className="ocase-tray">
         {item && (
           <div className="disc">
             {poster && <img src={poster} alt="" draggable={false} />}
@@ -46,7 +30,7 @@ export default function OpenCase({
         )}
       </div>
       <div className="ocase-cover">
-        <div ref={frontRef} className="ocase-front">
+        <div className="ocase-front">
           {(item || loading) && <Art item={item} size="w500" eager />}
         </div>
         <div className="ocase-inner">

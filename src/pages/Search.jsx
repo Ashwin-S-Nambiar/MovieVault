@@ -30,7 +30,7 @@ import {
   trending,
 } from '../lib/catalog';
 import { titleHref } from '../lib/format';
-import { claimHero, isHero, markHero, takeHero } from '../lib/hero';
+import { isHero, launchHero, takeHero } from '../lib/hero';
 import {
   useDebouncedValue,
   useInView,
@@ -41,7 +41,7 @@ import { pageImage, usePageMeta } from '../lib/meta';
 import { useRegion, useServices } from '../lib/prefs';
 import { img } from '../lib/tmdb';
 import { openSheet, recentStore, rememberSearch, useRecent } from '../lib/ui';
-import { useQuery } from '../lib/useQuery';
+import { useQuery, useReconnect } from '../lib/useQuery';
 
 const TYPES = [
   { value: 'all', label: 'All' },
@@ -181,8 +181,10 @@ function usePaged(key, fetchPage, enabled) {
       load(state.page + 1);
     }
   };
+  const retry = () => load(Math.max(1, state.page + 1));
+  useReconnect(Boolean(state.error), retry);
 
-  return { ...state, loadMore, retry: () => load(Math.max(1, state.page + 1)) };
+  return { ...state, loadMore, retry };
 }
 
 function sortItems(items, sort) {
@@ -212,6 +214,7 @@ function SpineStack({ items }) {
   const [peeked, setPeeked] = useState(() => new Set(heroKey ? [heroKey] : []));
   const [cover, ...spines] = [...shelved].reverse();
   const stackRef = useRef(null);
+  const took = useRef(null);
 
   if (heroKey && returning !== heroKey) {
     setReturning(heroKey);
@@ -220,14 +223,21 @@ function SpineStack({ items }) {
   }
 
   useLayoutEffect(() => {
-    if (!returning) return;
+    if (!returning) {
+      took.current = null;
+      for (const el of stackRef.current?.querySelectorAll('[data-landed]') ??
+        []) {
+        delete el.dataset.landed;
+      }
+      return;
+    }
     const holder = stackRef.current?.querySelector(`[data-returning="true"]`);
-    takeHero(
-      holder?.querySelector('.pull-cover, .cover-body'),
-      returning,
-      'spine',
-    );
-    const timer = setTimeout(() => setReturning(null), 1300);
+    const cover = holder?.querySelector('.pull-cover, .cover-body');
+    if (cover && took.current !== returning) {
+      took.current = returning;
+      if (!takeHero(cover, returning, 'spine')) cover.dataset.landed = 'true';
+    }
+    const timer = setTimeout(() => setReturning(null), 2400);
     return () => clearTimeout(timer);
   }, [returning]);
 
@@ -246,15 +256,23 @@ function SpineStack({ items }) {
     const link = event.currentTarget;
     peek(item);
     const go = () => {
-      claimHero(link.querySelector('.pull-cover, .cover-body'), {
-        transient: true,
-      });
-      markHero(item.key, 'spine');
-      navigate(titleHref(item), { state: { item }, viewTransition: true });
+      if (
+        !launchHero(
+          link.classList.contains('shelf-cover')
+            ? link.matches(':hover')
+              ? link.querySelector('.cover-body')
+              : link
+            : link.querySelector('.pull-cover'),
+          item,
+          'spine',
+        )
+      ) {
+        navigate(titleHref(item), { state: { item }, viewTransition: true });
+      }
     };
-    if (reduced) return go();
+    if (reduced || link.classList.contains('shelf-cover')) return go();
     setPulling(item.key);
-    setTimeout(go, 600);
+    setTimeout(go, 440);
   };
 
   if (!cover) {

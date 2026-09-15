@@ -42,7 +42,7 @@ import {
   toItems,
   watchStatus,
 } from '../lib/format';
-import { claimHero } from '../lib/hero';
+import { departHero, isArriving } from '../lib/hero';
 import { trackEdges, useMediaQuery, useReducedMotion } from '../lib/hooks';
 import { backdropImage, usePageMeta } from '../lib/meta';
 import { useRegion, useServices } from '../lib/prefs';
@@ -58,7 +58,7 @@ const regionName = (code) => {
   }
 };
 
-function useStageScroll(stageRef, hintRef, enabled) {
+function useStageScroll(stageRef, enabled) {
   useEffect(() => {
     const stage = stageRef.current;
     if (!stage || !enabled) return;
@@ -72,10 +72,6 @@ function useStageScroll(stageRef, hintRef, enabled) {
       stage.style.transform = `scale(${1 - p * 0.1})`;
       stage.style.filter = p > 0.01 ? `blur(${p * 16}px)` : '';
       stage.style.opacity = String(1 - p * 0.85);
-      hintRef.current?.style.setProperty(
-        '--hint-angle',
-        `${22 * Math.max(0, 1 - p * 6)}deg`,
-      );
     };
     const onScroll = () => {
       if (!frame) frame = requestAnimationFrame(update);
@@ -89,7 +85,7 @@ function useStageScroll(stageRef, hintRef, enabled) {
       stage.style.filter = '';
       stage.style.opacity = '';
     };
-  }, [stageRef, hintRef, enabled]);
+  }, [stageRef, enabled]);
 }
 
 const STATUS_NOTES = {
@@ -455,10 +451,7 @@ function TitleView({ type, id }) {
   const desktop = useMediaQuery('(min-width: 960px)');
   const reduced = useReducedMotion();
   const stageRef = useRef(null);
-  const hintRef = useRef(null);
-  const contentRef = useRef(null);
-  const [open, setOpen] = useState(false);
-  const [closing, setClosing] = useState(false);
+  const [open, setOpen] = useState(() => isArriving(`${type}-${id}`));
   const [trailerOpen, setTrailerOpen] = useState(false);
   const transitioning = useViewTransitionState(location.pathname);
   const arrived = useRef(transitioning);
@@ -469,7 +462,7 @@ function TitleView({ type, id }) {
   const raw = query.data?.raw;
   const item = query.data?.item ?? location.state?.item ?? null;
 
-  useStageScroll(stageRef, hintRef, !desktop && !reduced);
+  useStageScroll(stageRef, !desktop && !reduced);
 
   useEffect(() => {
     if (transitioning) return;
@@ -520,24 +513,18 @@ function TitleView({ type, id }) {
   }
 
   const goBack = () => {
-    const leave = () =>
+    const leave = (viewTransition) =>
       location.key !== 'default'
-        ? navigate(-1, { viewTransition: true })
-        : navigate('/', { viewTransition: true });
+        ? navigate(-1, { viewTransition })
+        : navigate('/', { viewTransition });
     const stage = stageRef.current;
-    if (!desktop && stage && window.scrollY > stage.offsetHeight * 0.2) {
-      claimHero(null);
-      stage
-        .querySelector('.ocase-tray')
-        ?.style.removeProperty('view-transition-name');
-      return leave();
-    }
-    if (!open || reduced || closing) return leave();
-    setClosing(true);
-    setTimeout(() => {
-      setClosing('settled');
-      requestAnimationFrame(leave);
-    }, 500);
+    const inView =
+      desktop || (stage && window.scrollY < stage.offsetHeight * 0.2);
+    const flown =
+      open &&
+      inView &&
+      departHero(stage?.querySelector('.ocase'), item, () => leave(false));
+    if (!flown) leave(true);
   };
 
   const cert = raw ? certification(raw, type, region) : null;
@@ -608,30 +595,16 @@ function TitleView({ type, id }) {
             <div>
               <OpenCase
                 item={item}
-                open={open && Boolean(item) && !closing}
-                closing={closing}
+                open={open && Boolean(item)}
+                hero
                 overview={raw?.overview}
                 loading={!item}
               />
-              <button
-                ref={hintRef}
-                type="button"
-                className="stage-hint"
-                aria-label="Scroll to details"
-                onClick={() =>
-                  contentRef.current?.scrollIntoView({
-                    behavior: reduced ? 'auto' : 'smooth',
-                  })
-                }
-              >
-                <i />
-                <i />
-              </button>
             </div>
           </div>
         </div>
 
-        <div ref={contentRef} className="sheet-body">
+        <div className="sheet-body">
           <div className="detail-content">
             <div className="detail-head">
               <div>
