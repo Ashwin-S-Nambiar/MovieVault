@@ -42,6 +42,7 @@ import {
   toItems,
   watchStatus,
 } from '../lib/format';
+import { claimHero } from '../lib/hero';
 import { trackEdges, useMediaQuery, useReducedMotion } from '../lib/hooks';
 import { backdropImage, usePageMeta } from '../lib/meta';
 import { useRegion, useServices } from '../lib/prefs';
@@ -523,6 +524,14 @@ function TitleView({ type, id }) {
       location.key !== 'default'
         ? navigate(-1, { viewTransition: true })
         : navigate('/', { viewTransition: true });
+    const stage = stageRef.current;
+    if (!desktop && stage && window.scrollY > stage.offsetHeight * 0.2) {
+      claimHero(null);
+      stage
+        .querySelector('.ocase-tray')
+        ?.style.removeProperty('view-transition-name');
+      return leave();
+    }
     if (!open || reduced || closing) return leave();
     setClosing(true);
     setTimeout(() => {

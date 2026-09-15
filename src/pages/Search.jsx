@@ -8,7 +8,13 @@ import {
   IconTorii,
   IconX,
 } from '@tabler/icons-react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
 import { usePillTransition } from '../components/AppShell';
 import { Art } from '../components/Case';
@@ -24,7 +30,7 @@ import {
   trending,
 } from '../lib/catalog';
 import { titleHref } from '../lib/format';
-import { claimHero, markHero } from '../lib/hero';
+import { claimHero, isHero, markHero, takeHero } from '../lib/hero';
 import {
   useDebouncedValue,
   useInView,
@@ -199,8 +205,31 @@ function SpineStack({ items }) {
   const navigate = useNavigate();
   const reduced = useReducedMotion();
   const [pulling, setPulling] = useState(null);
-  const [peeked, setPeeked] = useState(() => new Set());
-  const [cover, ...spines] = items.slice(0, 9).reverse();
+  const shelved = items.slice(0, 9);
+  const heroKey = shelved.find((item) => isHero(item.key, 'spine'))?.key;
+  const [returning, setReturning] = useState(heroKey ?? null);
+  const [returned, setReturned] = useState(Boolean(heroKey));
+  const [peeked, setPeeked] = useState(() => new Set(heroKey ? [heroKey] : []));
+  const [cover, ...spines] = [...shelved].reverse();
+  const stackRef = useRef(null);
+
+  if (heroKey && returning !== heroKey) {
+    setReturning(heroKey);
+    setReturned(true);
+    setPeeked((prev) => new Set(prev).add(heroKey));
+  }
+
+  useLayoutEffect(() => {
+    if (!returning) return;
+    const holder = stackRef.current?.querySelector(`[data-returning="true"]`);
+    takeHero(
+      holder?.querySelector('.pull-cover, .cover-body'),
+      returning,
+      'spine',
+    );
+    const timer = setTimeout(() => setReturning(null), 1300);
+    return () => clearTimeout(timer);
+  }, [returning]);
 
   const peek = (item) => {
     prefetchTitle(item);
@@ -247,8 +276,11 @@ function SpineStack({ items }) {
 
   return (
     <nav
+      ref={stackRef}
       className="shelf-stack"
       data-pulling={Boolean(pulling)}
+      data-returning={Boolean(returning)}
+      data-returned={returned}
       aria-label="Trending this week"
     >
       {spines.reverse().map((item, i) => (
@@ -261,6 +293,7 @@ function SpineStack({ items }) {
           aria-label={item.title}
           title={item.title}
           data-pulling={pulling === item.key}
+          data-returning={returning === item.key}
           onPointerEnter={() => peek(item)}
           onFocus={() => peek(item)}
           onClick={(event) => pull(event, item)}
@@ -283,6 +316,7 @@ function SpineStack({ items }) {
         aria-label={cover.title}
         title={cover.title}
         data-pulling={pulling === cover.key}
+        data-returning={returning === cover.key}
         onPointerEnter={() => peek(cover)}
         onFocus={() => peek(cover)}
         onClick={(event) => pull(event, cover)}

@@ -18,22 +18,11 @@
   --accent-press: #c92120;
   --on-accent: #ffffff;
   --glass: rgb(250 250 249 / 0.62);
-  --glass-fill: linear-gradient(
-      180deg,
-      rgb(255 255 255 / 0.5),
-      rgb(255 255 255 / 0.12)
-    )
-    rgb(250 250 249 / 0.6);
-  --glass-hover: linear-gradient(
-      180deg,
-      rgb(255 255 255 / 0.85),
-      rgb(255 255 255 / 0.55)
-    )
-    rgb(255 255 255 / 0.7);
+  --glass-fill: linear-gradient(180deg, #ffffff, #f6f6f4);
+  --glass-hover: linear-gradient(180deg, #ffffff, #efefec);
   --glass-edge:
     inset 0 1px 0 rgb(255 255 255 / 0.55),
     inset 0 0 0 1px rgb(255 255 255 / 0.18);
-  --frost: blur(24px) saturate(1.8) brightness(1.04);
   --skeleton: #efeeea;
   --sweep: linear-gradient(
     90deg,
@@ -98,22 +87,11 @@
     --accent: #ff4541;
     --accent-press: #e5302f;
     --glass: rgb(30 30 33 / 0.58);
-    --glass-fill: linear-gradient(
-        180deg,
-        rgb(255 255 255 / 0.075),
-        rgb(255 255 255 / 0.02)
-      )
-      rgb(28 28 31 / 0.56);
-    --glass-hover: linear-gradient(
-        180deg,
-        rgb(255 255 255 / 0.12),
-        rgb(255 255 255 / 0.05)
-      )
-      rgb(40 40 44 / 0.7);
+    --glass-fill: linear-gradient(180deg, #242427, #1b1b1e);
+    --glass-hover: linear-gradient(180deg, #2c2c30, #232326);
     --glass-edge:
       inset 0 1px 0 rgb(255 255 255 / 0.1),
       inset 0 0 0 1px rgb(255 255 255 / 0.045);
-    --frost: blur(24px) saturate(1.7) brightness(1.06);
     --skeleton: #19191b;
     --sweep: linear-gradient(
       90deg,
@@ -150,22 +128,11 @@
   --accent: #ff4541;
   --accent-press: #e5302f;
   --glass: rgb(30 30 33 / 0.58);
-  --glass-fill: linear-gradient(
-      180deg,
-      rgb(255 255 255 / 0.075),
-      rgb(255 255 255 / 0.02)
-    )
-    rgb(28 28 31 / 0.56);
-  --glass-hover: linear-gradient(
-      180deg,
-      rgb(255 255 255 / 0.12),
-      rgb(255 255 255 / 0.05)
-    )
-    rgb(40 40 44 / 0.7);
+  --glass-fill: linear-gradient(180deg, #242427, #1b1b1e);
+  --glass-hover: linear-gradient(180deg, #2c2c30, #232326);
   --glass-edge:
     inset 0 1px 0 rgb(255 255 255 / 0.1),
     inset 0 0 0 1px rgb(255 255 255 / 0.045);
-  --frost: blur(24px) saturate(1.7) brightness(1.06);
   --skeleton: #19191b;
   --sweep: linear-gradient(
     90deg,
@@ -285,8 +252,6 @@ p {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--glass-fill);
-  backdrop-filter: var(--frost);
-  -webkit-backdrop-filter: var(--frost);
   box-shadow: var(--glass-edge), var(--shadow-sm);
   color: var(--ink);
   font: inherit;
@@ -325,13 +290,6 @@ p {
   box-shadow: none;
 }
 
-.btn-solid,
-.btn-accent,
-.btn-ghost {
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
 @media (hover: hover) and (pointer: fine) {
   .btn:hover {
     background: var(--glass-hover);
@@ -368,8 +326,6 @@ p {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--glass-fill);
-  backdrop-filter: var(--frost);
-  -webkit-backdrop-filter: var(--frost);
   color: var(--ink);
   box-shadow: var(--glass-edge), var(--shadow-sm);
   text-decoration: none;
@@ -460,8 +416,6 @@ p {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--glass-fill);
-  backdrop-filter: var(--frost);
-  -webkit-backdrop-filter: var(--frost);
   box-shadow: var(--glass-edge);
   isolation: isolate;
 }
@@ -554,8 +508,6 @@ p {
   border: 1px solid var(--line);
   border-radius: 999px;
   box-shadow: var(--glass-edge);
-  backdrop-filter: var(--frost);
-  -webkit-backdrop-filter: var(--frost);
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%2374736d' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 4.5 3 3 3-3'/%3E%3C/svg%3E")
     no-repeat right 0.9em center,
@@ -805,8 +757,6 @@ p {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--glass-fill);
-  backdrop-filter: var(--frost);
-  -webkit-backdrop-filter: var(--frost);
   box-shadow: var(--glass-edge), var(--shadow-sm);
   color: var(--ink-2);
   font-size: 13px;
@@ -1146,17 +1096,13 @@ p {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--glass-fill);
-  backdrop-filter: var(--frost);
-  -webkit-backdrop-filter: var(--frost);
   box-shadow: var(--glass-edge), var(--shadow-md);
   color: var(--muted);
   font: inherit;
   font-size: 16px;
   text-align: left;
   text-decoration: none;
-  transition:
-    transform 160ms var(--ease-out),
-    box-shadow 200ms ease;
+  transition: transform 160ms var(--ease-out);
 }
 
 a.search-pill:active {
@@ -2127,11 +2073,11 @@ a.search-pill:active {
   place-items: center;
   width: 32px;
   height: 32px;
+  border: 1px solid var(--line);
   border-radius: 50%;
-  background: rgb(255 255 255 / 0.16);
-  backdrop-filter: blur(12px) saturate(1.6);
-  -webkit-backdrop-filter: blur(12px) saturate(1.6);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.25);
+  background: var(--glass-fill);
+  color: var(--ink);
+  box-shadow: var(--glass-edge), var(--shadow-sm);
   opacity: 0;
   translate: -6px 6px;
   transition:
@@ -3526,6 +3472,39 @@ a.link-card:active {
   transition: opacity 360ms ease;
 }
 
+.shelf-stack[data-returned="true"] :is(.shelf-spine, .shelf-cover) {
+  animation: none;
+}
+
+.shelf-stack[data-returning="true"]
+  :is(.shelf-spine, .shelf-cover):not([data-returning="true"]) {
+  animation: shelf-undim 420ms ease 600ms backwards;
+}
+
+.shelf-spine[data-returning="true"],
+.shelf-cover[data-returning="true"] {
+  z-index: 5;
+  animation: none;
+}
+
+.shelf-spine[data-returning="true"] .spine-body {
+  animation: spine-out 600ms var(--ease-in-out) 560ms reverse both;
+}
+
+.shelf-spine[data-returning="true"] .pull-cover {
+  animation: cover-out 600ms var(--ease-in-out) 560ms reverse both;
+}
+
+.shelf-cover[data-returning="true"] .cover-body {
+  animation: lean-out 560ms var(--ease-in-out) 560ms reverse both;
+}
+
+@keyframes shelf-undim {
+  from {
+    opacity: 0.45;
+  }
+}
+
 @keyframes spine-out {
   45% {
     opacity: 1;
@@ -4407,8 +4386,6 @@ a.link-card:active {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--glass-fill);
-  backdrop-filter: var(--frost);
-  -webkit-backdrop-filter: var(--frost);
   box-shadow: var(--glass-edge), var(--shadow-md);
   color: var(--ink);
   font-size: 13.5px;
@@ -4460,9 +4437,7 @@ a.link-card:active {
   padding: 8px 8px 8px 16px;
   border: 1px solid var(--line);
   border-radius: 18px;
-  background: color-mix(in srgb, var(--raised) 80%, transparent);
-  backdrop-filter: var(--frost);
-  -webkit-backdrop-filter: var(--frost);
+  background: var(--glass-fill);
   color: var(--ink);
   box-shadow: var(--glass-edge), var(--shadow-lg);
   font-size: 14px;
@@ -4515,8 +4490,6 @@ a.link-card:active {
   background: var(--ink);
   color: var(--bg);
   box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
 }
 
 .nf {
@@ -4555,8 +4528,6 @@ a.link-card:active {
   border: 1px solid var(--line);
   border-radius: 999px;
   background: var(--glass-fill);
-  backdrop-filter: var(--frost);
-  -webkit-backdrop-filter: var(--frost);
   box-shadow: var(--glass-edge), var(--shadow-sm);
   color: var(--ink);
   font: inherit;
@@ -4957,9 +4928,39 @@ a.link-card:active {
   animation: 140ms ease both fade-out;
 }
 
+:root:active-view-transition .search-pill[style*="search-pill"] {
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
+}
+
 ::view-transition-group(search-pill) {
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--glass-fill);
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    var(--glass-edge),
+    var(--shadow-md);
   animation-duration: 380ms;
   animation-timing-function: var(--ease-drawer);
+}
+
+::view-transition-old(search-pill),
+::view-transition-new(search-pill) {
+  width: 100%;
+  height: 100%;
+  object-fit: none;
+  object-position: left center;
+}
+
+::view-transition-old(search-pill):only-child,
+::view-transition-new(search-pill):only-child {
+  animation: none;
+}
+
+:root[data-footer="visible"] .search-dock .search-pill {
+  view-transition-name: none !important;
 }
 
 .route {
