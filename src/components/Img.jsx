@@ -1,6 +1,20 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 
-const seen = new Set();
+const KEEP = 240;
+const seen = new Map();
+
+function remember(src) {
+  const kept = seen.get(src);
+  seen.delete(src);
+  if (kept) {
+    seen.set(src, kept);
+    return;
+  }
+  const image = new Image();
+  image.src = src;
+  seen.set(src, image);
+  if (seen.size > KEEP) seen.delete(seen.keys().next().value);
+}
 
 export const isLoaded = (src) => seen.has(src);
 
@@ -23,7 +37,7 @@ export default function Img({
     mountedAt.current = performance.now();
     const node = ref.current;
     if (node?.complete && node.naturalWidth > 0) {
-      seen.add(src);
+      remember(src);
       setState((s) => (s === 'loaded' ? s : 'instant'));
     }
   }, [src]);
@@ -48,7 +62,7 @@ export default function Img({
       fetchPriority={props.loading === 'eager' ? 'high' : undefined}
       draggable={false}
       onLoad={() => {
-        seen.add(src);
+        remember(src);
         const quick = performance.now() - mountedAt.current < 150;
         setState((s) =>
           s === 'loading' && !quick ? 'loaded' : s === 'error' ? s : 'instant',
