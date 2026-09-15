@@ -29,6 +29,7 @@ export default function Img({
   }, [src]);
 
   if (state === 'error' && fallback) return fallback;
+  const cached = state === 'instant';
   return (
     <img
       {...props}
@@ -42,7 +43,8 @@ export default function Img({
           ? { ...style, backgroundImage: `url(${preview})` }
           : style
       }
-      decoding={props.loading === 'eager' ? 'sync' : 'async'}
+      loading={cached ? 'eager' : props.loading}
+      decoding={props.loading === 'eager' ? 'sync' : cached ? 'auto' : 'async'}
       fetchPriority={props.loading === 'eager' ? 'high' : undefined}
       draggable={false}
       onLoad={() => {

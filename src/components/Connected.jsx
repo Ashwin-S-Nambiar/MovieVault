@@ -78,7 +78,6 @@ function Group({ group, selfKey }) {
         {next && <Neighbor item={next} label="Next" Icon={IconArrowRight} />}
       </div>
       <div className="strip-wrap">
-        <RowNav track={track} label="universe" overlay />
         <div
           ref={(el) => {
             track.current = el;
@@ -111,12 +110,17 @@ function Group({ group, selfKey }) {
           )}
         </div>
       </div>
-      {group.href && (
-        <Link to={group.href} className="connected-more" viewTransition>
-          Explore {group.name}
-          <IconArrowUpRight stroke={1.8} />
-        </Link>
-      )}
+      <div className="connected-footer">
+        {group.href ? (
+          <Link to={group.href} className="connected-more" viewTransition>
+            Explore {group.name}
+            <IconArrowUpRight stroke={1.8} />
+          </Link>
+        ) : (
+          <span />
+        )}
+        <RowNav track={track} label="universe" />
+      </div>
     </>
   );
 }

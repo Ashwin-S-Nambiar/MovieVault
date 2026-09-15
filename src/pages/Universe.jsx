@@ -3,6 +3,7 @@ import {
   IconBookmark,
   IconBookmarkFilled,
 } from '@tabler/icons-react';
+import { useRef } from 'react';
 import { Link, useParams } from 'react-router';
 import { Poster } from '../components/Case';
 import Footer from '../components/Footer';
@@ -84,6 +85,7 @@ export default function Universe() {
   const { slug } = useParams();
   const curated = findUniverse(slug);
   const query = useUniverse(slug);
+  const cachedOnMount = useRef(Boolean(query.data)).current;
   const vault = useVault();
   const saved = new Set(vault.map((v) => v.key));
   const data = query.data;
@@ -228,6 +230,14 @@ export default function Universe() {
                   state={{ item: released[0] }}
                   className="btn btn-solid"
                   viewTransition
+                  onClick={() => {
+                    const firstPoster =
+                      document.querySelector('.tl-item .poster');
+                    if (firstPoster) {
+                      claimHero(firstPoster, { transient: true });
+                    }
+                    markHero(released[0].key, 'timeline');
+                  }}
                 >
                   Start from the beginning
                 </Link>
@@ -245,34 +255,40 @@ export default function Universe() {
         {loading ? (
           <TimelineSkeleton />
         ) : (
-          <ol className="timeline content-in">
+          <ol className={cachedOnMount ? 'timeline' : 'timeline content-in'}>
             {parts.map((p) => {
               const upcoming = !p.date || p.date > now;
               const isSaved = saved.has(p.key);
+              const onTitleClick = (e) => {
+                const itemEl = e.currentTarget.closest('.tl-item');
+                const poster = itemEl?.querySelector('.poster');
+                if (poster) {
+                  claimHero(poster, { transient: true });
+                }
+                markHero(p.key, 'timeline');
+              };
               return (
                 <li key={p.key}>
-                  <div className="tl-item" data-upcoming={upcoming}>
+                  <div
+                    className="tl-item"
+                    data-upcoming={upcoming}
+                    ref={(el) => {
+                      if (el && isHero(p.key, 'timeline')) {
+                        takeHero(
+                          el.querySelector('.poster'),
+                          p.key,
+                          'timeline',
+                        );
+                      }
+                    }}
+                  >
                     <span className="tl-year">{p.year || 'TBA'}</span>
                     <Link
-                      ref={(el) => {
-                        if (el && isHero(p.key, 'timeline')) {
-                          takeHero(
-                            el.querySelector('.poster'),
-                            p.key,
-                            'timeline',
-                          );
-                        }
-                      }}
                       to={titleHref(p)}
                       state={{ item: p }}
                       viewTransition
                       onPointerEnter={() => prefetchTitle(p)}
-                      onClick={(e) => {
-                        claimHero(e.currentTarget.querySelector('.poster'), {
-                          transient: true,
-                        });
-                        markHero(p.key, 'timeline');
-                      }}
+                      onClick={onTitleClick}
                     >
                       <Poster item={p} size="w154" />
                     </Link>
@@ -280,6 +296,8 @@ export default function Universe() {
                       to={titleHref(p)}
                       state={{ item: p }}
                       viewTransition
+                      onPointerEnter={() => prefetchTitle(p)}
+                      onClick={onTitleClick}
                       style={{
                         color: 'inherit',
                         textDecoration: 'none',
@@ -287,7 +305,7 @@ export default function Universe() {
                       }}
                     >
                       <div className="tl-title">
-                        {p.title}
+                        <span className="tl-title-text">{p.title}</span>
                         {p.type === 'tv' && (
                           <span className="tl-kind">{TYPE_LABEL[p.kind]}</span>
                         )}

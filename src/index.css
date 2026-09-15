@@ -2178,7 +2178,6 @@ a.search-pill:active {
 
 .detail {
   position: relative;
-  padding-bottom: 40px;
   overflow-x: clip;
 }
 
@@ -2755,8 +2754,8 @@ a.link-card:active {
 .connected-strip {
   display: flex;
   gap: 12px;
-  margin: 16px calc(var(--gutter) * -1) 0;
-  padding: 10px var(--gutter) 8px;
+  margin: 16px 0 0;
+  padding: 10px 2px 8px;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -2849,6 +2848,19 @@ a.link-card:active {
   .connected-more:hover svg {
     translate: 2px -2px;
   }
+}
+
+.connected-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 40px;
+  margin-top: 4px;
+}
+
+.connected-footer .shelf-nav {
+  margin-left: auto;
 }
 
 @media (max-width: 420px) {
@@ -3057,6 +3069,25 @@ a.link-card:active {
 .ocase[data-closing="true"] .ocase-cover {
   transition-duration: 460ms;
   transition-timing-function: var(--ease-in-out);
+}
+
+.ocase[data-closing="true"] {
+  transform: translateX(calc(var(--pw) * -0.5));
+}
+
+.ocase[data-closing="settled"],
+.ocase[data-closing="settled"] .ocase-cover {
+  perspective: none;
+  transform-style: flat;
+  transition: none;
+}
+
+.ocase[data-closing="settled"] {
+  transform: translateX(calc(var(--pw) * -0.5));
+}
+
+.ocase[data-closing="settled"] .ocase-cover {
+  transform: none;
 }
 
 .ocase[data-closing="true"] .disc {
@@ -3944,6 +3975,13 @@ a.link-card:active {
   width: 64px;
   padding: 2px;
   box-shadow: 0 8px 14px -8px rgb(0 0 0 / 0.5);
+  transition:
+    transform 200ms var(--ease-out),
+    box-shadow 200ms var(--ease-out);
+}
+
+.tl-item:active .poster {
+  transform: scale(0.96);
 }
 
 .tl-title {
@@ -3952,7 +3990,22 @@ a.link-card:active {
   letter-spacing: -0.015em;
 }
 
+.hover-underline,
+.tl-title-text {
+  display: inline;
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  background-size: 0% 1.5px;
+  padding-bottom: 2px;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  transition: background-size 260ms var(--ease-out);
+}
+
 .tl-kind {
+  display: inline-block;
   margin-left: 8px;
   padding: 1px 7px;
   border-radius: 999px;
@@ -3962,6 +4015,7 @@ a.link-card:active {
   font-weight: 500;
   letter-spacing: 0;
   vertical-align: 2px;
+  text-decoration: none;
 }
 
 .tl-sub {
@@ -3986,10 +4040,11 @@ a.link-card:active {
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .tl-item:hover .tl-title {
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    text-decoration-thickness: 1px;
+  .tl-item:hover .tl-title-text,
+  .hover-underline:hover,
+  a:hover .hover-underline,
+  .tl-title-text:hover {
+    background-size: 100% 1.5px;
   }
 }
 

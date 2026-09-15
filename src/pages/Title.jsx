@@ -525,7 +525,10 @@ function TitleView({ type, id }) {
         : navigate('/', { viewTransition: true });
     if (!open || reduced || closing) return leave();
     setClosing(true);
-    setTimeout(leave, 500);
+    setTimeout(() => {
+      setClosing('settled');
+      requestAnimationFrame(leave);
+    }, 500);
   };
 
   const cert = raw ? certification(raw, type, region) : null;
