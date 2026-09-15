@@ -49,11 +49,13 @@ export default function Shelf({
   useEffect(() => {
     const node = track.current;
     if (!node) return;
-    const update = () =>
-      setEdges({
-        start: node.scrollLeft < 8,
-        end: node.scrollLeft + node.clientWidth > node.scrollWidth - 8,
-      });
+    const update = () => {
+      const start = node.scrollLeft < 8;
+      const end = node.scrollLeft + node.clientWidth > node.scrollWidth - 8;
+      node.dataset.start = String(start);
+      node.dataset.end = String(end);
+      setEdges({ start, end });
+    };
     update();
     node.addEventListener('scroll', update, { passive: true });
     const observer = new ResizeObserver(update);

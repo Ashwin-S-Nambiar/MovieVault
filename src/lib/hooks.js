@@ -36,6 +36,27 @@ export function useInView({ rootMargin = '200px', once = true } = {}) {
   return [ref, inView];
 }
 
+export function trackEdges(node) {
+  if (!node) return;
+  const update = () => {
+    node.dataset.start = String(node.scrollLeft < 8);
+    node.dataset.end = String(
+      node.scrollLeft + node.clientWidth > node.scrollWidth - 8,
+    );
+  };
+  update();
+  node.addEventListener('scroll', update, { passive: true });
+  const resize = new ResizeObserver(update);
+  resize.observe(node);
+  const mutations = new MutationObserver(update);
+  mutations.observe(node, { childList: true });
+  return () => {
+    node.removeEventListener('scroll', update);
+    resize.disconnect();
+    mutations.disconnect();
+  };
+}
+
 export function useKeyboardInset() {
   const [inset, setInset] = useState(0);
 

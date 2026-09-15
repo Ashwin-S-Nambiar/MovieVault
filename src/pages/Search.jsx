@@ -30,7 +30,7 @@ import {
   useKeyboardInset,
   useReducedMotion,
 } from '../lib/hooks';
-import { usePageMeta } from '../lib/meta';
+import { pageImage, usePageMeta } from '../lib/meta';
 import { useRegion, useServices } from '../lib/prefs';
 import { img } from '../lib/tmdb';
 import { openSheet, recentStore, rememberSearch, useRecent } from '../lib/ui';
@@ -130,6 +130,7 @@ function usePaged(key, fetchPage, enabled) {
           );
           return {
             key: run.key,
+            stale: false,
             items: page === 1 ? fresh : [...s.items, ...fresh],
             page: result.page,
             totalPages: result.totalPages,
@@ -141,7 +142,11 @@ function usePaged(key, fetchPage, enabled) {
       })
       .catch((error) => {
         if (controller.signal.aborted || run !== current.current) return;
-        setState((s) => ({ ...s, loading: false, error }));
+        setState((s) =>
+          page === 1
+            ? { ...s, items: [], page: 0, stale: false, loading: false, error }
+            : { ...s, loading: false, error },
+        );
       });
   }, []);
 
@@ -149,7 +154,11 @@ function usePaged(key, fetchPage, enabled) {
     current.current.controller?.abort();
     current.current = { key, controller: null };
     const hit = enabled && cachedPages(key);
-    setState((s) => (hit ? (s === hit ? s : hit) : blank(key, enabled)));
+    setState((s) => {
+      if (hit) return s === hit ? s : hit;
+      if (!enabled || !s.items.length) return blank(key, enabled);
+      return { ...s, key, loading: true, error: null, stale: true };
+    });
     if (enabled && !hit) load(1);
     return () => current.current.controller?.abort();
   }, [key, enabled, load]);
@@ -185,7 +194,7 @@ function sortItems(items, sort) {
 
 const SPINE_GHOSTS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
-function SpineStack({ items, busy }) {
+function SpineStack({ items }) {
   const navigate = useNavigate();
   const reduced = useReducedMotion();
   const [pulling, setPulling] = useState(null);
@@ -207,8 +216,10 @@ function SpineStack({ items, busy }) {
     const link = event.currentTarget;
     peek(item);
     const go = () => {
-      claimHero(link.querySelector('.pull-cover, .cover-body'));
-      markHero(item.key);
+      claimHero(link.querySelector('.pull-cover, .cover-body'), {
+        transient: true,
+      });
+      markHero(item.key, 'spine');
       navigate(titleHref(item), { state: { item }, viewTransition: true });
     };
     if (reduced) return go();
@@ -236,7 +247,6 @@ function SpineStack({ items, busy }) {
   return (
     <nav
       className="shelf-stack"
-      data-busy={busy}
       data-pulling={Boolean(pulling)}
       aria-label="Trending this week"
     >
@@ -435,7 +445,7 @@ export default function Search() {
   const results = usePaged(
     [
       q,
-      type,
+      q ? '' : type,
       q ? '' : sort,
       !q && mine ? `${region}:${services.join(',')}` : '',
     ].join('|'),
@@ -475,6 +485,7 @@ export default function Search() {
 
   const heading = q ? `“${q}”` : HEADINGS[type];
   usePageMeta({
+    image: pageImage('search'),
     title: q
       ? `${q} · Search`
       : type !== 'all'
@@ -489,7 +500,6 @@ export default function Search() {
   return (
     <main className="search-page route">
       <Topbar
-        back="/"
         end={
           <button
             type="button"
@@ -504,21 +514,24 @@ export default function Search() {
       />
 
       <div className="page">
-        <SpineStack items={trend.data ?? []} busy={busy} />
+        <SpineStack items={trend.data ?? []} />
 
         {enabled || text ? (
           <>
             <div className="search-head">
               <div>
                 <h1>{heading}</h1>
-                <p className="section-sub">
-                  {results.total > 0 && !busy ? (
+                <p
+                  className="section-sub results"
+                  data-stale={Boolean(results.stale)}
+                >
+                  {results.total > 0 ? (
                     q ? (
                       `${results.total.toLocaleString()} matches`
                     ) : (
                       `${results.total.toLocaleString()} titles${mine ? ' on your services' : ''}`
                     )
-                  ) : busy ? (
+                  ) : results.loading ? (
                     <span className="skeleton ghost-line ghost-sm" />
                   ) : (
                     '\u00a0'
@@ -551,8 +564,14 @@ export default function Search() {
                 </p>
               </div>
             ) : (
-              <div className="grid" aria-busy={busy}>
-                {busy && filtered.length === 0 && <CardSkeletons count={18} />}
+              <div
+                className="grid results"
+                aria-busy={busy}
+                data-stale={Boolean(results.stale)}
+              >
+                {busy && filtered.length === 0 && !results.error && (
+                  <CardSkeletons count={18} />
+                )}
                 {filtered.map((item, i) => (
                   <TitleCard
                     key={item.key}
@@ -595,11 +614,10 @@ export default function Search() {
             }}
           >
             <label className="search-pill">
-              {busy ? (
-                <span className="spinner" />
-              ) : (
+              <span className="search-glyph" data-busy={results.loading}>
                 <IconSearch stroke={1.8} />
-              )}
+                <span className="spinner" />
+              </span>
               <span className="sr-only">Search movies, series and anime</span>
               <input
                 ref={inputRef}

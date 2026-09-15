@@ -7,7 +7,9 @@ const ORIGIN = import.meta.env.VITE_SITE_URL ?? '';
 export const DEFAULT_DESCRIPTION =
   'Find where to stream any film, series or anime, follow whole universes in release order, and keep a vault of what to watch next.';
 
-const DEFAULT_IMAGE = `${ORIGIN}/og.png`;
+const DEFAULT_IMAGE = `${ORIGIN}/og.jpg`;
+
+export const pageImage = (name) => `${ORIGIN}/og/${name}.jpg`;
 
 function setMeta(attr, key, value) {
   let node = document.head.querySelector(`meta[${attr}="${key}"]`);
@@ -41,5 +43,13 @@ export function usePageMeta({ title, description, image, type = 'website' }) {
     setMeta('name', 'twitter:title', fullTitle);
     setMeta('name', 'twitter:description', desc);
     setMeta('name', 'twitter:image', image || DEFAULT_IMAGE);
+    setMeta('property', 'og:image:alt', fullTitle);
+    let canonical = document.head.querySelector('link[rel="canonical"]');
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.append(canonical);
+    }
+    canonical.href = url;
   }, [title, description, image, type]);
 }

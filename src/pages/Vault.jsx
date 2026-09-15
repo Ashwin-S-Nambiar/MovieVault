@@ -8,7 +8,7 @@ import Sheet from '../components/Sheet';
 import TitleCard from '../components/TitleCard';
 import Topbar from '../components/Topbar';
 import { plural } from '../lib/format';
-import { usePageMeta } from '../lib/meta';
+import { pageImage, usePageMeta } from '../lib/meta';
 import { toast } from '../lib/ui';
 import {
   clearVault,
@@ -30,6 +30,7 @@ export default function Vault() {
   const [sort, setSort] = useState('added');
   const [confirming, setConfirming] = useState(false);
   usePageMeta({
+    image: pageImage('vault'),
     title: 'Your vault',
     description:
       'Everything you want to watch, in one place, with where each title is streaming right now.',
@@ -60,7 +61,7 @@ export default function Vault() {
 
   return (
     <main className="route">
-      <Topbar back="/" />
+      <Topbar />
       <div className="page">
         <header className="vault-head">
           <h1 className="vault-title">Your vault</h1>

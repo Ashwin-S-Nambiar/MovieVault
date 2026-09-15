@@ -1,4 +1,5 @@
 import {
+  IconArrowLeft,
   IconChevronRight,
   IconPlayerPlayFilled,
   IconShare2,
@@ -8,10 +9,12 @@ import { useEffect, useRef, useState } from 'react';
 import {
   Link,
   useLocation,
+  useNavigate,
   useParams,
   useViewTransitionState,
 } from 'react-router';
 import { Poster } from '../components/Case';
+import Connected from '../components/Connected';
 import Footer from '../components/Footer';
 import Img from '../components/Img';
 import OpenCase from '../components/OpenCase';
@@ -20,10 +23,9 @@ import SaveButton from '../components/SaveButton';
 import Sheet from '../components/Sheet';
 import Shelf from '../components/Shelf';
 import TitleCard from '../components/TitleCard';
-import Topbar, { BackButton } from '../components/Topbar';
+import Topbar from '../components/Topbar';
 import {
   certification,
-  getCollection,
   getSeason,
   getTitle,
   pickTrailer,
@@ -39,12 +41,11 @@ import {
   toItems,
   watchStatus,
 } from '../lib/format';
-import { useMediaQuery, useReducedMotion } from '../lib/hooks';
+import { trackEdges, useMediaQuery, useReducedMotion } from '../lib/hooks';
 import { backdropImage, usePageMeta } from '../lib/meta';
 import { useRegion, useServices } from '../lib/prefs';
 import { img } from '../lib/tmdb';
 import { openSheet, toast } from '../lib/ui';
-import { universeHref } from '../lib/universes';
 import { useQuery } from '../lib/useQuery';
 
 const regionName = (code) => {
@@ -200,44 +201,6 @@ function Availability({ raw, item }) {
   );
 }
 
-function UniverseLink({ collection, currentId }) {
-  const query = useQuery(`collection-${collection.id}`, (signal) =>
-    getCollection(collection.id, { signal }),
-  );
-  const parts = query.data?.parts ?? [];
-  const index = parts.findIndex((p) => p.id === currentId);
-
-  return (
-    <section className="block">
-      <h2 className="block-title">Part of a universe</h2>
-      <Link
-        to={universeHref(collection.id)}
-        className="universe-card"
-        viewTransition
-      >
-        <div>
-          <div className="universe-card-kicker">
-            {parts.length ? `Film ${index + 1} of ${parts.length}` : 'Universe'}
-          </div>
-          <div className="universe-card-name">
-            {collection.name.replace(/ Collection$/, '')}
-          </div>
-        </div>
-        <div className="universe-strip">
-          {parts.slice(0, 6).map((p) => (
-            <Poster
-              key={p.key}
-              item={p}
-              size="w92"
-              aria-current={p.id === currentId}
-            />
-          ))}
-        </div>
-      </Link>
-    </section>
-  );
-}
-
 function Season({ tvId, season }) {
   const [open, setOpen] = useState(false);
   const episodes = useQuery(
@@ -324,7 +287,7 @@ function Cast({ raw, type }) {
   return (
     <section className="block">
       <h2 className="block-title">Cast</h2>
-      <div className="shelf-track people">
+      <div ref={trackEdges} className="shelf-track people">
         {people.slice(0, 16).map((p) => (
           <div key={p.id} className="person">
             <div className="person-face">
@@ -428,6 +391,7 @@ function Facts({ raw, type }) {
 
 function TitleView({ type, id }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const region = useRegion();
   const desktop = useMediaQuery('(min-width: 960px)');
   const reduced = useReducedMotion();
@@ -435,6 +399,7 @@ function TitleView({ type, id }) {
   const hintRef = useRef(null);
   const contentRef = useRef(null);
   const [open, setOpen] = useState(false);
+  const [closing, setClosing] = useState(false);
   const [trailerOpen, setTrailerOpen] = useState(false);
   const transitioning = useViewTransitionState(location.pathname);
   const arrived = useRef(transitioning);
@@ -470,7 +435,7 @@ function TitleView({ type, id }) {
     const notFound = query.error.status === 404;
     return (
       <main className="nf route">
-        <Topbar back="/" />
+        <Topbar />
         <p className="nf-code">{notFound ? '404' : ':('}</p>
         <p>
           {notFound
@@ -494,6 +459,16 @@ function TitleView({ type, id }) {
       </main>
     );
   }
+
+  const goBack = () => {
+    const leave = () =>
+      location.key !== 'default'
+        ? navigate(-1, { viewTransition: true })
+        : navigate('/', { viewTransition: true });
+    if (!open || reduced || closing) return leave();
+    setClosing(true);
+    setTimeout(leave, 500);
+  };
 
   const cert = raw ? certification(raw, type, region) : null;
   const trailer = raw ? pickTrailer(raw) : null;
@@ -547,7 +522,14 @@ function TitleView({ type, id }) {
   return (
     <main className="detail route">
       <div className="detail-back">
-        <BackButton fallback="/" />
+        <button
+          type="button"
+          className="icon-btn"
+          aria-label="Back"
+          onClick={goBack}
+        >
+          <IconArrowLeft stroke={1.8} />
+        </button>
       </div>
 
       <div className="detail-grid">
@@ -556,7 +538,8 @@ function TitleView({ type, id }) {
             <div>
               <OpenCase
                 item={item}
-                open={open && Boolean(item)}
+                open={open && Boolean(item) && !closing}
+                closing={closing}
                 overview={raw?.overview}
                 loading={!item}
               />
@@ -702,12 +685,7 @@ function TitleView({ type, id }) {
 
             {raw && <Availability raw={raw} item={item} />}
 
-            {raw?.belongs_to_collection && (
-              <UniverseLink
-                collection={raw.belongs_to_collection}
-                currentId={raw.id}
-              />
-            )}
+            {raw && <Connected type={type} raw={raw} />}
 
             {type === 'tv' && seasons.length > 0 && (
               <section className="block">
@@ -777,7 +755,7 @@ export default function Title({ type }) {
   if (!numeric) {
     return (
       <main className="nf route">
-        <Topbar back="/" />
+        <Topbar />
         <p className="nf-code">404</p>
         <p>That link doesn't point to a title.</p>
         <Link to="/" className="btn" viewTransition>

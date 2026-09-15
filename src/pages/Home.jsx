@@ -1,5 +1,5 @@
-import { IconArrowUpRight } from '@tabler/icons-react';
-import { useCallback, useState } from 'react';
+import { IconArrowUpRight, IconChevronDown } from '@tabler/icons-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import Case from '../components/Case';
 import Footer from '../components/Footer';
@@ -17,8 +17,8 @@ import TitleCard from '../components/TitleCard';
 import Topbar, { ServicesButton } from '../components/Topbar';
 import { discover, prefetchTitle, trending } from '../lib/catalog';
 import { TYPE_LABEL, titleHref, watchStatus } from '../lib/format';
-import { markHero } from '../lib/hero';
-import { useDebouncedValue } from '../lib/hooks';
+import { claimHero, markHero } from '../lib/hero';
+import { useDebouncedValue, useReducedMotion } from '../lib/hooks';
 import { usePageMeta } from '../lib/meta';
 import { useRegion, useServices } from '../lib/prefs';
 import { img } from '../lib/tmdb';
@@ -75,7 +75,15 @@ function Caption({ item, failed, onHover }) {
               state={{ item }}
               viewTransition
               className="btn btn-solid"
-              onClick={() => markHero(null)}
+              onClick={() => {
+                markHero(item.key, 'reel');
+                claimHero(
+                  document.querySelector(
+                    '.reel-item[data-active="true"] .case-front',
+                  ),
+                  { transient: true },
+                );
+              }}
             >
               View details
             </Link>
@@ -115,6 +123,36 @@ function ReelSkeleton() {
         ))}
       </div>
     </div>
+  );
+}
+
+function ScrollCue({ target }) {
+  const reduced = useReducedMotion();
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setHidden(window.scrollY > 48);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  return (
+    <button
+      type="button"
+      className="scroll-cue"
+      data-hidden={hidden}
+      tabIndex={hidden ? -1 : 0}
+      onClick={() =>
+        target.current?.scrollIntoView({
+          behavior: reduced ? 'auto' : 'smooth',
+          block: 'start',
+        })
+      }
+    >
+      <span>Explore more</span>
+      <IconChevronDown stroke={2} />
+    </button>
   );
 }
 
@@ -162,6 +200,7 @@ export default function Home() {
   const items = reel.data?.slice(0, 16) ?? [];
   const [active, setActive] = useState(null);
   const [captionHover, setCaptionHover] = useState(false);
+  const moreRef = useRef(null);
 
   const mineMovies = useDiscover('movie', { mine: true });
   const mineSeries = useDiscover('tv', { mine: true });
@@ -210,9 +249,10 @@ export default function Home() {
           onHover={setCaptionHover}
         />
         <div />
+        <ScrollCue target={moreRef} />
       </section>
 
-      <div className="page">
+      <div ref={moreRef} className="page home-more">
         {services.length > 0 && (
           <ItemShelf
             title="Films on your services"

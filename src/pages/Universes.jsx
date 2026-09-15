@@ -3,19 +3,20 @@ import { Link } from 'react-router';
 import Footer from '../components/Footer';
 import Img from '../components/Img';
 import Topbar from '../components/Topbar';
-import { usePageMeta } from '../lib/meta';
+import { pageImage, usePageMeta } from '../lib/meta';
 import { img } from '../lib/tmdb';
 import { UNIVERSES } from '../lib/universes';
 
 export default function Universes() {
   usePageMeta({
+    image: pageImage('universes'),
     title: 'Universes',
     description:
       'Franchises and shared worlds, every film laid out in release order with where each one streams.',
   });
   return (
     <main className="route">
-      <Topbar back="/" />
+      <Topbar />
       <div className="page">
         <header className="vault-head">
           <h1 className="vault-title">Universes</h1>

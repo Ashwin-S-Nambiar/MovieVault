@@ -90,6 +90,76 @@ export async function getCollection(id, { signal } = {}) {
   return { ...data, parts };
 }
 
+const normalize = (text = '') =>
+  text
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\p{L}\p{N} ]+/gu, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const baseName = (text = '') =>
+  normalize(
+    text
+      .split(/[:：|–—]| - /)[0]
+      .replace(/\b(season|part|chapter|vol\.?|volume)\b.*$/i, '')
+      .replace(/\s\d+$/, ''),
+  );
+
+export async function getConnected(type, raw, { signal } = {}) {
+  const self = toItem(raw, type);
+  if (type === 'movie' && raw.belongs_to_collection) {
+    const collection = await getCollection(raw.belongs_to_collection.id, {
+      signal,
+    });
+    return {
+      parts: collection.parts,
+      name: collection.name.replace(/ Collection$/, ''),
+      collectionId: collection.id,
+    };
+  }
+
+  const names = [
+    baseName(self.title),
+    baseName(raw.original_title ?? raw.original_name),
+  ].filter((name, i, all) => name.length >= 3 && all.indexOf(name) === i);
+  if (!names.length) return null;
+
+  const genres = new Set((raw.genres ?? []).map((g) => g.id));
+  const pages = await Promise.all(
+    names.map((query) =>
+      tmdb('/search/multi', { query, include_adult: false }, { signal }),
+    ),
+  );
+  const seen = new Set([self.key]);
+  const related = pages
+    .flatMap((page) => page.results)
+    .filter((r) => {
+      if (r.media_type !== 'movie' && r.media_type !== 'tv') return false;
+      const key = `${r.media_type}-${r.id}`;
+      if (seen.has(key) || !r.poster_path) return false;
+      if (r.original_language !== raw.original_language) return false;
+      if (genres.size && !r.genre_ids?.some((id) => genres.has(id))) {
+        return false;
+      }
+      const titles = [r.title, r.name, r.original_title, r.original_name].map(
+        normalize,
+      );
+      const match = names.some((name) =>
+        titles.some((t) => t === name || t.startsWith(`${name} `)),
+      );
+      if (match) seen.add(key);
+      return match;
+    });
+
+  if (!related.length) return null;
+  const parts = [self, ...toItems(related)].sort((a, b) =>
+    (a.date || '9999').localeCompare(b.date || '9999'),
+  );
+  return { parts, name: raw.title ?? raw.name, collectionId: null };
+}
+
 export async function getKeywordUniverse(keywordId, { signal } = {}) {
   const pages = await Promise.all(
     [1, 2, 3, 4].map((n) =>

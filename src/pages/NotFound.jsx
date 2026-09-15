@@ -7,7 +7,7 @@ export default function NotFound() {
   usePageMeta({ title: 'Page not found' });
   return (
     <main className="nf route">
-      <Topbar back="/" />
+      <Topbar />
       <OpenCase open hero={false} style={{ '--pw': '72px' }} />
       <h1 className="nf-code">404</h1>
       <p>

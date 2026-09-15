@@ -9,6 +9,7 @@ export default function OpenCase({
   overview,
   hero = true,
   loading = false,
+  closing = false,
   style,
 }) {
   const trayRef = useRef(null);
@@ -31,7 +32,12 @@ export default function OpenCase({
   const poster = img(item?.poster, 'w500');
 
   return (
-    <div className="ocase" data-open={open} style={style}>
+    <div
+      className="ocase"
+      data-open={open}
+      data-closing={closing}
+      style={style}
+    >
       <div ref={trayRef} className="ocase-tray">
         {item && (
           <div className="disc">

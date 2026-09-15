@@ -16,11 +16,12 @@ Find where any film, series or anime is streaming, follow whole universes in rel
 
 ## Features
 
-- **The reel.** Trending films and series sit on a 3D ring of DVD cases. Drag, flick, scroll sideways or use the arrow keys; tap the centre case and it flies into the detail page and opens to reveal the disc.
+- **The reel.** Trending films and series sit on a 3D ring of DVD cases that turns on its own and pauses while you hover. Drag, flick, scroll sideways or use the arrow keys; tap the centre case and it flies into the detail page and opens to reveal the disc, then closes and flies back when you return.
 - **Where to watch.** Every title lists the services it streams, rents or sells on in your region, with the services you pay for first. Availability comes from JustWatch through TMDB.
 - **Your services.** Pick your streaming services and region once. Home shows what's popular on them, and search can filter to only what you can watch tonight.
 - **Films, series and anime.** One search across all three with type filters, sorting, infinite scroll and recent searches. Anime is recognised through TMDB's anime keyword, so it gets its own shelf and filter.
-- **Universes.** Franchises like the MCU, Star Wars, Middle-earth and Dune laid out as a timeline: every film in release order, what's upcoming, the span, the average rating and one tap to save them all. Any film that belongs to a collection links to its universe.
+- **Universes.** Franchises like the MCU, Star Wars, Middle-earth and Dune laid out as a timeline: every film in release order, what's upcoming, the span, the average rating and one tap to save them all.
+- **Connected titles.** Every detail page shows what came before and after it in release order, for films, series and anime alike, with a strip of the whole franchise and a link to its universe.
 - **Series detail.** Seasons with episode lists, the next episode's air date, networks and creators.
 - **Rich detail pages.** Local age ratings, runtime, tagline, genres, cast, crew, budget and box office, the official trailer and recommendations.
 - **The vault.** Save anything with a bookmark, filter it by type, sort it, and undo any removal.
@@ -29,9 +30,10 @@ Find where any film, series or anime is streaming, follow whole universes in rel
 
 ## Design
 
-- **Motion with a purpose.** The reel is positioned every frame with plain maths and eases toward its target with a frame-rate independent exponential curve. Pages move with the View Transitions API, so the case you tap is the case that opens.
+- **Motion with a purpose.** The reel is positioned every frame with plain maths and settles on a critically damped spring, so drags hand their momentum straight into the glide. Pages move with the View Transitions API, so the case you tap is the case that opens, and it only flies back to where you actually came from.
+- **Calm loading.** Skeletons match the real layout and share one synchronised sweep, images fade in, and results stay on screen while new ones load, so nothing jumps or flashes.
 - **Restraint.** Warm off-white ground, near-black ink, one red for saving, and pastel chips for browsing.
-- **Typography.** Geist for the interface, Instrument Serif in italic for accents, Geist Mono for numbers.
+- **Typography.** One family: Geist for everything, Geist Mono for small numbers like years.
 - **Built for phones first.** A bottom search dock that rides above the keyboard, drag-to-dismiss sheets, 44px touch targets and safe-area padding, scaling up to a two-column detail page and a wider ring on desktop.
 - **Accessible.** Keyboard navigation throughout, focus management in dialogs, and `prefers-reduced-motion` respected everywhere.
 
@@ -124,16 +126,29 @@ src/
 ![The reel of trending titles on a ring of DVD cases](./docs/screenshots/MovieVault.webp)
 
 ### Search
+![The shelf of trending spines above the browse cards and trending grid](./docs/screenshots/MovieVault-6.webp)
+
 ![Search results for Batman across films and series](./docs/screenshots/MovieVault-1.webp)
 
 ### Title
-![Jurassic Park with its case open, streaming services and universe](./docs/screenshots/MovieVault-2.webp)
+![Jurassic Park with its case open, streaming services and its universe](./docs/screenshots/MovieVault-2.webp)
 
-### Universe
+### Connected titles
+![Resident Evil with the previous and next film and the whole franchise in release order](./docs/screenshots/MovieVault-5.webp)
+
+### Universes
+![Every universe as a grid of backdrops](./docs/screenshots/MovieVault-8.webp)
+
 ![The Star Wars universe as a release-order timeline](./docs/screenshots/MovieVault-3.webp)
 
+### Vault
+![Saved titles with where each one streams](./docs/screenshots/MovieVault-7.webp)
+
+### Dark mode
+![The reel in dark mode](./docs/screenshots/MovieVault-9.webp)
+
 ### On a phone
-![Home, an anime detail page and search on a phone](./docs/screenshots/MovieVault-4.webp)
+![Home, an anime detail page and anime search on a phone](./docs/screenshots/MovieVault-4.webp)
 
 </div>
 

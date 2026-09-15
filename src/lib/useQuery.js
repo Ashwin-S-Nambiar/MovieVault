@@ -3,10 +3,31 @@ import { healthStore } from './health';
 import { useStore } from './store';
 
 const TTL = 10 * 60 * 1000;
+const MAX_STORED = 150_000;
 const results = new Map();
 
+function remember(key, data) {
+  const entry = { data, at: Date.now() };
+  results.set(key, entry);
+  try {
+    const json = JSON.stringify(entry);
+    if (json.length < MAX_STORED) sessionStorage.setItem(`mv:q:${key}`, json);
+  } catch {}
+}
+
+function recall(key) {
+  if (results.has(key)) return results.get(key);
+  try {
+    const entry = JSON.parse(sessionStorage.getItem(`mv:q:${key}`));
+    if (entry) results.set(key, entry);
+    return entry;
+  } catch {
+    return null;
+  }
+}
+
 const fresh = (key) => {
-  const hit = results.get(key);
+  const hit = recall(key);
   return hit && Date.now() - hit.at < TTL ? hit : null;
 };
 
@@ -45,7 +66,7 @@ export function useQuery(key, fetcher, { enabled = true } = {}) {
     fetcherRef
       .current(controller.signal)
       .then((data) => {
-        results.set(key, { data, at: Date.now() });
+        remember(key, data);
         if (!controller.signal.aborted) {
           setState({ data, error: null, loading: false });
         }

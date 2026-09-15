@@ -1,4 +1,8 @@
-import { IconBookmark, IconBookmarkFilled } from '@tabler/icons-react';
+import {
+  IconArrowLeft,
+  IconBookmark,
+  IconBookmarkFilled,
+} from '@tabler/icons-react';
 import { Link, useParams } from 'react-router';
 import { Poster } from '../components/Case';
 import Footer from '../components/Footer';
@@ -11,7 +15,7 @@ import {
   prefetchTitle,
 } from '../lib/catalog';
 import { longDate, titleHref } from '../lib/format';
-import { claimHero, markHero } from '../lib/hero';
+import { claimHero, isHero, markHero, takeHero } from '../lib/hero';
 import { backdropImage, usePageMeta } from '../lib/meta';
 import { img } from '../lib/tmdb';
 import { toast } from '../lib/ui';
@@ -100,7 +104,7 @@ export default function Universe() {
   if (query.error && !data) {
     return (
       <main className="nf route">
-        <Topbar back="/universes" />
+        <Topbar />
         <p className="nf-code">404</p>
         <p>We couldn't find that universe.</p>
         <Link to="/universes" className="btn" viewTransition>
@@ -132,8 +136,14 @@ export default function Universe() {
 
   return (
     <main className="route">
-      <Topbar back="/universes" />
+      <Topbar />
       <section className="uhero">
+        <div className="page">
+          <Link to="/universes" className="back-pill" viewTransition>
+            <IconArrowLeft stroke={2} />
+            Universes
+          </Link>
+        </div>
         <div className="page uhero-grid">
           <div className="uhero-art">
             {backdrop ? (
@@ -238,13 +248,24 @@ export default function Universe() {
                   <div className="tl-item" data-upcoming={upcoming}>
                     <span className="tl-year">{p.year || 'TBA'}</span>
                     <Link
+                      ref={(el) => {
+                        if (el && isHero(p.key, 'timeline')) {
+                          takeHero(
+                            el.querySelector('.poster'),
+                            p.key,
+                            'timeline',
+                          );
+                        }
+                      }}
                       to={titleHref(p)}
                       state={{ item: p }}
                       viewTransition
                       onPointerEnter={() => prefetchTitle(p)}
                       onClick={(e) => {
-                        claimHero(e.currentTarget.querySelector('.poster'));
-                        markHero(null);
+                        claimHero(e.currentTarget.querySelector('.poster'), {
+                          transient: true,
+                        });
+                        markHero(p.key, 'timeline');
                       }}
                     >
                       <Poster item={p} size="w154" />

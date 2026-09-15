@@ -1,10 +1,24 @@
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { claimHero, markHero } from '../lib/hero';
+import { claimHero, markHero, takeHero } from '../lib/hero';
 import { useReducedMotion } from '../lib/hooks';
 import Case from './Case';
 
-const memory = new Map();
+const memory = {
+  get(key) {
+    try {
+      const value = Number(sessionStorage.getItem(`mv:reel:${key}`));
+      return Number.isFinite(value) ? value : 0;
+    } catch {
+      return 0;
+    }
+  },
+  set(key, value) {
+    try {
+      sessionStorage.setItem(`mv:reel:${key}`, String(value));
+    } catch {}
+  },
+};
 const mod = (a, n) => ((a % n) + n) % n;
 const SNAP = 15;
 const GLIDE = 6.5;
@@ -242,8 +256,13 @@ export default function Reel({
     wasPaused.current = paused;
   }, [paused]);
 
+  const initialItem = useRef(items[active]);
   useLayoutEffect(() => {
-    claimHero(frontRefs.current[active]);
+    const item = initialItem.current;
+    if (item) takeHero(frontRefs.current[activeRef.current], item.key, 'reel');
+  }, []);
+
+  useLayoutEffect(() => {
     if (rootRef.current?.contains(document.activeElement)) {
       itemRefs.current[active]?.focus({ preventScroll: true });
     }
@@ -329,11 +348,16 @@ export default function Reel({
     }
     interact();
     if (index === activeRef.current && pos.current === target.current) {
-      markHero(null);
+      const item = items[index];
       const el = itemRefs.current[index];
-      if (reducedRef.current || !el) return onOpen(items[index]);
+      markHero(item.key, 'reel');
+      const go = () => {
+        claimHero(frontRefs.current[index], { transient: true });
+        onOpen(item);
+      };
+      if (reducedRef.current || !el) return go();
       el.dataset.opening = 'true';
-      setTimeout(() => onOpen(items[index]), 300);
+      setTimeout(go, 300);
     } else {
       goTo(index);
     }

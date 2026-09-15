@@ -41,7 +41,7 @@ export default function TitleCard({
   onOpen,
 }) {
   const posterRef = useRef(null);
-  const [returning] = useState(() => isHero(item.key));
+  const [returning] = useState(() => isHero(item.key, 'card'));
   const [hidden, setHidden] = useState(false);
   const [peeked, setPeeked] = useState(false);
 
@@ -51,16 +51,13 @@ export default function TitleCard({
   );
 
   useLayoutEffect(() => {
-    if (returning) takeHero(posterRef.current, item.key);
+    if (returning) takeHero(posterRef.current, item.key, 'card');
   }, [returning, item.key]);
 
   if (hidden) return null;
 
   return (
-    <div
-      className={`tcard ${returning ? '' : 'rise'}`}
-      style={{ '--i': index }}
-    >
+    <div className="tcard" style={{ '--i': index }}>
       <Link
         to={titleHref(item)}
         state={{ item }}
@@ -71,8 +68,8 @@ export default function TitleCard({
           prefetchTitle(item);
         }}
         onClick={() => {
-          claimHero(posterRef.current);
-          markHero(item.key);
+          claimHero(posterRef.current, { transient: true });
+          markHero(item.key, 'card');
           onOpen?.(item);
         }}
       >

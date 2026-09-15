@@ -29,22 +29,17 @@ export function BrandMark({ className = 'wordmark-mark' }) {
   );
 }
 
-export function Wordmark({ back }) {
+export function Wordmark() {
   return (
-    <div className="topbar-start">
-      <span className="brand-slot">
-        {back ? (
-          <BackButton fallback={back} />
-        ) : (
-          <Link to="/" viewTransition aria-label="MovieVault home">
-            <BrandMark />
-          </Link>
-        )}
-      </span>
-      <Link to="/" className="wordmark" viewTransition>
-        MovieVault
-      </Link>
-    </div>
+    <Link
+      to="/"
+      className="wordmark"
+      viewTransition
+      aria-label="MovieVault home"
+    >
+      <BrandMark />
+      <span className="wordmark-text">MovieVault</span>
+    </Link>
   );
 }
 
@@ -94,18 +89,15 @@ export function BackButton({ fallback = '/', className = '' }) {
   );
 }
 
-export default function Topbar({ center, end, back }) {
+export default function Topbar({ center, end }) {
   const count = useVault().length;
   return (
     <header className="topbar">
       <div className="page topbar-row">
-        <Wordmark back={back} />
+        <Wordmark />
         <div>{center}</div>
         <div className="topbar-end">
           <nav className="nav-links" aria-label="Primary">
-            <NavLink to="/search" className="nav-link" viewTransition>
-              Search
-            </NavLink>
             <NavLink to="/universes" className="nav-link" viewTransition>
               Universes
             </NavLink>
