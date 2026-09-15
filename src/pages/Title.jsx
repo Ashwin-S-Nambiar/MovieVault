@@ -20,8 +20,9 @@ import Img from '../components/Img';
 import OpenCase from '../components/OpenCase';
 import { WatchBadge } from '../components/Providers';
 import SaveButton from '../components/SaveButton';
+import Segmented from '../components/Segmented';
 import Sheet from '../components/Sheet';
-import Shelf from '../components/Shelf';
+import Shelf, { RowNav } from '../components/Shelf';
 import TitleCard from '../components/TitleCard';
 import Topbar from '../components/Topbar';
 import {
@@ -123,7 +124,10 @@ function Availability({ raw, item }) {
     services,
   );
   const primary = rows.mine.length ? rows.mine : rows.others.slice(0, 3);
-  const rest = rows.mine.length ? rows.others : rows.others.slice(3);
+  const shownIds = new Set(primary.map((p) => p.id));
+  const rest = (rows.mine.length ? rows.others : rows.others.slice(3)).filter(
+    (p) => !shownIds.has(p.id) && p.name,
+  );
   const status = watchStatus(item, {
     list: rows.streaming,
     buyable: rows.streaming.length < rows.mine.length + rows.others.length,
@@ -183,7 +187,7 @@ function Availability({ raw, item }) {
                 Other services
                 <IconChevronRight stroke={1.8} />
               </button>
-              <div className="collapse" data-open={showOthers}>
+              <div className="disclose" data-open={showOthers}>
                 <div>
                   <ul className="providers">
                     {rest.map((p) => (
@@ -201,8 +205,12 @@ function Availability({ raw, item }) {
   );
 }
 
+const EPISODE_PAGE = 24;
+
 function Season({ tvId, season }) {
   const [open, setOpen] = useState(false);
+  const [newest, setNewest] = useState(season.episode_count > EPISODE_PAGE);
+  const [limit, setLimit] = useState(EPISODE_PAGE);
   const episodes = useQuery(
     `season-${tvId}-${season.season_number}`,
     (signal) => getSeason(tvId, season.season_number, { signal }),
@@ -225,7 +233,7 @@ function Season({ tvId, season }) {
           <span className="season-sub">
             {[
               season.air_date?.slice(0, 4),
-              plural(season.episode_count, 'episode'),
+              `${season.episode_count.toLocaleString()} episode${season.episode_count === 1 ? '' : 's'}`,
               season.vote_average
                 ? `★ ${season.vote_average.toFixed(1)}`
                 : null,
@@ -236,30 +244,20 @@ function Season({ tvId, season }) {
         </span>
         <IconChevronRight stroke={1.8} />
       </button>
-      <div className="collapse" data-open={open}>
+      <div className="disclose" data-open={open}>
         <div>
           {episodes.loading && !episodes.data ? (
             <div className="sentinel">
               <span className="spinner" />
             </div>
           ) : (
-            <ol className="episodes">
-              {episodes.data?.episodes?.map((ep) => (
-                <li key={ep.id} className="episode">
-                  <span className="episode-num">
-                    {String(ep.episode_number).padStart(2, '0')}
-                  </span>
-                  <div>
-                    <strong style={{ fontWeight: 500 }}>{ep.name}</strong>
-                    <span className="muted">
-                      {ep.runtime ? ` · ${runtime(ep.runtime)}` : ''}
-                      {ep.air_date ? ` · ${longDate(ep.air_date)}` : ''}
-                    </span>
-                    {ep.overview && <p>{ep.overview}</p>}
-                  </div>
-                </li>
-              ))}
-            </ol>
+            <EpisodeList
+              episodes={episodes.data?.episodes ?? []}
+              newest={newest}
+              limit={limit}
+              onNewest={setNewest}
+              onMore={() => setLimit((n) => n + EPISODE_PAGE * 2)}
+            />
           )}
         </div>
       </div>
@@ -267,7 +265,58 @@ function Season({ tvId, season }) {
   );
 }
 
+function EpisodeList({ episodes, newest, limit, onNewest, onMore }) {
+  const long = episodes.length > EPISODE_PAGE;
+  const ordered = newest ? [...episodes].reverse() : episodes;
+  const shown = ordered.slice(0, limit);
+
+  return (
+    <>
+      {long && (
+        <div className="episodes-bar">
+          <span>
+            {shown.length.toLocaleString()} of{' '}
+            {episodes.length.toLocaleString()}
+          </span>
+          <Segmented
+            label="Episode order"
+            value={newest ? 'newest' : 'oldest'}
+            onChange={(value) => onNewest(value === 'newest')}
+            options={[
+              { value: 'newest', label: 'Newest' },
+              { value: 'oldest', label: 'First' },
+            ]}
+          />
+        </div>
+      )}
+      <ol className="episodes">
+        {shown.map((ep) => (
+          <li key={ep.id} className="episode">
+            <span className="episode-num">
+              {String(ep.episode_number).padStart(2, '0')}
+            </span>
+            <div>
+              <strong style={{ fontWeight: 500 }}>{ep.name}</strong>
+              <span className="muted">
+                {ep.runtime ? ` · ${runtime(ep.runtime)}` : ''}
+                {ep.air_date ? ` · ${longDate(ep.air_date)}` : ''}
+              </span>
+              {ep.overview && <p>{ep.overview}</p>}
+            </div>
+          </li>
+        ))}
+      </ol>
+      {shown.length < episodes.length && (
+        <button type="button" className="btn episodes-more" onClick={onMore}>
+          Show {Math.min(EPISODE_PAGE * 2, episodes.length - shown.length)} more
+        </button>
+      )}
+    </>
+  );
+}
+
 function Cast({ raw, type }) {
+  const track = useRef(null);
   const people =
     type === 'tv'
       ? (raw.aggregate_credits?.cast ?? []).map((p) => ({
@@ -286,8 +335,17 @@ function Cast({ raw, type }) {
 
   return (
     <section className="block">
-      <h2 className="block-title">Cast</h2>
-      <div ref={trackEdges} className="shelf-track people">
+      <div className="block-head">
+        <h2 className="block-title">Cast</h2>
+        <RowNav track={track} label="cast" />
+      </div>
+      <div
+        ref={(el) => {
+          track.current = el;
+          return trackEdges(el);
+        }}
+        className="shelf-track people"
+      >
         {people.slice(0, 16).map((p) => (
           <div key={p.id} className="person">
             <div className="person-face">
@@ -691,7 +749,7 @@ function TitleView({ type, id }) {
               <section className="block">
                 <h2 className="block-title">
                   Seasons{' '}
-                  <small>{plural(raw.number_of_episodes, 'episode')}</small>
+                  <small>{`${raw.number_of_episodes.toLocaleString()} episodes`}</small>
                 </h2>
                 <ul className="seasons">
                   {seasons.map((s) => (

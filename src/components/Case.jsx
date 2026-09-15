@@ -53,10 +53,10 @@ export default function Case({ item, eager, frontRef, style, inside = false }) {
   );
 }
 
-export function Poster({ item, size, className = '', ...props }) {
+export function Poster({ item, size, eager, className = '', ...props }) {
   return (
     <span className={`poster ${className}`} {...props}>
-      <Art item={item} size={size} />
+      <Art item={item} size={size} eager={eager} />
     </span>
   );
 }

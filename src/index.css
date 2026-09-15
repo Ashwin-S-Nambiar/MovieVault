@@ -2336,6 +2336,60 @@ a.search-pill:active {
   margin-top: 34px;
 }
 
+.block-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.block-head .block-title,
+.block-head .connected-position {
+  margin: 0;
+}
+
+.strip-wrap {
+  position: relative;
+}
+
+.row-nav-overlay {
+  position: absolute;
+  inset: 10px 0 26px;
+  z-index: 2;
+  justify-content: space-between;
+  align-items: center;
+  pointer-events: none;
+}
+
+.row-nav-overlay .icon-btn {
+  pointer-events: auto;
+  opacity: 0;
+  box-shadow: var(--glass-edge), var(--shadow-md);
+  transition:
+    opacity 200ms ease,
+    transform 160ms var(--ease-out);
+}
+
+.row-nav-overlay .icon-btn:disabled {
+  opacity: 0 !important;
+}
+
+.strip-wrap:hover .row-nav-overlay .icon-btn,
+.row-nav-overlay .icon-btn:focus-visible {
+  opacity: 1;
+}
+
+.row-nav .icon-btn {
+  width: 32px;
+  height: 32px;
+}
+
+.row-nav .icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 .block-title {
   margin: 0 0 12px;
   font-size: 15px;
@@ -2412,17 +2466,17 @@ a.search-pill:active {
   transform: rotate(90deg);
 }
 
-.collapse {
+.disclose {
   display: grid;
   grid-template-rows: 0fr;
   transition: grid-template-rows 300ms var(--ease-out);
 }
 
-.collapse[data-open="true"] {
+.disclose[data-open="true"] {
   grid-template-rows: 1fr;
 }
 
-.collapse > div {
+.disclose > div {
   min-height: 0;
   overflow: hidden;
 }
@@ -2455,10 +2509,11 @@ a.search-pill:active {
 }
 
 .person-face {
-  width: 72px;
-  height: 72px;
+  width: 76px;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
-  border-radius: 50%;
+  border-radius: 14px;
+  box-shadow: inset 0 0 0 1px var(--line);
   background: var(--surface);
   color: var(--muted);
   display: grid;
@@ -2471,6 +2526,7 @@ a.search-pill:active {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: 50% 20%;
 }
 
 .person-name {
@@ -2518,6 +2574,63 @@ a.search-pill:active {
 .facts dd {
   margin: 2px 0 0;
   font-size: 14.5px;
+}
+
+.connected-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.connected-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
+}
+
+.connected-tabs button span {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  transition: color 200ms ease;
+}
+
+.connected-tabs button[aria-selected="true"] {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.connected-tabs button[aria-selected="true"] span {
+  color: color-mix(in srgb, var(--bg) 65%, transparent);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .connected-tabs button[aria-selected="false"]:hover {
+    background: var(--surface-2);
+  }
+}
+
+.connected-position {
+  margin: 0 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.connected-pair[data-single="true"] {
+  grid-template-columns: minmax(0, 1fr);
 }
 
 .connected-pair {
@@ -2583,19 +2696,6 @@ a.search-pill:active {
 .link-card-text > span:last-child {
   color: var(--muted);
   font-size: 12.5px;
-}
-
-.link-card[data-empty="true"] {
-  grid-template-columns: minmax(0, 1fr);
-  align-content: center;
-  gap: 4px;
-  background: transparent;
-  box-shadow: inset 0 0 0 1px var(--line-2);
-}
-
-.link-card[data-empty="true"] strong {
-  color: var(--muted);
-  font-weight: 400;
 }
 
 a.link-card:active {
@@ -2772,6 +2872,26 @@ a.link-card:active {
 
 .season-head[aria-expanded="true"] > svg {
   transform: rotate(90deg);
+}
+
+.episodes-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.episodes-bar .seg button {
+  min-height: 30px;
+  font-size: 13px;
+}
+
+.episodes-more {
+  margin: 0 0 16px 38px;
 }
 
 .episodes {
@@ -3777,6 +3897,18 @@ a.link-card:active {
   letter-spacing: -0.015em;
 }
 
+.tl-kind {
+  margin-left: 8px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--chip-sky);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0;
+  vertical-align: 2px;
+}
+
 .tl-sub {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -4674,6 +4806,11 @@ a.link-card:active {
   object-fit: cover;
 }
 
+[data-landing] .case-face:not(.case-front),
+[data-landing] .sleeve-disc {
+  visibility: hidden;
+}
+
 ::view-transition-group(hero-tray) {
   z-index: 1;
 }
@@ -4733,7 +4870,7 @@ a.link-card:active {
   .swap,
   .fade-img,
   .status-pill,
-  .collapse {
+  .disclose {
     transition-duration: 180ms !important;
   }
 }

@@ -36,6 +36,7 @@ export default function TitleCard({
   item,
   index = 0,
   providers = true,
+  eager = false,
   onlyMine = false,
   onRemove,
   onOpen,
@@ -77,7 +78,7 @@ export default function TitleCard({
           {item.poster && (
             <Disc item={item} className="sleeve-disc" load={peeked} />
           )}
-          <Poster ref={posterRef} item={item} />
+          <Poster ref={posterRef} item={item} eager={eager} />
         </span>
         <div>
           <h3 className="tcard-title">{item.title}</h3>

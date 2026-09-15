@@ -3,14 +3,15 @@ import {
   IconArrowRight,
   IconArrowUpRight,
 } from '@tabler/icons-react';
+import { useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { getConnected } from '../lib/catalog';
 import { TYPE_LABEL, titleHref } from '../lib/format';
 import { claimHero, isHero, markHero, takeHero } from '../lib/hero';
 import { trackEdges } from '../lib/hooks';
-import { UNIVERSES, universeHref } from '../lib/universes';
 import { useQuery } from '../lib/useQuery';
 import { Poster } from './Case';
+import { RowNav } from './Shelf';
 
 const heroProps = (item) => ({
   ref: (el) => {
@@ -38,18 +39,7 @@ const centerCurrent = (strip) => {
   return trackEdges(strip);
 };
 
-function Neighbor({ item, label, empty, Icon }) {
-  if (!item) {
-    return (
-      <div className="link-card" data-empty="true">
-        <span className="link-card-label">
-          <Icon stroke={2} />
-          {label}
-        </span>
-        <strong>{empty}</strong>
-      </div>
-    );
-  }
+function Neighbor({ item, label, Icon }) {
   return (
     <Link className="link-card" {...heroProps(item)}>
       <Poster item={item} size="w154" />
@@ -67,20 +57,79 @@ function Neighbor({ item, label, empty, Icon }) {
   );
 }
 
+function Group({ group, selfKey }) {
+  const track = useRef(null);
+  const { parts } = group;
+  const index = parts.findIndex((p) => p.key === selfKey);
+  const previous = parts[index - 1];
+  const next = parts[index + 1];
+
+  return (
+    <>
+      <p className="connected-position">
+        {index + 1} of {parts.length} in release order
+        {!next && ' · the latest'}
+        {!previous && ' · where it starts'}
+      </p>
+      <div className="connected-pair" data-single={!previous || !next}>
+        {previous && (
+          <Neighbor item={previous} label="Previous" Icon={IconArrowLeft} />
+        )}
+        {next && <Neighbor item={next} label="Next" Icon={IconArrowRight} />}
+      </div>
+      <div className="strip-wrap">
+        <RowNav track={track} label="universe" overlay />
+        <div
+          ref={(el) => {
+            track.current = el;
+            return centerCurrent(el);
+          }}
+          className="connected-strip"
+        >
+          {parts.map((p) =>
+            p.key === selfKey ? (
+              <span
+                key={p.key}
+                className="connected-item"
+                aria-current="true"
+                title={p.title}
+              >
+                <Poster item={p} size="w154" />
+                <span className="connected-year">{p.year || 'TBA'}</span>
+              </span>
+            ) : (
+              <Link
+                key={p.key}
+                className="connected-item"
+                title={`${p.title}${p.year ? ` (${p.year})` : ''}`}
+                {...heroProps(p)}
+              >
+                <Poster item={p} size="w154" />
+                <span className="connected-year">{p.year || 'TBA'}</span>
+              </Link>
+            ),
+          )}
+        </div>
+      </div>
+      {group.href && (
+        <Link to={group.href} className="connected-more" viewTransition>
+          Explore {group.name}
+          <IconArrowUpRight stroke={1.8} />
+        </Link>
+      )}
+    </>
+  );
+}
+
 export default function Connected({ type, raw }) {
-  const query = useQuery(`connected-${type}-${raw.id}`, (signal) =>
+  const [selected, setSelected] = useState(0);
+  const query = useQuery(`connected-v3-${type}-${raw.id}`, (signal) =>
     getConnected(type, raw, { signal }),
   );
+  const groups = query.data ?? [];
   const selfKey = `${type}-${raw.id}`;
-  const keywords = raw.keywords?.keywords ?? raw.keywords?.results ?? [];
-  const curated = UNIVERSES.find(
-    (u) => u.keyword && keywords.some((k) => k.id === u.keyword),
-  );
-  const data = query.data;
-  const parts = data?.parts ?? [];
-  const index = parts.findIndex((p) => p.key === selfKey);
 
-  if (query.loading && !data) {
+  if (query.loading && !query.data) {
     return (
       <section className="block" aria-hidden="true">
         <span
@@ -94,76 +143,33 @@ export default function Connected({ type, raw }) {
       </section>
     );
   }
+  if (!groups.length) return null;
 
-  const href = data?.collectionId
-    ? universeHref(data.collectionId)
-    : curated
-      ? `/universe/${curated.slug}`
-      : null;
-  if (parts.length < 2 && !href) return null;
-  const name = curated?.name ?? data?.name;
+  const group = groups[Math.min(selected, groups.length - 1)];
 
   return (
     <section className="block">
       <h2 className="block-title">
         Universe
-        {parts.length > 1 && (
-          <small>
-            {index + 1} of {parts.length}, in release order
-          </small>
-        )}
+        {groups.length > 1 && <small>Part of {groups.length}</small>}
       </h2>
-
-      {parts.length > 1 && (
-        <>
-          <div className="connected-pair">
-            <Neighbor
-              item={parts[index - 1]}
-              label="Previous"
-              empty="This is where it starts"
-              Icon={IconArrowLeft}
-            />
-            <Neighbor
-              item={parts[index + 1]}
-              label="Next"
-              empty="The latest so far"
-              Icon={IconArrowRight}
-            />
-          </div>
-          <div ref={centerCurrent} className="connected-strip">
-            {parts.map((p) =>
-              p.key === selfKey ? (
-                <span
-                  key={p.key}
-                  className="connected-item"
-                  aria-current="true"
-                  title={p.title}
-                >
-                  <Poster item={p} size="w154" />
-                  <span className="connected-year">{p.year || 'TBA'}</span>
-                </span>
-              ) : (
-                <Link
-                  key={p.key}
-                  className="connected-item"
-                  title={`${p.title}${p.year ? ` (${p.year})` : ''}`}
-                  {...heroProps(p)}
-                >
-                  <Poster item={p} size="w154" />
-                  <span className="connected-year">{p.year || 'TBA'}</span>
-                </Link>
-              ),
-            )}
-          </div>
-        </>
+      {groups.length > 1 && (
+        <div className="connected-tabs" role="tablist">
+          {groups.map((g, i) => (
+            <button
+              key={g.id}
+              type="button"
+              role="tab"
+              aria-selected={g === group}
+              onClick={() => setSelected(i)}
+            >
+              {g.name}
+              <span>{g.parts.length}</span>
+            </button>
+          ))}
+        </div>
       )}
-
-      {href && name && (
-        <Link to={href} className="connected-more" viewTransition>
-          Explore the {name} universe
-          <IconArrowUpRight stroke={1.8} />
-        </Link>
-      )}
+      <Group key={group.id} group={group} selfKey={selfKey} />
     </section>
   );
 }

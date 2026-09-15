@@ -102,7 +102,7 @@ export default function Topbar({ center, end }) {
               Universes
             </NavLink>
             <NavLink to="/vault" className="nav-link" viewTransition>
-              Vault{count > 0 && <span className="muted"> {count}</span>}
+              Vault{count > 0 && <span className="muted"> ({count})</span>}
             </NavLink>
           </nav>
           {end}

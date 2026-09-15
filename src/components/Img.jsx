@@ -14,11 +14,13 @@ export default function Img({
   ...props
 }) {
   const ref = useRef(null);
+  const mountedAt = useRef(0);
   const [state, setState] = useState(() =>
     seen.has(src) ? 'instant' : preview ? 'preview' : 'loading',
   );
 
   useLayoutEffect(() => {
+    mountedAt.current = performance.now();
     const node = ref.current;
     if (node?.complete && node.naturalWidth > 0) {
       seen.add(src);
@@ -40,12 +42,14 @@ export default function Img({
           ? { ...style, backgroundImage: `url(${preview})` }
           : style
       }
-      decoding="async"
+      decoding={props.loading === 'eager' ? 'sync' : 'async'}
+      fetchPriority={props.loading === 'eager' ? 'high' : undefined}
       draggable={false}
       onLoad={() => {
         seen.add(src);
+        const quick = performance.now() - mountedAt.current < 150;
         setState((s) =>
-          s === 'loading' ? 'loaded' : s === 'error' ? s : 'instant',
+          s === 'loading' && !quick ? 'loaded' : s === 'error' ? s : 'instant',
         );
       }}
       onError={() => setState('error')}

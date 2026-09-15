@@ -102,6 +102,7 @@ const STATUS_ICONS = {
 };
 
 export function WatchBadge({ status, compact = false }) {
+  const region = useRegion();
   const Icon = STATUS_ICONS[status.tone];
   return (
     <span
@@ -110,7 +111,7 @@ export function WatchBadge({ status, compact = false }) {
       data-compact={compact}
     >
       <Icon stroke={1.8} />
-      {status.label}
+      {status.tone === 'none' ? `Not streaming in ${region}` : status.label}
     </span>
   );
 }

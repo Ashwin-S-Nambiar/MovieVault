@@ -7,6 +7,59 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { CardSkeletons } from './TitleCard';
 
+export function RowNav({ track, label = 'row', overlay = false }) {
+  const [edges, setEdges] = useState({ start: true, end: true });
+
+  useEffect(() => {
+    const node = track.current;
+    if (!node) return;
+    const update = () =>
+      setEdges({
+        start: node.scrollLeft < 8,
+        end: node.scrollLeft + node.clientWidth > node.scrollWidth - 8,
+      });
+    update();
+    node.addEventListener('scroll', update, { passive: true });
+    const observer = new ResizeObserver(update);
+    observer.observe(node);
+    return () => {
+      node.removeEventListener('scroll', update);
+      observer.disconnect();
+    };
+  }, [track]);
+
+  if (edges.start && edges.end) return null;
+
+  const page = (dir) =>
+    track.current?.scrollBy({
+      left: dir * track.current.clientWidth * 0.8,
+      behavior: 'smooth',
+    });
+
+  return (
+    <div className={`shelf-nav row-nav ${overlay ? 'row-nav-overlay' : ''}`}>
+      <button
+        type="button"
+        className="icon-btn"
+        aria-label={`Scroll ${label} back`}
+        disabled={edges.start}
+        onClick={() => page(-1)}
+      >
+        <IconChevronLeft stroke={1.8} />
+      </button>
+      <button
+        type="button"
+        className="icon-btn"
+        aria-label={`Scroll ${label} forward`}
+        disabled={edges.end}
+        onClick={() => page(1)}
+      >
+        <IconChevronRight stroke={1.8} />
+      </button>
+    </div>
+  );
+}
+
 export function SectionHead({
   title,
   sub,

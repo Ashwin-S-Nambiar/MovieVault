@@ -14,7 +14,7 @@ import {
   getKeywordUniverse,
   prefetchTitle,
 } from '../lib/catalog';
-import { longDate, titleHref } from '../lib/format';
+import { longDate, TYPE_LABEL, titleHref } from '../lib/format';
 import { claimHero, isHero, markHero, takeHero } from '../lib/hero';
 import { backdropImage, usePageMeta } from '../lib/meta';
 import { img } from '../lib/tmdb';
@@ -29,7 +29,7 @@ function useUniverse(slug) {
   const curated = findUniverse(slug);
   const collectionId = curated?.collection ?? Number.parseInt(slug, 10);
 
-  return useQuery(`universe-${slug}`, async (signal) => {
+  return useQuery(`universe-v2-${slug}`, async (signal) => {
     if (curated?.keyword) {
       const parts = await getKeywordUniverse(curated.keyword, { signal });
       return {
@@ -147,7 +147,7 @@ export default function Universe() {
         <div className="page uhero-grid">
           <div className="uhero-art">
             {backdrop ? (
-              <Img src={img(backdrop, 'w1280')} />
+              <Img src={img(backdrop, 'w1280')} loading="eager" />
             ) : (
               <span className="skeleton" />
             )}
@@ -192,12 +192,18 @@ export default function Universe() {
               <dl className="stats">
                 <div>
                   <dt>films</dt>
-                  <dd>{released.length}</dd>
+                  <dd>{released.filter((p) => p.type === 'movie').length}</dd>
                 </div>
+                {released.some((p) => p.type === 'tv') && (
+                  <div>
+                    <dt>series</dt>
+                    <dd>{released.filter((p) => p.type === 'tv').length}</dd>
+                  </div>
+                )}
                 {first && (
                   <div>
                     <dt>span</dt>
-                    <dd>{first === last ? first : `${first}–${last}`}</dd>
+                    <dd>{first === last ? first : `${first} - ${last}`}</dd>
                   </div>
                 )}
                 {average && (
@@ -280,7 +286,12 @@ export default function Universe() {
                         minWidth: 0,
                       }}
                     >
-                      <div className="tl-title">{p.title}</div>
+                      <div className="tl-title">
+                        {p.title}
+                        {p.type === 'tv' && (
+                          <span className="tl-kind">{TYPE_LABEL[p.kind]}</span>
+                        )}
+                      </div>
                       <div className="tl-sub">
                         {upcoming
                           ? `Upcoming${p.date ? ` · ${longDate(p.date)}` : ''}`

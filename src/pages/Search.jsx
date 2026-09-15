@@ -361,7 +361,7 @@ function Landing({ trendingItems, loading }) {
               <CardSkeletons count={12} />
             ) : (
               trendingItems.map((item, i) => (
-                <TitleCard key={item.key} item={item} index={i} />
+                <TitleCard key={item.key} item={item} index={i} eager={i < 6} />
               ))
             )}
           </div>
@@ -577,6 +577,7 @@ export default function Search() {
                     key={item.key}
                     item={item}
                     index={i % 20}
+                    eager={i < 12}
                     onlyMine={Boolean(q) && mine}
                     onOpen={() => rememberSearch(q)}
                   />

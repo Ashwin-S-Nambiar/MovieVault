@@ -49,5 +49,10 @@ export function takeHero(el, key, source) {
   if (!el || !isHero(key, source)) return false;
   writePending(null);
   claimHero(el, { transient: true });
+  const holder = el.closest('.reel-item, .sleeve');
+  if (holder) {
+    holder.dataset.landing = 'true';
+    setTimeout(() => delete holder.dataset.landing, 700);
+  }
   return true;
 }

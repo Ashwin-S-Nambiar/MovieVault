@@ -144,6 +144,7 @@ export default function Vault() {
                 key={item.key}
                 item={item}
                 index={i}
+                eager={i < 12}
                 onRemove={remove}
               />
             ))}

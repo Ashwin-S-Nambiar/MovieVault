@@ -1,5 +1,6 @@
 import { toItem, toItems } from './format';
 import { tmdb } from './tmdb';
+import { UNIVERSES, universeHref } from './universes';
 
 const ANIME_KEYWORD = 210024;
 
@@ -107,24 +108,34 @@ const baseName = (text = '') =>
       .replace(/\s\d+$/, ''),
   );
 
-export async function getConnected(type, raw, { signal } = {}) {
-  const self = toItem(raw, type);
-  if (type === 'movie' && raw.belongs_to_collection) {
-    const collection = await getCollection(raw.belongs_to_collection.id, {
-      signal,
-    });
-    return {
-      parts: collection.parts,
-      name: collection.name.replace(/ Collection$/, ''),
-      collectionId: collection.id,
-    };
-  }
+const companies = (raw) =>
+  new Set(
+    [...(raw.production_companies ?? []), ...(raw.networks ?? [])].map(
+      (c) => c.id,
+    ),
+  );
 
+const inOrder = (items) =>
+  [...items].sort((a, b) => (a.date || '9999').localeCompare(b.date || '9999'));
+
+const isStory = (detail, type) => {
+  const genres = (detail.genres ?? []).map((g) => g.id);
+  if (type === 'tv') {
+    return !genres.some((id) => [99, 10763, 10764, 10767].includes(id));
+  }
+  if (genres.includes(99)) return false;
+  const released =
+    detail.release_date && detail.release_date <= new Date().toISOString();
+  return !released || !detail.runtime || detail.runtime >= 40;
+};
+
+async function namedGroup(raw, self, signal) {
   const names = [
     baseName(self.title),
     baseName(raw.original_title ?? raw.original_name),
   ].filter((name, i, all) => name.length >= 3 && all.indexOf(name) === i);
-  if (!names.length) return null;
+  const own = companies(raw);
+  if (!names.length || !own.size) return null;
 
   const genres = new Set((raw.genres ?? []).map((g) => g.id));
   const pages = await Promise.all(
@@ -133,7 +144,7 @@ export async function getConnected(type, raw, { signal } = {}) {
     ),
   );
   const seen = new Set([self.key]);
-  const related = pages
+  const candidates = pages
     .flatMap((page) => page.results)
     .filter((r) => {
       if (r.media_type !== 'movie' && r.media_type !== 'tv') return false;
@@ -151,38 +162,121 @@ export async function getConnected(type, raw, { signal } = {}) {
       );
       if (match) seen.add(key);
       return match;
-    });
+    })
+    .slice(0, 12);
+  if (!candidates.length) return null;
 
-  if (!related.length) return null;
-  const parts = [self, ...toItems(related)].sort((a, b) =>
-    (a.date || '9999').localeCompare(b.date || '9999'),
-  );
-  return { parts, name: raw.title ?? raw.name, collectionId: null };
-}
-
-export async function getKeywordUniverse(keywordId, { signal } = {}) {
-  const pages = await Promise.all(
-    [1, 2, 3, 4].map((n) =>
-      tmdb(
-        '/discover/movie',
-        {
-          with_keywords: keywordId,
-          sort_by: 'primary_release_date.asc',
-          page: n,
-        },
-        { signal },
-      ).catch(() => ({ results: [] })),
+  const verified = await Promise.all(
+    candidates.map((r) =>
+      tmdb(`/${r.media_type}/${r.id}`, {}, { signal })
+        .then((detail) => {
+          const shared = [...companies(detail)].some((id) => own.has(id));
+          return shared && isStory(detail, r.media_type) ? r : null;
+        })
+        .catch(() => null),
     ),
   );
+  const related = toItems(verified.filter(Boolean));
+  if (!related.length) return null;
+  const parts = inOrder([self, ...related]);
+  const shortest = parts.reduce((a, b) =>
+    b.title.length < a.title.length ? b : a,
+  );
+  return { id: 'named', name: shortest.title, parts, href: null };
+}
+
+export async function getConnected(type, raw, { signal } = {}) {
+  const self = toItem(raw, type);
+  const keywords = new Set(
+    (raw.keywords?.keywords ?? raw.keywords?.results ?? []).map((k) => k.id),
+  );
+  const collectionId = type === 'movie' ? raw.belongs_to_collection?.id : null;
+  const tasks = [];
+
+  if (collectionId) {
+    const curated = UNIVERSES.find((u) => u.collection === collectionId);
+    tasks.push(
+      getCollection(collectionId, { signal }).then((c) => ({
+        id: `collection-${c.id}`,
+        name: curated?.name ?? c.name.replace(/ Collection$/, ''),
+        parts: c.parts,
+        href: universeHref(c.id),
+      })),
+    );
+  }
+
+  for (const u of UNIVERSES) {
+    if (!u.keyword || !keywords.has(u.keyword)) continue;
+    tasks.push(
+      getKeywordUniverse(u.keyword, { signal }).then((parts) => ({
+        id: `universe-${u.slug}`,
+        name: u.name,
+        parts: parts.some((p) => p.key === self.key)
+          ? parts
+          : inOrder([...parts, self]),
+        href: `/universe/${u.slug}`,
+      })),
+    );
+  }
+
+  if (!collectionId) tasks.push(namedGroup(raw, self, signal));
+
+  const groups = await Promise.all(tasks.map((task) => task.catch(() => null)));
+  return groups.filter((g) => g && g.parts.length > 1);
+}
+
+const NON_STORY_TV = '99,10763,10764,10767';
+
+export async function getKeywordUniverse(keywordId, { signal } = {}) {
+  const today = new Date().toISOString().slice(0, 10);
+  const discoverPages = (type, params, pages) =>
+    Promise.all(
+      pages.map((n) =>
+        tmdb(
+          `/discover/${type}`,
+          { with_keywords: keywordId, page: n, ...params },
+          { signal },
+        )
+          .then((data) => toItems(data.results, type))
+          .catch(() => []),
+      ),
+    ).then((all) => all.flat());
+
+  const [films, upcoming, series] = await Promise.all([
+    discoverPages(
+      'movie',
+      {
+        without_genres: 99,
+        'with_runtime.gte': 40,
+        'primary_release_date.lte': today,
+        sort_by: 'primary_release_date.asc',
+      },
+      [1, 2, 3, 4],
+    ),
+    discoverPages(
+      'movie',
+      {
+        without_genres: 99,
+        'primary_release_date.gte': today,
+        sort_by: 'primary_release_date.asc',
+      },
+      [1],
+    ),
+    discoverPages(
+      'tv',
+      { without_genres: NON_STORY_TV, sort_by: 'first_air_date.asc' },
+      [1, 2],
+    ),
+  ]);
+
   const seen = new Set();
-  return toItems(
-    pages.flatMap((p) => p.results),
-    'movie',
-  ).filter((item) => {
-    if (!item.poster || seen.has(item.id)) return false;
-    seen.add(item.id);
-    return true;
-  });
+  return inOrder(
+    [...films, ...upcoming, ...series].filter((item) => {
+      if (!item.poster || seen.has(item.key)) return false;
+      seen.add(item.key);
+      return true;
+    }),
+  );
 }
 
 export async function getProviderCatalog(region, { signal } = {}) {
