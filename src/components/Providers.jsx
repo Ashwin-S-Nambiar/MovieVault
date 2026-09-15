@@ -111,7 +111,9 @@ export function WatchBadge({ status, compact = false }) {
       data-compact={compact}
     >
       <Icon stroke={1.8} />
-      {status.tone === 'none' ? `Not streaming in ${region}` : status.label}
+      <span className="watch-badge-text">
+        {status.tone === 'none' ? `Not streaming in ${region}` : status.label}
+      </span>
     </span>
   );
 }

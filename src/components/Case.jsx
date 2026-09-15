@@ -5,7 +5,12 @@ const PREVIEW_SIZES = ['w500', 'w342', 'w185', 'w154', 'w92'];
 
 export function Art({ item, size = 'w342', eager = false }) {
   if (!item) return <span className="case-art art-loading" />;
-  const empty = <div className="case-art case-art-empty">{item.title}</div>;
+  const empty = (
+    <div className="case-art case-art-empty" title={item.title}>
+      <span className="case-art-title">{item.title}</span>
+      <span className="case-art-mark" aria-hidden="true" />
+    </div>
+  );
   if (!item.poster) return empty;
   const src = img(item.poster, size);
   const preview = isLoaded(src)
