@@ -1,27 +1,39 @@
+import {
+  IconMovie,
+  IconSearch,
+  IconSortAscending,
+  IconTrash,
+} from '@tabler/icons-react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Film, Search, SortAsc, Trash2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Toast  from '../components/Toast';
+import { Link } from 'react-router';
 import MovieCard from '../components/MovieCard';
+import Toast from '../components/Toast';
 
 const WatchlistPage = () => {
   const [watchlist, setWatchlist] = useState(() => {
     const saved = localStorage.getItem('movie-watchlist');
     return saved ? JSON.parse(saved) : [];
   });
-  
-  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success',
+  });
   const [sortBy, setSortBy] = useState('date-added');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+    setTimeout(
+      () => setToast({ show: false, message: '', type: 'success' }),
+      3000,
+    );
   };
 
   const handleRemoveFromWatchlist = (movie) => {
-    const newWatchlist = watchlist.filter(m => m.imdbID !== movie.imdbID);
+    const newWatchlist = watchlist.filter((m) => m.imdbID !== movie.imdbID);
     setWatchlist(newWatchlist);
     localStorage.setItem('movie-watchlist', JSON.stringify(newWatchlist));
     showToast('Removed from watchlist');
@@ -39,7 +51,9 @@ const WatchlistPage = () => {
       case 'title':
         return [...watchlist].sort((a, b) => a.Title.localeCompare(b.Title));
       case 'rating':
-        return [...watchlist].sort((a, b) => (b.imdbRating || 0) - (a.imdbRating || 0));
+        return [...watchlist].sort(
+          (a, b) => (b.imdbRating || 0) - (a.imdbRating || 0),
+        );
       case 'year':
         return [...watchlist].sort((a, b) => b.Year - a.Year);
       default:
@@ -53,27 +67,42 @@ const WatchlistPage = () => {
       {watchlist.length > 0 && (
         <section className="bg-linear-to-b from-[#242938] to-[#1A1F2B] py-8 border-b border-white/5">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="flex items-center justify-between gap-4"
             >
               <div>
-                <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-h2)', lineHeight: 'var(--lh-h2)' }} className="font-semibold text-white mb-1">
+                <h1
+                  style={{
+                    fontFamily: 'var(--font-display)',
+                    fontSize: 'var(--fs-h2)',
+                    lineHeight: 'var(--lh-h2)',
+                  }}
+                  className="font-semibold text-white mb-1"
+                >
                   My Watchlist
                 </h1>
-                <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--fs-label)' }} className="text-[#9CA3AF]">
-                  {watchlist.length} {watchlist.length === 1 ? 'movie' : 'movies'} saved
+                <p
+                  style={{
+                    fontFamily: 'var(--font-sans)',
+                    fontSize: 'var(--fs-label)',
+                  }}
+                  className="text-[#9CA3AF]"
+                >
+                  {watchlist.length}{' '}
+                  {watchlist.length === 1 ? 'movie' : 'movies'} saved
                 </p>
               </div>
-              
+
               {/* Clear All Button */}
               <button
+                type="button"
                 onClick={() => setShowClearConfirm(true)}
                 className="cursor-pointer group flex items-center gap-2 px-4 py-2 bg-[#242938] hover:bg-red-500/20 border border-white/10 hover:border-red-500/50 text-[#9CA3AF] hover:text-red-400 rounded-lg transition-all duration-300 text-sm font-medium"
                 style={{ fontFamily: 'var(--font-sans)' }}
               >
-                <Trash2 className="w-4 h-4" />
+                <IconTrash className="w-4 h-4" />
                 Clear All
               </button>
             </motion.div>
@@ -87,7 +116,7 @@ const WatchlistPage = () => {
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex items-center gap-2">
               {/* Sort Dropdown */}
-              <SortAsc className="w-4 h-4 text-[#9CA3AF]" />
+              <IconSortAscending className="w-4 h-4 text-[#9CA3AF]" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
@@ -109,7 +138,7 @@ const WatchlistPage = () => {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <AnimatePresence mode="wait">
             {watchlist.length === 0 ? (
-              <motion.div 
+              <motion.div
                 key="empty"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -119,34 +148,50 @@ const WatchlistPage = () => {
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                  transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
                 >
                   <div className="relative">
                     <div className="absolute inset-0 bg-[#FF6B6B]/20 blur-3xl rounded-full" />
-                    <Film className="relative w-24 h-24 text-[#FF6B6B]/40" strokeWidth={1.5} />
+                    <IconMovie
+                      className="relative w-24 h-24 text-[#FF6B6B]/40"
+                      stroke={1.5}
+                    />
                   </div>
                 </motion.div>
-                
+
                 <div className="max-w-md">
-                  <h2 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-h2)' }} className="font-semibold text-white mb-2">
+                  <h2
+                    style={{
+                      fontFamily: 'var(--font-display)',
+                      fontSize: 'var(--fs-h2)',
+                    }}
+                    className="font-semibold text-white mb-2"
+                  >
                     Your Watchlist is Empty
                   </h2>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--fs-body)' }} className="text-[#9CA3AF] mb-6">
-                    Start building your collection! Search for movies and add them to your watchlist.
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: 'var(--fs-body)',
+                    }}
+                    className="text-[#9CA3AF] mb-6"
+                  >
+                    Start building your collection! Search for movies and add
+                    them to your watchlist.
                   </p>
                 </div>
-                
-                <Link 
+
+                <Link
                   to="/"
                   className="group inline-flex items-center gap-2 px-6 py-3 bg-[#FF6B6B] hover:bg-[#FF5252] text-white font-semibold rounded-lg transition-all duration-300 shadow-lg shadow-[#FF6B6B]/30 hover:shadow-xl hover:shadow-[#FF6B6B]/40 hover:scale-105"
                   style={{ fontFamily: 'var(--font-sans)' }}
                 >
-                  <Search className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
+                  <IconSearch className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
                   Discover Movies
                 </Link>
               </motion.div>
             ) : (
-              <motion.div 
+              <motion.div
                 key="watchlist"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -161,7 +206,7 @@ const WatchlistPage = () => {
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ delay: index * 0.03 }}
                   >
-                    <MovieCard 
+                    <MovieCard
                       movie={movie}
                       onWatchlistToggle={handleRemoveFromWatchlist}
                       isInWatchlist={true}
@@ -193,20 +238,34 @@ const WatchlistPage = () => {
             >
               <div className="flex items-start gap-4 mb-4">
                 <div className="p-3 bg-red-500/10 rounded-full">
-                  <Trash2 className="w-6 h-6 text-red-400" />
+                  <IconTrash className="w-6 h-6 text-red-400" />
                 </div>
                 <div>
-                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: 'var(--fs-h3)' }} className="font-semibold text-white mb-2">
+                  <h3
+                    style={{
+                      fontFamily: 'var(--font-display)',
+                      fontSize: 'var(--fs-h3)',
+                    }}
+                    className="font-semibold text-white mb-2"
+                  >
                     Clear Watchlist?
                   </h3>
-                  <p style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--fs-label)' }} className="text-[#9CA3AF]">
-                    Are you sure you want to remove all {watchlist.length} movies from your watchlist? This action cannot be undone.
+                  <p
+                    style={{
+                      fontFamily: 'var(--font-sans)',
+                      fontSize: 'var(--fs-label)',
+                    }}
+                    className="text-[#9CA3AF]"
+                  >
+                    Are you sure you want to remove all {watchlist.length}{' '}
+                    movies from your watchlist? This action cannot be undone.
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex gap-3 justify-end">
                 <button
+                  type="button"
                   onClick={() => setShowClearConfirm(false)}
                   className="cursor-pointer px-4 py-2 bg-[#1A1F2B] hover:bg-[#2D3446] text-white rounded-lg transition-colors duration-300 text-sm font-medium"
                   style={{ fontFamily: 'var(--font-sans)' }}
@@ -214,6 +273,7 @@ const WatchlistPage = () => {
                   Cancel
                 </button>
                 <button
+                  type="button"
                   onClick={handleClearWatchlist}
                   className="cursor-pointer px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-300 text-sm font-medium"
                   style={{ fontFamily: 'var(--font-sans)' }}

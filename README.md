@@ -5,7 +5,7 @@
 ![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
 ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Framer Motion](https://img.shields.io/badge/Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
+![Motion](https://img.shields.io/badge/Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 
 A modern, minimal movie discovery app with a beautiful dark interface. Search thousands of movies, view detailed information, and build your perfect watchlist.
@@ -34,31 +34,31 @@ MovieVault features a completely redesigned modern interface built with these pr
 - **Typography System** - Inter for UI, Poppins for headings with proper hierarchy
 - **Coral Accent** - Warm `#FF6B6B` accent color for interactive elements
 - **Generous Whitespace** - Reduces cognitive load and feels premium
-- **Subtle Animations** - Framer Motion for smooth, non-intrusive transitions
+- **Subtle Animations** - Motion for smooth, non-intrusive transitions
 - **Card-Based Layouts** - Modern grid system that scales beautifully
 
 ## Tech Stack
 
 ### Frontend
 - **[React 19](https://reactjs.org/)** - Latest React with enhanced performance
-- **[React Router v7](https://reactrouter.com/)** - Client-side routing with nested routes
+- **[React Router v8](https://reactrouter.com/)** - Client-side routing with nested routes
 - **[Tailwind CSS v4](https://tailwindcss.com/)** - Utility-first CSS with custom design tokens
-- **[Framer Motion](https://motion.dev/)** - Smooth animations and micro-interactions
+- **[Motion](https://motion.dev/)** - Smooth animations and micro-interactions
 - **[Vite](https://vitejs.dev/)** - Lightning-fast build tool and dev server
-- **[Lucide React](https://lucide.dev/)** - Beautiful, consistent icons
+- **[Tabler Icons](https://tabler.io/icons)** - Beautiful, consistent icons
 
 ### API & Data
 - **[TMDB API](https://www.themoviedb.org/documentation/api)** - Comprehensive movie database
 - **LocalStorage** - Persistent watchlist storage
 
 ### Development Tools
-- **ESLint** - Code quality and consistency
+- **[Biome](https://biomejs.dev/)** - Linting and formatting
 - **use-debounce** - Optimized search performance
 
 ## Installation
 
 ### Prerequisites
-- Node.js 18+ and npm/yarn
+- Node.js 22.22+ and npm/yarn
 - TMDB API Key (free)
 
 ### Setup
@@ -94,7 +94,16 @@ MovieVault features a completely redesigned modern interface built with these pr
    
    Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-5. **Build for production**
+5. **Lint and format**
+
+   ```bash
+   npm run check      # Lint, format and import-order checks
+   npm run check:fix  # Apply safe fixes and formatting
+   ```
+
+   A pre-commit hook (installed automatically by `npm install`) runs Biome on staged files, and GitHub Actions runs `biome ci` and the build on every push and pull request.
+
+6. **Build for production**
 
    ```bash
    npm run build
@@ -127,19 +136,19 @@ Please ensure your code follows the existing style and includes appropriate comm
 <div align="center"> 
    
    ### Landing Page / HomePage
-   ![Landing Page](./public/screenshots/MovieVault.webp)
+   ![Landing Page](./docs/screenshots/MovieVault.webp)
 
    ### Search Results
-   ![Search Results](./public/screenshots/MovieVault-1.webp)
+   ![Search Results](./docs/screenshots/MovieVault-1.webp)
 
    ### Movie Details Page
-   ![Movie Details Page](./public/screenshots/MovieVault-2.webp)
+   ![Movie Details Page](./docs/screenshots/MovieVault-2.webp)
 
    ### Watchlist Page
-   ![Watchlist Page](./public/screenshots/MovieVault-3.webp)
+   ![Watchlist Page](./docs/screenshots/MovieVault-3.webp)
 
    ### 404 Page
-   ![Page Not Found](./public/screenshots/MovieVault-4.webp)
+   ![Page Not Found](./docs/screenshots/MovieVault-4.webp)
 
 </div>
 

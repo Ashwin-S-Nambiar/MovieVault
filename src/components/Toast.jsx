@@ -1,8 +1,8 @@
-import { motion } from 'framer-motion';
-import { CheckCircle, XCircle } from 'lucide-react';
+import { IconCircleCheck, IconCircleX } from '@tabler/icons-react';
+import { motion } from 'motion/react';
 
 const Toast = ({ message, type = 'success' }) => (
-  <motion.div 
+  <motion.div
     initial={{ opacity: 0, y: 50, scale: 0.9 }}
     animate={{ opacity: 1, y: 0, scale: 1 }}
     exit={{ opacity: 0, y: 50, scale: 0.9 }}
@@ -12,9 +12,9 @@ const Toast = ({ message, type = 'success' }) => (
     style={{ fontFamily: 'var(--font-sans)' }}
   >
     {type === 'error' ? (
-      <XCircle className="w-5 h-5 shrink-0" />
+      <IconCircleX className="w-5 h-5 shrink-0" />
     ) : (
-      <CheckCircle className="w-5 h-5 shrink-0" />
+      <IconCircleCheck className="w-5 h-5 shrink-0" />
     )}
     <span className="font-medium">{message}</span>
   </motion.div>

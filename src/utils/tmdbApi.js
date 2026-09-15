@@ -9,14 +9,14 @@ export const IMAGE_SIZES = {
     small: 'w185',
     medium: 'w342',
     large: 'w500',
-    original: 'original'
+    original: 'original',
   },
   backdrop: {
     small: 'w300',
     medium: 'w780',
     large: 'w1280',
-    original: 'original'
-  }
+    original: 'original',
+  },
 };
 
 /**
@@ -38,13 +38,13 @@ export const getImageUrl = (path, size = IMAGE_SIZES.poster.medium) => {
  */
 export const searchMovies = async (query, page = 1) => {
   const response = await fetch(
-    `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}&include_adult=false`
+    `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query)}&page=${page}&include_adult=false`,
   );
-  
+
   if (!response.ok) {
     throw new Error('Failed to search movies');
   }
-  
+
   return await response.json();
 };
 
@@ -55,13 +55,13 @@ export const searchMovies = async (query, page = 1) => {
  */
 export const getMovieDetails = async (movieId) => {
   const response = await fetch(
-    `${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&append_to_response=credits`
+    `${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&append_to_response=credits`,
   );
-  
+
   if (!response.ok) {
     throw new Error('Failed to fetch movie details');
   }
-  
+
   return await response.json();
 };
 
@@ -85,10 +85,17 @@ export const convertTmdbToOmdbFormat = (tmdbMovie, isDetailed = false) => {
 
   if (isDetailed) {
     // For detailed movie information
-    const director = tmdbMovie.credits?.crew?.find(person => person.job === 'Director');
-    const writers = tmdbMovie.credits?.crew?.filter(person => 
-      person.job === 'Writer' || person.job === 'Screenplay' || person.job === 'Story'
-    ).slice(0, 3);
+    const director = tmdbMovie.credits?.crew?.find(
+      (person) => person.job === 'Director',
+    );
+    const writers = tmdbMovie.credits?.crew
+      ?.filter(
+        (person) =>
+          person.job === 'Writer' ||
+          person.job === 'Screenplay' ||
+          person.job === 'Story',
+      )
+      .slice(0, 3);
     const actors = tmdbMovie.credits?.cast?.slice(0, 5);
 
     return {
@@ -96,29 +103,37 @@ export const convertTmdbToOmdbFormat = (tmdbMovie, isDetailed = false) => {
       Rated: tmdbMovie.adult ? 'R' : 'PG-13', // TMDB doesn't provide exact rating
       Released: tmdbMovie.release_date || 'N/A',
       Runtime: tmdbMovie.runtime ? `${tmdbMovie.runtime} min` : 'N/A',
-      Genre: tmdbMovie.genres?.map(g => g.name).join(', ') || 'N/A',
+      Genre: tmdbMovie.genres?.map((g) => g.name).join(', ') || 'N/A',
       Director: director?.name || 'N/A',
-      Writer: writers?.map(w => w.name).join(', ') || 'N/A',
-      Actors: actors?.map(a => a.name).join(', ') || 'N/A',
+      Writer: writers?.map((w) => w.name).join(', ') || 'N/A',
+      Actors: actors?.map((a) => a.name).join(', ') || 'N/A',
       Plot: tmdbMovie.overview || 'No plot available.',
       Language: tmdbMovie.original_language?.toUpperCase() || 'N/A',
-      Country: tmdbMovie.production_countries?.map(c => c.name).join(', ') || 'N/A',
+      Country:
+        tmdbMovie.production_countries?.map((c) => c.name).join(', ') || 'N/A',
       Awards: 'N/A', // TMDB doesn't provide this directly
-      imdbRating: tmdbMovie.vote_average ? tmdbMovie.vote_average.toFixed(1) : 'N/A',
+      imdbRating: tmdbMovie.vote_average
+        ? tmdbMovie.vote_average.toFixed(1)
+        : 'N/A',
       imdbVotes: tmdbMovie.vote_count?.toLocaleString() || 'N/A',
       Ratings: [
         {
           Source: 'TMDB',
-          Value: tmdbMovie.vote_average ? `${tmdbMovie.vote_average.toFixed(1)}/10` : 'N/A'
-        }
+          Value: tmdbMovie.vote_average
+            ? `${tmdbMovie.vote_average.toFixed(1)}/10`
+            : 'N/A',
+        },
       ],
       Metascore: 'N/A', // Not available in TMDB
       Type: 'movie',
       DVD: 'N/A',
-      BoxOffice: tmdbMovie.revenue ? `$${(tmdbMovie.revenue / 1000000).toFixed(1)}M` : 'N/A',
-      Production: tmdbMovie.production_companies?.map(c => c.name).join(', ') || 'N/A',
+      BoxOffice: tmdbMovie.revenue
+        ? `$${(tmdbMovie.revenue / 1000000).toFixed(1)}M`
+        : 'N/A',
+      Production:
+        tmdbMovie.production_companies?.map((c) => c.name).join(', ') || 'N/A',
       Website: tmdbMovie.homepage || 'N/A',
-      Response: 'True'
+      Response: 'True',
     };
   }
 
@@ -132,7 +147,7 @@ export const convertTmdbToOmdbFormat = (tmdbMovie, isDetailed = false) => {
 export const checkApiStatus = async () => {
   try {
     const response = await fetch(
-      `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=1`
+      `${BASE_URL}/movie/popular?api_key=${API_KEY}&page=1`,
     );
     return response.ok;
   } catch {

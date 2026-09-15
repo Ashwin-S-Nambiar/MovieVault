@@ -1,9 +1,9 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router';
 import Layout from './Layout';
 import HomePage from './pages/HomePage';
-import WatchlistPage from './pages/WatchlistPage';
 import MoviePage from './pages/MoviePage';
 import NotFoundPage from './pages/NotFoundPage';
+import WatchlistPage from './pages/WatchlistPage';
 
 const App = () => {
   return (
@@ -14,7 +14,7 @@ const App = () => {
           <Route path="/watchlist" element={<WatchlistPage />} />
           <Route path="/movie/:id" element={<MoviePage />} />
         </Route>
-        <Route path='*' element={<NotFoundPage />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </BrowserRouter>
   );
