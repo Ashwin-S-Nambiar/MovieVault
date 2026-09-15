@@ -1,12 +1,36 @@
-import { IconFilter2, IconSearch, IconX } from '@tabler/icons-react';
+import {
+  IconArrowUpRight,
+  IconDeviceTv,
+  IconFilter2,
+  IconMovie,
+  IconSearch,
+  IconStack2,
+  IconTorii,
+  IconX,
+} from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
+import { Art } from '../components/Case';
+import Img from '../components/Img';
 import Segmented from '../components/Segmented';
 import Sheet from '../components/Sheet';
-import TitleCard from '../components/TitleCard';
+import TitleCard, { CardSkeletons } from '../components/TitleCard';
 import Topbar from '../components/Topbar';
-import { discover, searchTitles, trending } from '../lib/catalog';
-import { useDebouncedValue, useInView, useKeyboardInset } from '../lib/hooks';
+import {
+  discover,
+  prefetchTitle,
+  searchTitles,
+  trending,
+} from '../lib/catalog';
+import { titleHref } from '../lib/format';
+import { claimHero, markHero } from '../lib/hero';
+import {
+  useDebouncedValue,
+  useInView,
+  useKeyboardInset,
+  useReducedMotion,
+} from '../lib/hooks';
+import { usePageMeta } from '../lib/meta';
 import { useRegion, useServices } from '../lib/prefs';
 import { img } from '../lib/tmdb';
 import { openSheet, recentStore, rememberSearch, useRecent } from '../lib/ui';
@@ -25,6 +49,37 @@ const SORTS = [
   { value: 'rating', label: 'Top rated' },
 ];
 
+const BROWSE = [
+  {
+    to: '/search?type=movie',
+    tone: 'chip-sky',
+    Icon: IconMovie,
+    title: 'Films',
+    sub: 'Every film on TMDB',
+  },
+  {
+    to: '/search?type=tv',
+    tone: 'chip-mint',
+    Icon: IconDeviceTv,
+    title: 'Series',
+    sub: 'Shows worth a binge',
+  },
+  {
+    to: '/search?type=anime',
+    tone: 'chip-lilac',
+    Icon: IconTorii,
+    title: 'Anime',
+    sub: 'Popular right now',
+  },
+  {
+    to: '/universes',
+    tone: 'chip-butter',
+    Icon: IconStack2,
+    title: 'Universes',
+    sub: 'Franchises in order',
+  },
+];
+
 const HEADINGS = {
   all: 'Everything',
   movie: 'Films',
@@ -32,15 +87,28 @@ const HEADINGS = {
   anime: 'Anime',
 };
 
+const PAGED_TTL = 10 * 60 * 1000;
+const pagedCache = new Map();
+
+const blank = (key, loading) => ({
+  key,
+  items: [],
+  page: 0,
+  totalPages: 1,
+  total: 0,
+  loading,
+  error: null,
+});
+
+const cachedPages = (key) => {
+  const hit = pagedCache.get(key);
+  return hit && Date.now() - hit.at < PAGED_TTL ? hit.state : null;
+};
+
 function usePaged(key, fetchPage, enabled) {
-  const [state, setState] = useState({
-    items: [],
-    page: 0,
-    totalPages: 1,
-    total: 0,
-    loading: false,
-    error: null,
-  });
+  const [state, setState] = useState(
+    () => (enabled && cachedPages(key)) || blank(key, enabled),
+  );
   const current = useRef({ key, controller: null });
   const fetchRef = useRef(fetchPage);
   fetchRef.current = fetchPage;
@@ -61,6 +129,7 @@ function usePaged(key, fetchPage, enabled) {
             (i) => !seen.has(i.key) && seen.add(i.key),
           );
           return {
+            key: run.key,
             items: page === 1 ? fresh : [...s.items, ...fresh],
             page: result.page,
             totalPages: result.totalPages,
@@ -79,17 +148,17 @@ function usePaged(key, fetchPage, enabled) {
   useEffect(() => {
     current.current.controller?.abort();
     current.current = { key, controller: null };
-    setState({
-      items: [],
-      page: 0,
-      totalPages: 1,
-      total: 0,
-      loading: enabled,
-      error: null,
-    });
-    if (enabled) load(1);
+    const hit = enabled && cachedPages(key);
+    setState((s) => (hit ? (s === hit ? s : hit) : blank(key, enabled)));
+    if (enabled && !hit) load(1);
     return () => current.current.controller?.abort();
   }, [key, enabled, load]);
+
+  useEffect(() => {
+    if (state.key === key && state.page > 0 && !state.loading) {
+      pagedCache.set(key, { state, at: Date.now() });
+    }
+  }, [state, key]);
 
   const loadMore = () => {
     if (!state.loading && !state.error && state.page < state.totalPages) {
@@ -114,31 +183,108 @@ function sortItems(items, sort) {
   return items;
 }
 
+const SPINE_GHOSTS = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
 function SpineStack({ items, busy }) {
+  const navigate = useNavigate();
+  const reduced = useReducedMotion();
+  const [pulling, setPulling] = useState(null);
+  const [peeked, setPeeked] = useState(() => new Set());
   const [cover, ...spines] = items.slice(0, 9).reverse();
-  if (!cover) return <div className="shelf-stack" aria-hidden="true" />;
+
+  const peek = (item) => {
+    prefetchTitle(item);
+    setPeeked((prev) =>
+      prev.has(item.key) ? prev : new Set(prev).add(item.key),
+    );
+  };
+
+  const pull = (event, item) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey)
+      return;
+    event.preventDefault();
+    if (pulling) return;
+    const link = event.currentTarget;
+    peek(item);
+    const go = () => {
+      claimHero(link.querySelector('.pull-cover, .cover-body'));
+      markHero(item.key);
+      navigate(titleHref(item), { state: { item }, viewTransition: true });
+    };
+    if (reduced) return go();
+    setPulling(item.key);
+    setTimeout(go, 600);
+  };
+
+  if (!cover) {
+    return (
+      <div className="shelf-stack" data-ghost="true" aria-hidden="true">
+        {SPINE_GHOSTS.map((id, i) => (
+          <span key={id} className="shelf-spine" style={{ '--i': i }}>
+            <span className="spine-body art-loading" />
+          </span>
+        ))}
+        <span className="shelf-cover" style={{ '--i': 8 }}>
+          <span className="cover-body">
+            <Art item={null} />
+          </span>
+        </span>
+      </div>
+    );
+  }
+
   return (
-    <Link
-      to="/"
+    <nav
       className="shelf-stack"
       data-busy={busy}
-      aria-label="Back to the reel"
-      viewTransition
+      data-pulling={Boolean(pulling)}
+      aria-label="Trending this week"
     >
       {spines.reverse().map((item, i) => (
-        <span key={item.key} className="shelf-spine" style={{ '--i': i }}>
-          {item.poster && <img src={img(item.poster, 'w92')} alt="" />}
-          <span>{item.title}</span>
-        </span>
+        <Link
+          key={item.key}
+          to={titleHref(item)}
+          state={{ item }}
+          className="shelf-spine"
+          style={{ '--i': i }}
+          aria-label={item.title}
+          title={item.title}
+          data-pulling={pulling === item.key}
+          onPointerEnter={() => peek(item)}
+          onFocus={() => peek(item)}
+          onClick={(event) => pull(event, item)}
+        >
+          <span className="spine-body">
+            {item.poster && <Img src={img(item.poster, 'w92')} />}
+          </span>
+          <span className="spine-pull" aria-hidden="true">
+            <span className="pull-cover">
+              {peeked.has(item.key) && <Art item={item} size="w185" eager />}
+            </span>
+          </span>
+        </Link>
       ))}
-      <span className="shelf-cover" style={{ '--i': spines.length }}>
-        {cover.poster && <img src={img(cover.poster, 'w185')} alt="" />}
-      </span>
-    </Link>
+      <Link
+        to={titleHref(cover)}
+        state={{ item: cover }}
+        className="shelf-cover"
+        style={{ '--i': spines.length }}
+        aria-label={cover.title}
+        title={cover.title}
+        data-pulling={pulling === cover.key}
+        onPointerEnter={() => peek(cover)}
+        onFocus={() => peek(cover)}
+        onClick={(event) => pull(event, cover)}
+      >
+        <span className="cover-body">
+          <Art item={cover} size="w185" eager />
+        </span>
+      </Link>
+    </nav>
   );
 }
 
-function Landing({ trendingItems }) {
+function Landing({ trendingItems, loading }) {
   const recent = useRecent();
   const [, setParams] = useSearchParams();
 
@@ -180,34 +326,34 @@ function Landing({ trendingItems }) {
           <h2 className="section-title">Browse</h2>
         </div>
         <div className="browse">
-          <Link to="/search?type=movie" className="chip-sky" viewTransition>
-            <span>Every</span>
-            <strong>Film</strong>
-          </Link>
-          <Link to="/search?type=tv" className="chip-mint" viewTransition>
-            <span>Binge a</span>
-            <strong>Series</strong>
-          </Link>
-          <Link to="/search?type=anime" className="chip-lilac" viewTransition>
-            <span>Tonight's</span>
-            <strong>Anime</strong>
-          </Link>
-          <Link to="/universes" className="chip-butter" viewTransition>
-            <span>Follow a</span>
-            <strong>Universe</strong>
-          </Link>
+          {BROWSE.map(({ to, tone, Icon, title, sub }) => (
+            <Link key={to} to={to} className={tone} viewTransition>
+              <span className="browse-icon">
+                <Icon stroke={1.8} />
+              </span>
+              <span className="browse-text">
+                <strong>{title}</strong>
+                <span>{sub}</span>
+              </span>
+              <IconArrowUpRight className="browse-go" stroke={2} />
+            </Link>
+          ))}
         </div>
       </section>
 
-      {trendingItems.length > 0 && (
+      {(loading || trendingItems.length > 0) && (
         <section className="section">
           <div className="section-head">
             <h2 className="section-title">Trending this week</h2>
           </div>
-          <div className="grid">
-            {trendingItems.map((item, i) => (
-              <TitleCard key={item.key} item={item} index={i} />
-            ))}
+          <div className="grid" aria-busy={loading}>
+            {loading ? (
+              <CardSkeletons count={12} />
+            ) : (
+              trendingItems.map((item, i) => (
+                <TitleCard key={item.key} item={item} index={i} />
+              ))
+            )}
           </div>
         </section>
       )}
@@ -328,10 +474,22 @@ export default function Search() {
   };
 
   const heading = q ? `“${q}”` : HEADINGS[type];
+  usePageMeta({
+    title: q
+      ? `${q} · Search`
+      : type !== 'all'
+        ? `${HEADINGS[type]}${mine ? ' on your services' : ''}`
+        : 'Search',
+    description:
+      type === 'all'
+        ? 'Search every film, series and anime on TMDB and see where each one streams in your region.'
+        : `Browse popular ${HEADINGS[type].toLowerCase()} and see where each one streams in your region.`,
+  });
 
   return (
     <main className="search-page route">
       <Topbar
+        back="/"
         end={
           <button
             type="button"
@@ -353,13 +511,19 @@ export default function Search() {
             <div className="search-head">
               <div>
                 <h1>{heading}</h1>
-                {!results.loading && results.total > 0 && (
-                  <p className="section-sub">
-                    {q
-                      ? `${results.total.toLocaleString()} matches`
-                      : `${results.total.toLocaleString()} titles${mine ? ' on your services' : ''}`}
-                  </p>
-                )}
+                <p className="section-sub">
+                  {results.total > 0 && !busy ? (
+                    q ? (
+                      `${results.total.toLocaleString()} matches`
+                    ) : (
+                      `${results.total.toLocaleString()} titles${mine ? ' on your services' : ''}`
+                    )
+                  ) : busy ? (
+                    <span className="skeleton ghost-line ghost-sm" />
+                  ) : (
+                    '\u00a0'
+                  )}
+                </p>
               </div>
               <Segmented
                 label="Type"
@@ -388,6 +552,7 @@ export default function Search() {
               </div>
             ) : (
               <div className="grid" aria-busy={busy}>
+                {busy && filtered.length === 0 && <CardSkeletons count={18} />}
                 {filtered.map((item, i) => (
                   <TitleCard
                     key={item.key}
@@ -407,7 +572,10 @@ export default function Search() {
             </div>
           </>
         ) : (
-          <Landing trendingItems={trend.data?.slice(0, 12) ?? []} />
+          <Landing
+            trendingItems={trend.data?.slice(0, 12) ?? []}
+            loading={trend.loading && !trend.data}
+          />
         )}
       </div>
 

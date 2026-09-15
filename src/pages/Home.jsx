@@ -1,3 +1,4 @@
+import { IconArrowUpRight } from '@tabler/icons-react';
 import { useCallback, useState } from 'react';
 import { Link, useNavigate } from 'react-router';
 import Case from '../components/Case';
@@ -16,13 +17,15 @@ import TitleCard from '../components/TitleCard';
 import Topbar, { ServicesButton } from '../components/Topbar';
 import { discover, prefetchTitle, trending } from '../lib/catalog';
 import { TYPE_LABEL, titleHref, watchStatus } from '../lib/format';
+import { markHero } from '../lib/hero';
 import { useDebouncedValue } from '../lib/hooks';
+import { usePageMeta } from '../lib/meta';
 import { useRegion, useServices } from '../lib/prefs';
 import { img } from '../lib/tmdb';
 import { UNIVERSES } from '../lib/universes';
 import { useQuery } from '../lib/useQuery';
 
-function Caption({ item }) {
+function Caption({ item, failed, onHover }) {
   const settled = useDebouncedValue(item, 220);
   const rows = useStreaming(settled, Boolean(settled));
   const current = settled?.key === item?.key ? rows : null;
@@ -30,7 +33,20 @@ function Caption({ item }) {
   const status = watchStatus(settled, current);
 
   return (
-    <div className="reel-caption">
+    <div
+      className="reel-caption"
+      data-loading={!item && !failed}
+      onPointerEnter={(event) => {
+        if (event.pointerType === 'mouse') onHover(true);
+      }}
+      onPointerLeave={() => onHover(false)}
+    >
+      {!item && !failed && (
+        <div className="reel-caption-ghost" aria-hidden="true">
+          <span className="skeleton ghost-title" />
+          <span className="skeleton ghost-line ghost-sm" />
+        </div>
+      )}
       <h1 className="reel-title">
         <Swap id={item?.key} value={item}>
           {(v) => v?.title ?? ' '}
@@ -39,7 +55,9 @@ function Caption({ item }) {
       <div className="reel-meta">
         <Swap id={item?.key} value={item}>
           {(v) =>
-            v ? [TYPE_LABEL[v.kind], v.year].filter(Boolean).join(' · ') : ''
+            v
+              ? [TYPE_LABEL[v.kind], v.year].filter(Boolean).join(' · ')
+              : '\u00a0'
           }
         </Swap>
       </div>
@@ -49,37 +67,52 @@ function Caption({ item }) {
         )}
         {status && <WatchBadge status={status} />}
       </div>
-      {item && (
-        <div className="reel-cta">
-          <Link
-            to={titleHref(item)}
-            state={{ item }}
-            viewTransition
-            className="btn btn-solid"
-          >
-            View details
-          </Link>
-          <SaveButton item={item} variant="pill" />
-        </div>
-      )}
+      <div className="reel-cta">
+        {item ? (
+          <>
+            <Link
+              to={titleHref(item)}
+              state={{ item }}
+              viewTransition
+              className="btn btn-solid"
+              onClick={() => markHero(null)}
+            >
+              View details
+            </Link>
+            <SaveButton item={item} variant="pill" />
+          </>
+        ) : (
+          !failed && (
+            <>
+              <span className="skeleton ghost-btn" />
+              <span className="skeleton ghost-btn ghost-btn-sm" />
+            </>
+          )
+        )}
+      </div>
     </div>
   );
 }
 
+const GHOSTS = [-3, -2, -1, 0, 1, 2, 3];
+
 function ReelSkeleton() {
-  const ghost = { key: 'ghost', title: '', poster: null };
   return (
-    <div className="reel" aria-hidden="true">
-      <div
-        className="reel-ring"
-        style={{ display: 'flex', justifyContent: 'center' }}
-      >
-        <div
-          className="reel-item skeleton"
-          style={{ left: 'calc(var(--cw) / -2)', opacity: 0.6 }}
-        >
-          <Case item={ghost} />
-        </div>
+    <div className="reel reel-ghost" aria-hidden="true">
+      <div className="reel-ring">
+        {GHOSTS.map((o) => (
+          <div
+            key={o}
+            className="reel-item"
+            style={{
+              '--o': o,
+              '--d': `${Math.abs(o) * 70}ms`,
+              opacity: Math.abs(o) === 3 ? 0.42 : undefined,
+            }}
+          >
+            <Case item={null} />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -124,9 +157,11 @@ function ItemShelf({ title, sub, to, query, providers = true }) {
 export default function Home() {
   const navigate = useNavigate();
   const services = useServices();
+  usePageMeta({});
   const reel = useQuery('trending', (signal) => trending({ signal }));
   const items = reel.data?.slice(0, 16) ?? [];
   const [active, setActive] = useState(null);
+  const [captionHover, setCaptionHover] = useState(false);
 
   const mineMovies = useDiscover('movie', { mine: true });
   const mineSeries = useDiscover('tv', { mine: true });
@@ -157,6 +192,7 @@ export default function Home() {
             label="Trending this week"
             onOpen={open}
             onActive={onActive}
+            paused={captionHover}
           />
         ) : reel.error ? (
           <div className="state">
@@ -168,7 +204,11 @@ export default function Home() {
         ) : (
           <ReelSkeleton />
         )}
-        <Caption item={active} />
+        <Caption
+          item={active}
+          failed={Boolean(reel.error) && !items.length}
+          onHover={setCaptionHover}
+        />
         <div />
       </section>
 
@@ -176,7 +216,7 @@ export default function Home() {
         {services.length > 0 && (
           <ItemShelf
             title="Films on your services"
-            sub="Popular right now on what you already pay for"
+            sub="Popular on what you already pay for"
             to="/search?type=movie&mine=1"
             query={mineMovies}
           />
@@ -184,18 +224,15 @@ export default function Home() {
         {services.length > 0 && (
           <ItemShelf
             title="Series on your services"
+            sub="Worth a binge, already included"
             to="/search?type=tv&mine=1"
             query={mineSeries}
           />
         )}
 
         <Shelf
-          title={
-            <>
-              Follow a <span className="serif">universe</span>
-            </>
-          }
-          sub="Every film in a franchise, in the order it came out"
+          title="Follow a universe"
+          sub="Whole franchises, in release order"
           to="/universes"
           className="utrack"
         >
@@ -207,20 +244,23 @@ export default function Home() {
               viewTransition
             >
               <Img src={img(u.backdrop, 'w780')} loading="lazy" />
-              <p className="utile-kicker">Universe</p>
               <p className="utile-name">{u.name}</p>
+              <span className="utile-go" aria-hidden="true">
+                <IconArrowUpRight stroke={2} />
+              </span>
             </Link>
           ))}
         </Shelf>
 
         <ItemShelf
           title="Popular anime"
+          sub="What anime fans are watching now"
           to="/search?type=anime"
           query={anime}
         />
         <ItemShelf
           title="Critically loved films"
-          sub="Highest rated on TMDB with at least 300 votes"
+          sub="The best reviewed, all time"
           to="/search?type=movie&sort=rating"
           query={topRated}
         />

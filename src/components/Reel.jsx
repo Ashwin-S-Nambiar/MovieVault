@@ -1,14 +1,24 @@
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { claimHero } from '../lib/hero';
+import { claimHero, markHero } from '../lib/hero';
 import { useReducedMotion } from '../lib/hooks';
 import Case from './Case';
 
 const memory = new Map();
 const mod = (a, n) => ((a % n) + n) % n;
-const TAU = 0.12;
+const SNAP = 15;
+const GLIDE = 6.5;
+const RESUME = 2400;
 
-export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
+export default function Reel({
+  items,
+  memoryKey,
+  label,
+  onOpen,
+  onActive,
+  autoplay = 5200,
+  paused = false,
+}) {
   const n = items.length;
   const saved = memory.get(memoryKey) ?? 0;
   const rootRef = useRef(null);
@@ -16,7 +26,13 @@ export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
   const itemRefs = useRef([]);
   const frontRefs = useRef([]);
   const pos = useRef(saved);
+  const vel = useRef(0);
   const target = useRef(saved);
+  const stiffness = useRef(SNAP);
+  const idleUntil = useRef(0);
+  const hovering = useRef(false);
+  const pausedRef = useRef(paused);
+  pausedRef.current = paused;
   const frame = useRef(0);
   const lastTime = useRef(0);
   const drag = useRef(null);
@@ -62,10 +78,20 @@ export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
     const dt = Math.min(0.05, (now - lastTime.current) / 1000);
     lastTime.current = now;
     if (!drag.current?.moved) {
-      const k = reducedRef.current ? 1 : 1 - Math.exp(-dt / TAU);
-      pos.current += (target.current - pos.current) * k;
-      if (Math.abs(target.current - pos.current) < 0.0006) {
+      const x0 = pos.current - target.current;
+      const v0 = vel.current;
+      const w = stiffness.current;
+      const decay = Math.exp(-w * dt);
+      const c = v0 + w * x0;
+      if (
+        reducedRef.current ||
+        (Math.abs(x0) < 0.0006 && Math.abs(v0) < 0.01)
+      ) {
         pos.current = target.current;
+        vel.current = 0;
+      } else {
+        pos.current = target.current + (x0 + c * dt) * decay;
+        vel.current = (v0 - w * c * dt) * decay;
       }
     }
     render();
@@ -75,6 +101,11 @@ export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
       frame.current = 0;
       memory.set(memoryKey, pos.current);
     }
+  };
+
+  const interact = (hold = autoplay) => {
+    stiffness.current = SNAP;
+    idleUntil.current = performance.now() + hold;
   };
 
   const kick = () => {
@@ -92,6 +123,7 @@ export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
   };
 
   const step = (dir) => {
+    interact();
     target.current = Math.round(target.current) + dir;
     kick();
   };
@@ -132,6 +164,7 @@ export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
     const onWheel = (event) => {
       if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
       event.preventDefault();
+      interact();
       target.current += event.deltaX / geo.current.spacing;
       clearTimeout(snap);
       snap = setTimeout(() => {
@@ -147,6 +180,68 @@ export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
     };
   }, []);
 
+  const kickRef = useRef(kick);
+  kickRef.current = kick;
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root || !autoplay || reduced || n < 2) return;
+    let timer = 0;
+    let visible = true;
+    idleUntil.current = performance.now() + autoplay;
+
+    const held = () =>
+      hovering.current ||
+      pausedRef.current ||
+      drag.current ||
+      !visible ||
+      document.hidden ||
+      root.querySelector(':focus-visible');
+
+    const schedule = (delay) => {
+      clearTimeout(timer);
+      timer = setTimeout(advance, Math.max(120, delay));
+    };
+
+    function advance() {
+      const wait = idleUntil.current - performance.now();
+      if (wait > 0) return schedule(wait);
+      if (held()) return schedule(600);
+      stiffness.current = GLIDE;
+      target.current = Math.round(target.current) + 1;
+      kickRef.current();
+      idleUntil.current = performance.now() + autoplay;
+      schedule(autoplay);
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        visible = entry.isIntersecting;
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(root);
+    const onVisibility = () => {
+      if (!document.hidden) idleUntil.current = performance.now() + autoplay;
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    schedule(autoplay);
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [autoplay, reduced, n]);
+
+  const wasPaused = useRef(paused);
+  useEffect(() => {
+    if (wasPaused.current && !paused) {
+      stiffness.current = SNAP;
+      idleUntil.current = performance.now() + RESUME;
+    }
+    wasPaused.current = paused;
+  }, [paused]);
+
   useLayoutEffect(() => {
     claimHero(frontRefs.current[active]);
     if (rootRef.current?.contains(document.activeElement)) {
@@ -157,6 +252,7 @@ export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
 
   const onPointerDown = (event) => {
     if (event.button !== 0) return;
+    interact();
     dragged.current = false;
     drag.current = {
       x: event.clientX,
@@ -185,6 +281,7 @@ export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
     }
     pos.current = d.from - dx / geo.current.spacing;
     target.current = pos.current;
+    vel.current = 0;
     d.samples.push({ x: event.clientX, t: event.timeStamp });
     while (d.samples.length > 2 && event.timeStamp - d.samples[0].t > 90) {
       d.samples.shift();
@@ -202,6 +299,11 @@ export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
     const elapsed = last.t - first.t;
     const velocity = elapsed > 0 ? (last.x - first.x) / elapsed : 0;
     const fling = (-velocity * 1000 * 0.2) / geo.current.spacing;
+    vel.current = Math.max(
+      -12,
+      Math.min(12, (-velocity * 1000) / geo.current.spacing),
+    );
+    interact();
     const base = Math.round(d.from);
     target.current = Math.min(
       base + 5,
@@ -225,8 +327,13 @@ export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
       dragged.current = false;
       return;
     }
+    interact();
     if (index === activeRef.current && pos.current === target.current) {
-      onOpen(items[index]);
+      markHero(null);
+      const el = itemRefs.current[index];
+      if (reducedRef.current || !el) return onOpen(items[index]);
+      el.dataset.opening = 'true';
+      setTimeout(() => onOpen(items[index]), 300);
     } else {
       goTo(index);
     }
@@ -238,6 +345,14 @@ export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
       className="reel"
       aria-roledescription="carousel"
       aria-label={label}
+      onPointerEnter={(event) => {
+        if (event.pointerType === 'mouse') hovering.current = true;
+      }}
+      onPointerLeave={() => {
+        if (!hovering.current) return;
+        hovering.current = false;
+        interact(RESUME);
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
@@ -262,7 +377,9 @@ export default function Reel({ items, memoryKey, label, onOpen, onActive }) {
             <Case
               item={item}
               inside={i === active}
-              eager={Math.abs(i - active) <= 2}
+              eager={
+                Math.min(Math.abs(i - active), n - Math.abs(i - active)) <= 3
+              }
               frontRef={(el) => {
                 frontRefs.current[i] = el;
               }}

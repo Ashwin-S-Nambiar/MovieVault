@@ -3,12 +3,30 @@ import { claimHero } from '../lib/hero';
 import { img } from '../lib/tmdb';
 import { Art } from './Case';
 
-export default function OpenCase({ item, open, overview, hero = true, style }) {
+export default function OpenCase({
+  item,
+  open,
+  overview,
+  hero = true,
+  loading = false,
+  style,
+}) {
   const trayRef = useRef(null);
+  const frontRef = useRef(null);
 
   useLayoutEffect(() => {
-    if (hero) claimHero(trayRef.current);
-  }, [hero]);
+    if (!hero) return;
+    const tray = trayRef.current;
+    if (open) {
+      claimHero(tray);
+      return;
+    }
+    claimHero(frontRef.current);
+    tray.style.viewTransitionName = 'hero-tray';
+    return () => {
+      tray.style.viewTransitionName = '';
+    };
+  }, [hero, open]);
 
   const poster = img(item?.poster, 'w500');
 
@@ -22,8 +40,8 @@ export default function OpenCase({ item, open, overview, hero = true, style }) {
         )}
       </div>
       <div className="ocase-cover">
-        <div className="ocase-front">
-          {item && <Art item={item} size="w500" eager />}
+        <div ref={frontRef} className="ocase-front">
+          {(item || loading) && <Art item={item} size="w500" eager />}
         </div>
         <div className="ocase-inner">
           {poster && <img src={poster} alt="" draggable={false} />}

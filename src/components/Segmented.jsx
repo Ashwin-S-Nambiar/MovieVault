@@ -35,9 +35,12 @@ export default function Segmented({ options, value, onChange, label }) {
           key={option.value}
           type="button"
           aria-pressed={option.value === value}
+          aria-label={option.icon ? option.label : undefined}
+          title={option.icon ? option.label : undefined}
+          data-icon={Boolean(option.icon)}
           onClick={() => onChange(option.value)}
         >
-          {option.label}
+          {option.icon ?? option.label}
         </button>
       ))}
     </fieldset>

@@ -1,12 +1,16 @@
 import {
-  IconArrowLeft,
   IconChevronRight,
   IconPlayerPlayFilled,
   IconShare2,
   IconStarFilled,
 } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
-import { Link, useLocation, useNavigate, useParams } from 'react-router';
+import {
+  Link,
+  useLocation,
+  useParams,
+  useViewTransitionState,
+} from 'react-router';
 import { Poster } from '../components/Case';
 import Footer from '../components/Footer';
 import Img from '../components/Img';
@@ -16,6 +20,7 @@ import SaveButton from '../components/SaveButton';
 import Sheet from '../components/Sheet';
 import Shelf from '../components/Shelf';
 import TitleCard from '../components/TitleCard';
+import Topbar, { BackButton } from '../components/Topbar';
 import {
   certification,
   getCollection,
@@ -35,6 +40,7 @@ import {
   watchStatus,
 } from '../lib/format';
 import { useMediaQuery, useReducedMotion } from '../lib/hooks';
+import { backdropImage, usePageMeta } from '../lib/meta';
 import { useRegion, useServices } from '../lib/prefs';
 import { img } from '../lib/tmdb';
 import { openSheet, toast } from '../lib/ui';
@@ -422,7 +428,6 @@ function Facts({ raw, type }) {
 
 function TitleView({ type, id }) {
   const location = useLocation();
-  const navigate = useNavigate();
   const region = useRegion();
   const desktop = useMediaQuery('(min-width: 960px)');
   const reduced = useReducedMotion();
@@ -431,6 +436,8 @@ function TitleView({ type, id }) {
   const contentRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [trailerOpen, setTrailerOpen] = useState(false);
+  const transitioning = useViewTransitionState(location.pathname);
+  const arrived = useRef(transitioning);
 
   const query = useQuery(`${type}-${id}`, (signal) =>
     getTitle(type, id, { signal }),
@@ -441,21 +448,29 @@ function TitleView({ type, id }) {
   useStageScroll(stageRef, hintRef, !desktop && !reduced);
 
   useEffect(() => {
-    const timer = setTimeout(() => setOpen(true), reduced ? 0 : 420);
+    if (transitioning) return;
+    const delay = reduced ? 0 : arrived.current ? 90 : 420;
+    const timer = setTimeout(() => setOpen(true), delay);
     return () => clearTimeout(timer);
-  }, [reduced]);
+  }, [reduced, transitioning]);
 
-  useEffect(() => {
-    if (item?.title) document.title = `${item.title} · MovieVault`;
-    return () => {
-      document.title = 'MovieVault';
-    };
-  }, [item?.title]);
+  usePageMeta({
+    title: item?.title
+      ? `${item.title}${item.year ? ` (${item.year})` : ''}`
+      : TYPE_LABEL[type],
+    description:
+      raw?.overview || item?.overview
+        ? `${raw?.overview || item.overview}`
+        : undefined,
+    image: backdropImage(raw?.backdrop_path ?? item?.backdrop),
+    type: type === 'movie' ? 'video.movie' : 'video.tv_show',
+  });
 
   if (query.error && !raw) {
     const notFound = query.error.status === 404;
     return (
       <main className="nf route">
+        <Topbar back="/" />
         <p className="nf-code">{notFound ? '404' : ':('}</p>
         <p>
           {notFound
@@ -479,11 +494,6 @@ function TitleView({ type, id }) {
       </main>
     );
   }
-
-  const goBack = () => {
-    if (location.key !== 'default') navigate(-1, { viewTransition: true });
-    else navigate('/', { viewTransition: true });
-  };
 
   const cert = raw ? certification(raw, type, region) : null;
   const trailer = raw ? pickTrailer(raw) : null;
@@ -536,14 +546,9 @@ function TitleView({ type, id }) {
 
   return (
     <main className="detail route">
-      <button
-        type="button"
-        className="icon-btn detail-back"
-        aria-label="Back"
-        onClick={goBack}
-      >
-        <IconArrowLeft stroke={1.8} />
-      </button>
+      <div className="detail-back">
+        <BackButton fallback="/" />
+      </div>
 
       <div className="detail-grid">
         <div>
@@ -553,6 +558,7 @@ function TitleView({ type, id }) {
                 item={item}
                 open={open && Boolean(item)}
                 overview={raw?.overview}
+                loading={!item}
               />
               <button
                 ref={hintRef}
@@ -576,14 +582,29 @@ function TitleView({ type, id }) {
           <div className="detail-content">
             <div className="detail-head">
               <div>
-                <h1 className="detail-title">{item?.title ?? ' '}</h1>
+                <h1 className="detail-title">
+                  {item ? (
+                    item.title
+                  ) : (
+                    <span className="skeleton ghost-heading" />
+                  )}
+                </h1>
                 <div className="detail-meta">
-                  {meta.map(([key, value]) => (
-                    <span key={key}>{value}</span>
-                  ))}
+                  {item ? (
+                    meta.map(([key, value]) => <span key={key}>{value}</span>)
+                  ) : (
+                    <span
+                      className="skeleton ghost-line"
+                      style={{ width: 180 }}
+                    />
+                  )}
                 </div>
               </div>
-              <SaveButton item={item} />
+              {item ? (
+                <SaveButton item={item} />
+              ) : (
+                <span className="skeleton ghost-save" />
+              )}
             </div>
 
             {raw?.tagline && <p className="detail-tagline">{raw.tagline}</p>}
@@ -593,14 +614,50 @@ function TitleView({ type, id }) {
                 {raw.overview || 'No overview on TMDB yet.'}
               </p>
             ) : (
-              <div style={{ marginTop: 18, display: 'grid', gap: 8 }}>
-                {[92, 100, 70].map((w) => (
-                  <div
-                    key={w}
-                    className="skeleton"
-                    style={{ height: 14, width: `${w}%`, borderRadius: 6 }}
+              <div className="detail-ghost" aria-hidden="true">
+                <div className="ghost-para">
+                  {[96, 100, 88, 62].map((w) => (
+                    <span
+                      key={w}
+                      className="skeleton ghost-line"
+                      style={{ width: `${w}%` }}
+                    />
+                  ))}
+                </div>
+                <div className="detail-chips">
+                  {[64, 82, 56].map((w) => (
+                    <span
+                      key={w}
+                      className="skeleton ghost-chip"
+                      style={{ width: w }}
+                    />
+                  ))}
+                </div>
+                <div className="detail-actions">
+                  <span className="skeleton ghost-btn" />
+                  <span className="skeleton ghost-btn ghost-btn-sm" />
+                </div>
+                <section className="block">
+                  <span
+                    className="skeleton ghost-line"
+                    style={{ width: 150, height: 15 }}
                   />
-                ))}
+                  <ul className="providers ghost-providers">
+                    {[0, 1, 2].map((i) => (
+                      <li key={i} className="provider">
+                        <span className="skeleton ghost-logo" />
+                        <span
+                          className="skeleton ghost-line"
+                          style={{ width: `${48 - i * 8}%` }}
+                        />
+                        <span
+                          className="skeleton ghost-line ghost-sm"
+                          style={{ width: 44 }}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </section>
               </div>
             )}
 
@@ -672,14 +729,20 @@ function TitleView({ type, id }) {
         </div>
       </div>
 
-      {recommendations.length > 0 && (
-        <div className="page">
-          <Shelf title="More like this">
-            {recommendations.map((r, i) => (
-              <TitleCard key={r.key} item={r} index={i} />
-            ))}
-          </Shelf>
+      {!raw ? (
+        <div className="page" aria-hidden="true">
+          <Shelf title="More like this" loading />
         </div>
+      ) : (
+        recommendations.length > 0 && (
+          <div className="page">
+            <Shelf title="More like this">
+              {recommendations.map((r, i) => (
+                <TitleCard key={r.key} item={r} index={i} />
+              ))}
+            </Shelf>
+          </div>
+        )
       )}
 
       <Footer />
@@ -714,6 +777,7 @@ export default function Title({ type }) {
   if (!numeric) {
     return (
       <main className="nf route">
+        <Topbar back="/" />
         <p className="nf-code">404</p>
         <p>That link doesn't point to a title.</p>
         <Link to="/" className="btn" viewTransition>

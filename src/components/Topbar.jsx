@@ -1,40 +1,50 @@
 import {
+  IconArrowLeft,
   IconBookmark,
   IconChevronDown,
   IconDeviceTv,
 } from '@tabler/icons-react';
-import { Link, NavLink } from 'react-router';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router';
 import { useServiceCatalog } from '../lib/services';
 import { openSheet } from '../lib/ui';
 import { useVault } from '../lib/watchlist';
 import { ProviderStack } from './Providers';
 
-export function Wordmark() {
+export function BrandMark({ className = 'wordmark-mark' }) {
   return (
-    <Link
-      to="/"
-      className="wordmark"
-      viewTransition
-      aria-label="MovieVault home"
-    >
-      <svg className="wordmark-mark" viewBox="0 0 64 64" aria-hidden="true">
-        <rect width="64" height="64" rx="15" fill="var(--ink)" />
-        <circle cx="32" cy="32" r="19" fill="var(--accent)" />
-        <circle
-          cx="32"
-          cy="32"
-          r="12.5"
-          fill="none"
-          stroke="#fff"
-          strokeOpacity=".28"
-          strokeWidth="1.5"
-        />
-        <circle cx="32" cy="32" r="5" fill="var(--ink)" />
-      </svg>
-      <span className="wordmark-text">
-        Movie<span className="serif">Vault</span>
+    <svg className={className} viewBox="0 0 64 64" aria-hidden="true">
+      <rect width="64" height="64" rx="15" fill="var(--ink)" />
+      <circle cx="32" cy="32" r="19" fill="var(--accent)" />
+      <circle
+        cx="32"
+        cy="32"
+        r="12.5"
+        fill="none"
+        stroke="#fff"
+        strokeOpacity=".28"
+        strokeWidth="1.5"
+      />
+      <circle cx="32" cy="32" r="5" fill="var(--ink)" />
+    </svg>
+  );
+}
+
+export function Wordmark({ back }) {
+  return (
+    <div className="topbar-start">
+      <span className="brand-slot">
+        {back ? (
+          <BackButton fallback={back} />
+        ) : (
+          <Link to="/" viewTransition aria-label="MovieVault home">
+            <BrandMark />
+          </Link>
+        )}
       </span>
-    </Link>
+      <Link to="/" className="wordmark" viewTransition>
+        MovieVault
+      </Link>
+    </div>
   );
 }
 
@@ -65,12 +75,31 @@ export function ServicesButton() {
   );
 }
 
-export default function Topbar({ center, end }) {
+export function BackButton({ fallback = '/', className = '' }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return (
+    <button
+      type="button"
+      className={`icon-btn ${className}`}
+      aria-label="Back"
+      onClick={() =>
+        location.key !== 'default'
+          ? navigate(-1, { viewTransition: true })
+          : navigate(fallback, { viewTransition: true })
+      }
+    >
+      <IconArrowLeft stroke={1.8} />
+    </button>
+  );
+}
+
+export default function Topbar({ center, end, back }) {
   const count = useVault().length;
   return (
     <header className="topbar">
       <div className="page topbar-row">
-        <Wordmark />
+        <Wordmark back={back} />
         <div>{center}</div>
         <div className="topbar-end">
           <nav className="nav-links" aria-label="Primary">

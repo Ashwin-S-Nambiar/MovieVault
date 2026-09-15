@@ -5,6 +5,7 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
+import { CardSkeletons } from './TitleCard';
 
 export function SectionHead({
   title,
@@ -40,6 +41,7 @@ export default function Shelf({
   className = '',
   skeleton = 8,
   children,
+  ...props
 }) {
   const track = useRef(null);
   const [edges, setEdges] = useState({ start: true, end: false });
@@ -69,7 +71,7 @@ export default function Shelf({
     });
 
   return (
-    <section className="section shelf">
+    <section className="section shelf" {...props}>
       <SectionHead title={title} sub={sub} to={to}>
         <div className="shelf-nav" style={{ marginLeft: 'auto' }}>
           <button
@@ -101,11 +103,7 @@ export default function Shelf({
         </div>
       ) : (
         <div ref={track} className={`shelf-track ${className}`}>
-          {loading
-            ? Array.from({ length: skeleton }, (_, i) => `skeleton-${i}`).map(
-                (id) => <div key={id} className="shelf-skeleton skeleton" />,
-              )
-            : children}
+          {loading ? <CardSkeletons count={skeleton} /> : children}
         </div>
       )}
     </section>

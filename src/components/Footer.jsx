@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useInView } from '../lib/hooks';
+import { BrandMark } from './Topbar';
 
 const COLUMNS = [
   {
@@ -93,7 +94,8 @@ export default function Footer() {
         <div className="page footer-grid">
           <div>
             <Link to="/" className="footer-brand" viewTransition>
-              Movie<span className="serif">Vault</span>
+              <BrandMark className="footer-brand-mark" />
+              MovieVault
             </Link>
             <p className="footer-blurb">
               Where to stream any film, series or anime, whole universes in the

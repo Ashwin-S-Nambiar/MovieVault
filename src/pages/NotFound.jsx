@@ -1,9 +1,13 @@
 import { Link } from 'react-router';
 import OpenCase from '../components/OpenCase';
+import Topbar from '../components/Topbar';
+import { usePageMeta } from '../lib/meta';
 
 export default function NotFound() {
+  usePageMeta({ title: 'Page not found' });
   return (
     <main className="nf route">
+      <Topbar back="/" />
       <OpenCase open hero={false} style={{ '--pw': '72px' }} />
       <h1 className="nf-code">404</h1>
       <p>

@@ -1,4 +1,9 @@
-import { IconCheck } from '@tabler/icons-react';
+import {
+  IconCheck,
+  IconDeviceDesktop,
+  IconMoon,
+  IconSun,
+} from '@tabler/icons-react';
 import { useState } from 'react';
 import { getRegions } from '../lib/catalog';
 import { useHealth } from '../lib/health';
@@ -166,9 +171,17 @@ export default function ServicesSheet() {
             value={theme}
             onChange={(value) => themeStore.set(value)}
             options={[
-              { value: 'system', label: 'Auto' },
-              { value: 'light', label: 'Light' },
-              { value: 'dark', label: 'Dark' },
+              {
+                value: 'system',
+                label: 'Match device',
+                icon: <IconDeviceDesktop stroke={1.8} />,
+              },
+              {
+                value: 'light',
+                label: 'Light',
+                icon: <IconSun stroke={1.8} />,
+              },
+              { value: 'dark', label: 'Dark', icon: <IconMoon stroke={1.8} /> },
             ]}
           />
         </div>

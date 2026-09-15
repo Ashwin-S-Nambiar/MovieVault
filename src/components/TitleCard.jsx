@@ -1,11 +1,36 @@
 import { IconX } from '@tabler/icons-react';
-import { useCallback, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { prefetchTitle } from '../lib/catalog';
 import { TYPE_LABEL, titleHref } from '../lib/format';
-import { claimHero } from '../lib/hero';
+import { claimHero, isHero, markHero, takeHero } from '../lib/hero';
 import { Disc, Poster } from './Case';
 import { LazyProviders } from './Providers';
+
+export function CardSkeleton() {
+  return (
+    <div className="tcard tcard-ghost" aria-hidden="true">
+      <div className="tcard-link">
+        <span className="sleeve">
+          <Poster item={null} />
+        </span>
+        <div>
+          <span className="skeleton ghost-line" style={{ width: '82%' }} />
+          <span className="skeleton ghost-line ghost-sm" />
+        </div>
+      </div>
+      <div className="tcard-providers">
+        <span className="skeleton ghost-pill" />
+      </div>
+    </div>
+  );
+}
+
+const GHOST_IDS = Array.from({ length: 24 }, (_, i) => `ghost-${i}`);
+
+export function CardSkeletons({ count = 12 }) {
+  return GHOST_IDS.slice(0, count).map((id) => <CardSkeleton key={id} />);
+}
 
 export default function TitleCard({
   item,
@@ -15,6 +40,8 @@ export default function TitleCard({
   onRemove,
   onOpen,
 }) {
+  const posterRef = useRef(null);
+  const [returning] = useState(() => isHero(item.key));
   const [hidden, setHidden] = useState(false);
   const [peeked, setPeeked] = useState(false);
 
@@ -23,10 +50,17 @@ export default function TitleCard({
     [onlyMine],
   );
 
+  useLayoutEffect(() => {
+    if (returning) takeHero(posterRef.current, item.key);
+  }, [returning, item.key]);
+
   if (hidden) return null;
 
   return (
-    <div className="tcard rise" style={{ '--i': index }}>
+    <div
+      className={`tcard ${returning ? '' : 'rise'}`}
+      style={{ '--i': index }}
+    >
       <Link
         to={titleHref(item)}
         state={{ item }}
@@ -36,8 +70,9 @@ export default function TitleCard({
           if (event.pointerType === 'mouse') setPeeked(true);
           prefetchTitle(item);
         }}
-        onClick={(event) => {
-          claimHero(event.currentTarget.querySelector('.poster'));
+        onClick={() => {
+          claimHero(posterRef.current);
+          markHero(item.key);
           onOpen?.(item);
         }}
       >
@@ -45,7 +80,7 @@ export default function TitleCard({
           {item.poster && (
             <Disc item={item} className="sleeve-disc" load={peeked} />
           )}
-          <Poster item={item} />
+          <Poster ref={posterRef} item={item} />
         </span>
         <div>
           <h3 className="tcard-title">{item.title}</h3>
