@@ -1,10 +1,37 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { createBrowserRouter, Navigate } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 import './index.css';
-import App from './App.jsx';
+import AppShell from './components/AppShell';
+import Home from './pages/Home';
+import NotFound from './pages/NotFound';
+import Search from './pages/Search';
+import Title from './pages/Title';
+import Universe from './pages/Universe';
+import Universes from './pages/Universes';
+import Vault from './pages/Vault';
+
+const router = createBrowserRouter([
+  {
+    element: <AppShell />,
+    errorElement: <NotFound />,
+    children: [
+      { index: true, element: <Home /> },
+      { path: 'search', element: <Search /> },
+      { path: 'movie/:id', element: <Title type="movie" /> },
+      { path: 'tv/:id', element: <Title type="tv" /> },
+      { path: 'vault', element: <Vault /> },
+      { path: 'watchlist', element: <Navigate to="/vault" replace /> },
+      { path: 'universes', element: <Universes /> },
+      { path: 'universe/:slug', element: <Universe /> },
+      { path: '*', element: <NotFound /> },
+    ],
+  },
+]);
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <RouterProvider router={router} />
   </StrictMode>,
 );

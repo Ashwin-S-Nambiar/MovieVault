@@ -2,64 +2,56 @@
 
 <div align="center">
 
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Motion](https://img.shields.io/badge/Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![React Router](https://img.shields.io/badge/React_Router_8-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS_4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite_8-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![TMDB](https://img.shields.io/badge/TMDB-01B4E4?style=for-the-badge&logo=themoviedatabase&logoColor=white)
 
-A modern, minimal movie discovery app with a beautiful dark interface. Search thousands of movies, view detailed information, and build your perfect watchlist.
+Find where any film, series or anime is streaming, follow whole universes in release order, and keep a vault of what to watch next.
 
-[Features](#-features) • [Design](#-design) • [Tech Stack](#-tech-stack) • [Installation](#-installation) • [Contributing](#-contributing) • [Screenshots](#-screenshots)
+[Features](#features) • [Design](#design) • [Tech stack](#tech-stack) • [Installation](#installation) • [Screenshots](#screenshots)
 
 </div>
 
-## ✨ Features
+## Features
 
-- **Smart Search** - Quickly discover movies with real-time search and suggestions
-- **Rich Details** - View comprehensive movie information including plot, cast, ratings, and more
-- **Personal Watchlist** - Save movies you want to watch with easy add/remove functionality
-- **Modern Design** - Clean, minimal interface with dark theme and smooth animations
-- **Fully Responsive** - Seamless experience across mobile, tablet, and desktop
-- **Beautiful UI** - High-quality movie posters with elegant card layouts
-- **Fast & Smooth** - Powered by Vite with optimized performance
-- **Accessible** - WCAG compliant with keyboard navigation support
+- **The reel.** Trending films and series sit on a 3D ring of DVD cases. Drag, flick, scroll sideways or use the arrow keys; tap the centre case and it flies into the detail page and opens to reveal the disc.
+- **Where to watch.** Every title lists the services it streams, rents or sells on in your region, with the services you pay for first. Availability comes from JustWatch through TMDB.
+- **Your services.** Pick your streaming services and region once. Home shows what's popular on them, and search can filter to only what you can watch tonight.
+- **Films, series and anime.** One search across all three with type filters, sorting, infinite scroll and recent searches. Anime is recognised through TMDB's anime keyword, so it gets its own shelf and filter.
+- **Universes.** Franchises like the MCU, Star Wars, Middle-earth and Dune laid out as a timeline: every film in release order, what's upcoming, the span, the average rating and one tap to save them all. Any film that belongs to a collection links to its universe.
+- **Series detail.** Seasons with episode lists, the next episode's air date, networks and creators.
+- **Rich detail pages.** Local age ratings, runtime, tagline, genres, cast, crew, budget and box office, the official trailer and recommendations.
+- **The vault.** Save anything with a bookmark, filter it by type, sort it, and undo any removal.
+- **Honest API status.** The app watches the requests it really makes. Failed requests retry with backoff, and a small pill only appears when TMDB is unreachable, you're offline or the key is wrong, with a retry button.
+- **Light and dark.** Follows the system, or pick one in the services sheet.
 
 ## Design
 
-MovieVault features a completely redesigned modern interface built with these principles:
+- **Motion with a purpose.** The reel is positioned every frame with plain maths and eases toward its target with a frame-rate independent exponential curve. Pages move with the View Transitions API, so the case you tap is the case that opens.
+- **Restraint.** Warm off-white ground, near-black ink, one red for saving, and pastel chips for browsing.
+- **Typography.** Geist for the interface, Instrument Serif in italic for accents, Geist Mono for numbers.
+- **Built for phones first.** A bottom search dock that rides above the keyboard, drag-to-dismiss sheets, 44px touch targets and safe-area padding, scaling up to a two-column detail page and a wider ring on desktop.
+- **Accessible.** Keyboard navigation throughout, focus management in dialogs, and `prefers-reduced-motion` respected everywhere.
 
-- **Minimal & Focused** - Clean layout that prioritizes content discovery
-- **Dark Navy Theme** - Comfortable viewing experience with `#1A1F2B` background
-- **Typography System** - Inter for UI, Poppins for headings with proper hierarchy
-- **Coral Accent** - Warm `#FF6B6B` accent color for interactive elements
-- **Generous Whitespace** - Reduces cognitive load and feels premium
-- **Subtle Animations** - Motion for smooth, non-intrusive transitions
-- **Card-Based Layouts** - Modern grid system that scales beautifully
+## Tech stack
 
-## Tech Stack
+- **[React 19](https://react.dev/)** with a data router from **[React Router 8](https://reactrouter.com/)** for view transitions and scroll restoration
+- **[Tailwind CSS 4](https://tailwindcss.com/)** for the reset, with a hand-written token-based stylesheet
+- **[Vite 8](https://vite.dev/)** for development and builds
+- **[Tabler Icons](https://tabler.io/icons)**
+- **[TMDB API](https://developer.themoviedb.org/docs/getting-started)** for titles, providers, collections, credits, seasons and videos
+- **[Biome](https://biomejs.dev/)** for linting and formatting
 
-### Frontend
-- **[React 19](https://reactjs.org/)** - Latest React with enhanced performance
-- **[React Router v8](https://reactrouter.com/)** - Client-side routing with nested routes
-- **[Tailwind CSS v4](https://tailwindcss.com/)** - Utility-first CSS with custom design tokens
-- **[Motion](https://motion.dev/)** - Smooth animations and micro-interactions
-- **[Vite](https://vitejs.dev/)** - Lightning-fast build tool and dev server
-- **[Tabler Icons](https://tabler.io/icons)** - Beautiful, consistent icons
-
-### API & Data
-- **[TMDB API](https://www.themoviedb.org/documentation/api)** - Comprehensive movie database
-- **LocalStorage** - Persistent watchlist storage
-
-### Development Tools
-- **[Biome](https://biomejs.dev/)** - Linting and formatting
-- **use-debounce** - Optimized search performance
+No animation or data-fetching libraries: the carousel, sheets, toasts, request cache and stores are small modules in `src/lib` and `src/components`.
 
 ## Installation
 
 ### Prerequisites
-- Node.js 22.22+ and npm/yarn
-- TMDB API Key (free)
+
+- Node.js 22.22+ and npm
+- A free TMDB API key
 
 ### Setup
 
@@ -76,23 +68,19 @@ MovieVault features a completely redesigned modern interface built with these pr
    npm install
    ```
 
-3. **Configure API Key**
-   
-   - Sign up at [TMDB](https://www.themoviedb.org/signup)
-   - Get your API key from [API Settings](https://www.themoviedb.org/settings/api)
-   - Create `.env` file in the root:
+3. **Add your API key**
 
-     ```env
-     VITE_TMDB_API_KEY=your_api_key_here
-     ```
+   Get a key from [TMDB API settings](https://www.themoviedb.org/settings/api) and create a `.env` file in the root:
 
-4. **Start development server**
+   ```env
+   VITE_TMDB_API_KEY=your_api_key_here
+   ```
+
+4. **Start the dev server**
 
    ```bash
    npm run dev
    ```
-   
-   Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 5. **Lint and format**
 
@@ -101,68 +89,70 @@ MovieVault features a completely redesigned modern interface built with these pr
    npm run check:fix  # Apply safe fixes and formatting
    ```
 
-   A pre-commit hook (installed automatically by `npm install`) runs Biome on staged files, and GitHub Actions runs `biome ci` and the build on every push and pull request.
+   A pre-commit hook runs Biome on staged files, and GitHub Actions runs `biome ci` and the build on every push and pull request.
 
 6. **Build for production**
 
    ```bash
    npm run build
-   npm run preview  # Preview production build
+   npm run preview
    ```
+
+### Project layout
+
+```
+src/
+  components/  reel, cases, sheets, toasts, status pill, shelves, cards
+  lib/         TMDB client and catalogue, stores, hooks, universes
+  pages/       home, search, title, vault, universes, universe, not found
+  index.css    design tokens, themes and every component style
+```
 
 ## Contributing
 
-Contributions are welcome! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Commit your changes**
-   ```bash
-   git commit -m 'Add amazing feature'
-   ```   
-4. **Push to the branch**
-   ```bash   
-   git push origin feature/amazing-feature
-   ```
-5. **Open a Pull Request**
-
-Please ensure your code follows the existing style and includes appropriate comments.
+1. Fork the repository
+2. Create a branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push the branch: `git push origin feature/amazing-feature`
+5. Open a pull request
 
 ## Screenshots
 
-<div align="center"> 
-   
-   ### Landing Page / HomePage
-   ![Landing Page](./docs/screenshots/MovieVault.webp)
+<div align="center">
 
-   ### Search Results
-   ![Search Results](./docs/screenshots/MovieVault-1.webp)
+### Home
+![The reel of trending titles on a ring of DVD cases](./docs/screenshots/MovieVault.webp)
 
-   ### Movie Details Page
-   ![Movie Details Page](./docs/screenshots/MovieVault-2.webp)
+### Search
+![Search results for Batman across films and series](./docs/screenshots/MovieVault-1.webp)
 
-   ### Watchlist Page
-   ![Watchlist Page](./docs/screenshots/MovieVault-3.webp)
+### Title
+![Jurassic Park with its case open, streaming services and universe](./docs/screenshots/MovieVault-2.webp)
 
-   ### 404 Page
-   ![Page Not Found](./docs/screenshots/MovieVault-4.webp)
+### Universe
+![The Star Wars universe as a release-order timeline](./docs/screenshots/MovieVault-3.webp)
+
+### On a phone
+![Home, an anime detail page and search on a phone](./docs/screenshots/MovieVault-4.webp)
 
 </div>
 
-## Live Demo
+## Live demo
 
 <div align="center">
-   
-   [![Visit Site](https://img.shields.io/badge/Visit_Site-000?style=for-the-badge&logo=vercel&logoColor=white)](https://movievault.ashwin.co.in)
+
+[![Visit Site](https://img.shields.io/badge/Visit_Site-000?style=for-the-badge&logo=vercel&logoColor=white)](https://movievault.ashwin.co.in)
+
 </div>
+
+## Attribution
+
+This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability is provided by JustWatch.
 
 ---
 
 <div align="center">
 
-Made with ❤️ and ☕ by Ashwin S Nambiar
+Made by Ashwin S Nambiar
 
 </div>
