@@ -29,12 +29,12 @@ function useUniverse(slug) {
   const curated = findUniverse(slug);
   const collectionId = curated?.collection ?? Number.parseInt(slug, 10);
 
-  return useQuery(`universe-v2-${slug}`, async (signal) => {
+  return useQuery(`universe-v3-${slug}`, async (signal) => {
     if (curated?.keyword) {
       const parts = await getKeywordUniverse(curated.keyword, { signal });
       return {
         name: curated.name,
-        overview: `Every film TMDB tags as part of the ${curated.name}, in release order.`,
+        overview: `Every film and series TMDB tags as part of the ${curated.name}, in release order.`,
         backdrop: curated.backdrop,
         parts,
       };

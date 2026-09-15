@@ -176,7 +176,9 @@ async function namedGroup(raw, self, signal) {
         .catch(() => null),
     ),
   );
-  const related = toItems(verified.filter(Boolean));
+  const related = toItems(verified.filter(Boolean)).filter(
+    (item) => !EXTRAS.test(item.title),
+  );
   if (!related.length) return null;
   const parts = inOrder([self, ...related]);
   const shortest = parts.reduce((a, b) =>
@@ -219,13 +221,15 @@ export async function getConnected(type, raw, { signal } = {}) {
     );
   }
 
-  if (!collectionId) tasks.push(namedGroup(raw, self, signal));
+  if (type === 'tv') tasks.push(namedGroup(raw, self, signal));
 
   const groups = await Promise.all(tasks.map((task) => task.catch(() => null)));
   return groups.filter((g) => g && g.parts.length > 1);
 }
 
 const NON_STORY_TV = '99,10763,10764,10767';
+const EXTRAS =
+  /\b(making of|behind the scenes|featurette|special look|recap|first look)\b/i;
 
 export async function getKeywordUniverse(keywordId, { signal } = {}) {
   const today = new Date().toISOString().slice(0, 10);
@@ -272,7 +276,9 @@ export async function getKeywordUniverse(keywordId, { signal } = {}) {
   const seen = new Set();
   return inOrder(
     [...films, ...upcoming, ...series].filter((item) => {
-      if (!item.poster || seen.has(item.key)) return false;
+      if (!item.poster || seen.has(item.key) || EXTRAS.test(item.title)) {
+        return false;
+      }
       seen.add(item.key);
       return true;
     }),

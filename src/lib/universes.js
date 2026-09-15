@@ -7,6 +7,20 @@ export const UNIVERSES = [
     tint: 'peach',
   },
   {
+    slug: 'dcu',
+    name: 'DC Universe',
+    keyword: 312528,
+    backdrop: '/yRBc6WY3r1Fz5Cjd6DhSvzqunED.jpg',
+    tint: 'sky',
+  },
+  {
+    slug: 'dceu',
+    name: 'DC Extended Universe',
+    keyword: 229266,
+    backdrop: '/13Nz8EchKRdCgJcKdEoJAnpiVn2.jpg',
+    tint: 'lilac',
+  },
+  {
     slug: 'star-wars',
     name: 'Star Wars',
     collection: 10,

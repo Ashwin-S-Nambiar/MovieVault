@@ -123,7 +123,7 @@ function Group({ group, selfKey }) {
 
 export default function Connected({ type, raw }) {
   const [selected, setSelected] = useState(0);
-  const query = useQuery(`connected-v3-${type}-${raw.id}`, (signal) =>
+  const query = useQuery(`connected-v4-${type}-${raw.id}`, (signal) =>
     getConnected(type, raw, { signal }),
   );
   const groups = query.data ?? [];

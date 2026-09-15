@@ -1,9 +1,10 @@
 import { IconSearch } from '@tabler/icons-react';
-import { useEffect } from 'react';
+import { useContext, useEffect } from 'react';
 import {
   Link,
   Outlet,
   ScrollRestoration,
+  UNSAFE_ViewTransitionContext,
   useLocation,
   useNavigate,
 } from 'react-router';
@@ -12,11 +13,22 @@ import StatusPill from './StatusPill';
 import Toaster from './Toaster';
 
 const DOCKED = /^\/($|vault|universes?)/;
+const HAS_PILL = /^\/($|search|vault|universes?)/;
+
+export function usePillTransition() {
+  const vt = useContext(UNSAFE_ViewTransitionContext);
+  const morphs =
+    vt?.isTransitioning &&
+    HAS_PILL.test(vt.currentLocation.pathname) &&
+    HAS_PILL.test(vt.nextLocation.pathname);
+  return morphs ? { viewTransitionName: 'search-pill' } : undefined;
+}
 
 function SearchDock() {
+  const pill = usePillTransition();
   return (
     <div className="search-dock">
-      <Link to="/search" className="search-pill" viewTransition>
+      <Link to="/search" className="search-pill" style={pill} viewTransition>
         <IconSearch stroke={1.8} />
         <span className="grow">Movies, series and anime</span>
         <kbd className="kbd">/</kbd>

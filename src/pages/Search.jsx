@@ -10,6 +10,7 @@ import {
 } from '@tabler/icons-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
+import { usePillTransition } from '../components/AppShell';
 import { Art } from '../components/Case';
 import Img from '../components/Img';
 import Segmented from '../components/Segmented';
@@ -484,6 +485,7 @@ export default function Search() {
   };
 
   const heading = q ? `“${q}”` : HEADINGS[type];
+  const pill = usePillTransition();
   usePageMeta({
     image: pageImage('search'),
     title: q
@@ -614,7 +616,7 @@ export default function Search() {
               inputRef.current?.blur();
             }}
           >
-            <label className="search-pill">
+            <label className="search-pill" style={pill}>
               <span className="search-glyph" data-busy={results.loading}>
                 <IconSearch stroke={1.8} />
                 <span className="spinner" />
