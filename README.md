@@ -26,7 +26,8 @@ Find where any film, series or anime is streaming, follow whole universes in rel
 - **Rich detail pages.** Local age ratings, runtime, tagline, genres, cast, crew, budget and box office, the official trailer and recommendations.
 - **The vault.** Save anything with a bookmark, filter it by type, sort it, and undo any removal.
 - **Honest API status.** The app watches the requests it really makes. Failed requests retry with backoff, and a small pill only appears when TMDB is unreachable, you're offline or the key is wrong, with a retry button.
-- **Light and dark.** Follows the system, or pick one in the services sheet.
+- **Settings.** A gear in the header opens appearance and the live TMDB connection status, and shows a dot when the connection is down.
+- **Light and dark.** Follows the system, or pick one in settings.
 
 ## Design
 
@@ -104,7 +105,7 @@ No animation or data-fetching libraries: the carousel, sheets, toasts, request c
 
 ```
 src/
-  components/  reel, cases, sheets, toasts, status pill, shelves, cards
+  components/  reel, cases, services and settings sheets, toasts, status pill, shelves, cards
   lib/         TMDB client and catalogue, stores, hooks, universes
   pages/       home, search, title, vault, universes, universe, not found
   index.css    design tokens, themes and every component style
@@ -134,7 +135,7 @@ src/
 ![Jurassic Park with its case open, streaming services and its universe](./docs/screenshots/MovieVault-2.webp)
 
 ### Connected titles
-![Resident Evil with the previous and next film and the whole franchise in release order](./docs/screenshots/MovieVault-5.webp)
+![Resident Evil: Extinction with the previous and next film and the whole franchise in release order](./docs/screenshots/MovieVault-5.webp)
 
 ### Universes
 ![Every universe as a grid of backdrops](./docs/screenshots/MovieVault-8.webp)
@@ -144,11 +145,16 @@ src/
 ### Vault
 ![Saved titles with where each one streams](./docs/screenshots/MovieVault-7.webp)
 
+### Services and settings
+![Picking streaming services in the services sheet](./docs/screenshots/MovieVault-10.webp)
+
+![The settings sheet with appearance and the TMDB connection](./docs/screenshots/MovieVault-11.webp)
+
 ### Dark mode
 ![The reel in dark mode](./docs/screenshots/MovieVault-9.webp)
 
 ### On a phone
-![Home, an anime detail page and anime search on a phone](./docs/screenshots/MovieVault-4.webp)
+![Home, an anime detail page and anime search on iPhones](./docs/screenshots/MovieVault-4.webp)
 
 </div>
 
