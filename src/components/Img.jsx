@@ -58,7 +58,7 @@ export default function Img({
           : style
       }
       loading={cached ? 'eager' : props.loading}
-      decoding={props.loading === 'eager' ? 'sync' : cached ? 'auto' : 'async'}
+      decoding="async"
       fetchPriority={props.loading === 'eager' ? 'high' : undefined}
       draggable={false}
       onLoad={() => {

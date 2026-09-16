@@ -6,9 +6,8 @@ const KEY = 'mv:hero';
 const HOLDERS = '.case, .sleeve, .pull-cover, .cover-body';
 
 const SWING_MS = 400;
-const LEAVE_MS = 200;
+const LEAVE_MS = 150;
 const FLY_MS = 560;
-const HANDOFF_MS = 200;
 const FLY_AT = { open: 260, close: 90 };
 const LAND_MS = 620;
 
@@ -170,11 +169,13 @@ function veil(f, entering) {
 const flyDelay = (f) =>
   Math.max(0, f.startedAt + FLY_AT[f.dir] - performance.now());
 
-const near = (a, b) =>
-  Math.abs(a.left - b.left) < 1.5 &&
-  Math.abs(a.top - b.top) < 1.5 &&
-  Math.abs(a.width - b.width) < 1.5 &&
-  Math.abs(a.height - b.height) < 1.5;
+const offBy = (a, b) =>
+  Math.max(
+    Math.abs(a.left - b.left),
+    Math.abs(a.top - b.top),
+    Math.abs(a.width - b.width),
+    Math.abs(a.height - b.height),
+  );
 
 function settle(f) {
   for (const el of f.hidden) el.style.visibility = '';
@@ -190,20 +191,11 @@ function settle(f) {
 function release(f) {
   if (flight !== f || f.released) return;
   f.released = true;
-  window.clearTimeout(f.fallback);
   for (const el of f.hidden) {
-    el.style.visibility = '';
     el.dataset.landed = 'true';
     window.setTimeout(() => delete el.dataset.landed, 2400);
   }
-  const fade = animate(f, f.parts.wrap, [{ opacity: 1 }, { opacity: 0 }], {
-    duration: HANDOFF_MS,
-    easing: 'ease-out',
-  });
-  fade.finished.then(
-    () => settle(f),
-    () => {},
-  );
+  settle(f);
 }
 
 function travel(f, keyframes, timing) {
@@ -227,12 +219,13 @@ const flyTiming = (f) => ({
   easing: f.dir === 'open' ? FLY : LAND,
 });
 
-function steer(f, to) {
+function steer(f, to, off) {
+  if (off < 0.5) return;
   const animation = f.travel;
   if (animation && animation.playState !== 'finished') {
     const { delay, duration } = animation.effect.getTiming();
     const elapsed = (animation.currentTime ?? 0) - delay;
-    if (elapsed <= 0) {
+    if (elapsed <= 0 || off < 12) {
       const [first] = animation.effect.getKeyframes();
       animation.effect.setKeyframes([
         { transform: first.transform },
@@ -308,7 +301,8 @@ export function launchHero(el, item, source, event) {
     return false;
   }
   const away = el ? rectOf(el) : null;
-  markHero(item.key, source, away);
+  const rest = el ? rectOf(el.closest('.reel-item, .sleeve') ?? el) : null;
+  markHero(item.key, source, rest);
   if (!el || !navigateTo || reducedMotion()) return false;
   event?.preventDefault();
   const hovered = el.classList.contains('case') && el.matches(':hover');
@@ -320,6 +314,7 @@ export function launchHero(el, item, source, event) {
     from: caseAround(away),
     pw: home.width / 2,
     angle: hovered ? -32 : 0,
+    bare: source === 'reel',
   });
   f.hidden.push(hide(el));
   f.timer = window.setTimeout(
@@ -343,7 +338,14 @@ export function departHero(el, item, leave) {
       ? pending.rect
       : null;
   const home = layoutBox(el);
-  const f = begin({ dir: 'close', item, home, guess, pw: home.width / 2 });
+  const f = begin({
+    dir: 'close',
+    item,
+    home,
+    guess,
+    bare: pending?.key === item.key && pending.source === 'reel',
+    pw: home.width / 2,
+  });
   f.hidden.push(hide(el));
   f.timer = window.setTimeout(leave, LEAVE_MS);
   f.fallback = window.setTimeout(
@@ -364,10 +366,21 @@ export function attachFlight(id, node) {
     ocase: node.querySelector('.ocase'),
     cover: node.querySelector('.ocase-cover'),
     disc: node.querySelector('.disc'),
+    tray: node.querySelector('.ocase-tray'),
   };
   place(f, f.home);
   swing(f, f.dir === 'open');
   veil(f, false);
+  if (f.bare) {
+    animate(
+      f,
+      f.parts.tray,
+      f.dir === 'open'
+        ? [{ opacity: 0 }, { opacity: 1 }]
+        : [{ opacity: 1 }, { opacity: 0 }],
+      { ...flyTiming(f), pseudoElement: '::after' },
+    );
+  }
   if (f.dir === 'open') {
     travel(
       f,
@@ -403,7 +416,7 @@ export function arriveHero(el, key) {
   requestAnimationFrame(() => {
     if (flight !== f || !f.parts || !el.isConnected) return;
     const home = layoutBox(el);
-    if (!near(home, f.home)) steer(f, boxToBox(f.home, home));
+    steer(f, boxToBox(f.home, home), offBy(home, f.home));
     f.settledOn = true;
     if (f.landed) release(f);
   });
@@ -431,8 +444,8 @@ export function takeHero(el, key, source) {
         ],
         flyTiming(f),
       );
-    } else if (!near(target, f.guess)) {
-      steer(f, boxToBox(f.home, caseAround(target)));
+    } else {
+      steer(f, boxToBox(f.home, caseAround(target)), offBy(target, f.guess));
     }
     f.settledOn = true;
     if (f.landed) release(f);

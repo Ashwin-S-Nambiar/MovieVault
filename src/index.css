@@ -1437,7 +1437,7 @@ a.search-pill:active {
 
 .tcard-providers {
   --size: 20px;
-  min-height: 22px;
+  min-height: 30px;
   margin-top: 6px;
   padding: 0;
 }
@@ -1686,6 +1686,7 @@ a.search-pill:active {
   height: 70px;
   translate: -50% 0;
   border-radius: 50%;
+  z-index: -1;
   background: radial-gradient(closest-side, var(--halo), transparent);
   filter: blur(8px);
   pointer-events: none;
@@ -1718,9 +1719,7 @@ a.search-pill:active {
 }
 
 .reel-item .case-front {
-  box-shadow:
-    inset 0 0 0 1px rgb(255 255 255 / 0.07),
-    0 26px 34px -22px rgb(0 0 0 / 0.55);
+  box-shadow: none;
 }
 
 .reel-item:focus-visible .case-front {
@@ -2989,9 +2988,16 @@ a.link-card:active {
   place-items: center;
   border-radius: 1px 5px 5px 1px;
   background: linear-gradient(145deg, #262626, #121212 70%);
-  box-shadow:
-    var(--shadow-case),
-    inset 0 0 0 1px rgb(255 255 255 / 0.05);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.05);
+}
+
+.ocase-tray::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: var(--shadow-case);
+  pointer-events: none;
 }
 
 .ocase-tray::before {
@@ -3430,11 +3436,11 @@ a.link-card:active {
 }
 
 .shelf-spine[data-returning="true"] .spine-body {
-  animation: spine-out 440ms var(--ease-in-out) 180ms reverse both;
+  animation: spine-out 440ms var(--ease-in-out) reverse both;
 }
 
 .shelf-spine[data-returning="true"] .pull-cover {
-  animation: cover-out 440ms var(--ease-in-out) 180ms reverse both;
+  animation: cover-out 440ms var(--ease-in-out) reverse both;
 }
 
 .shelf-spine[data-returning="true"]:not(:has([data-landed]))
@@ -4839,9 +4845,7 @@ a.link-card:active {
 .flight-veil {
   position: absolute;
   inset: 0;
-  background: color-mix(in srgb, var(--bg) 72%, transparent);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  background: var(--bg);
   opacity: 0;
 }
 
