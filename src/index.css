@@ -349,6 +349,13 @@ p {
   .icon-btn:hover {
     background: var(--glass-hover);
   }
+  .topbar .icon-btn:hover {
+    background: var(--glass-fill);
+  }
+}
+
+.topbar .icon-btn {
+  isolation: isolate;
 }
 
 .badge {
@@ -4493,6 +4500,8 @@ a.link-card:active {
 
 .services-btn {
   display: inline-flex;
+  position: relative;
+  isolation: isolate;
   align-items: center;
   gap: 8px;
   max-width: 100%;
@@ -4507,16 +4516,42 @@ a.link-card:active {
   text-align: left;
   transition:
     transform 160ms var(--ease-out),
-    background-color 200ms ease;
+    border-color 240ms ease;
+}
+
+.services-btn::before,
+.topbar .icon-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: var(--glass-hover);
+  box-shadow: var(--glass-edge);
+  opacity: 0;
+  transition: opacity 260ms ease;
+  pointer-events: none;
 }
 
 .services-btn:active {
   transform: scale(0.97);
 }
 
+.services-btn > svg:last-child {
+  transition: transform 240ms var(--ease-out);
+}
+
 @media (hover: hover) and (pointer: fine) {
   .services-btn:hover {
-    background: var(--glass-hover);
+    border-color: var(--line-2);
+  }
+  .services-btn:hover::before,
+  .topbar .icon-btn:hover::before {
+    opacity: 1;
+    transition-duration: 160ms;
+  }
+  .services-btn:hover > svg:last-child {
+    transform: translateY(1px);
   }
 }
 
