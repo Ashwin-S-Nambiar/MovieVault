@@ -4937,15 +4937,19 @@ a.link-card:active {
     cursor: pointer;
   }
 
-  .reel:not([data-dragging]) .reel-item:hover .case {
+  .reel:not([data-dragging], [data-moving]) .reel-item:hover .case {
     transform: translateY(-12px) translateZ(26px);
   }
 
-  .reel:not([data-dragging]) .reel-item[data-active="true"]:hover .case {
+  .reel:not([data-dragging], [data-moving])
+    .reel-item[data-active="true"]:hover
+    .case {
     transform: translateY(-18px) translateZ(46px) rotateX(4deg);
   }
 
-  .reel:not([data-dragging]) .reel-item[data-active="true"]:hover .case-front {
+  .reel:not([data-dragging], [data-moving])
+    .reel-item[data-active="true"]:hover
+    .case-front {
     transform: translateZ(calc(var(--cd) / 2)) rotateY(-32deg);
   }
 }

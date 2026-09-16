@@ -109,7 +109,9 @@ export default function Reel({
       }
     }
     render();
-    if (drag.current?.moved || pos.current !== target.current) {
+    const moving = drag.current?.moved || pos.current !== target.current;
+    rootRef.current?.toggleAttribute('data-moving', moving);
+    if (moving) {
       frame.current = requestAnimationFrame(tick);
     } else {
       frame.current = 0;
