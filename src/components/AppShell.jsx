@@ -11,6 +11,7 @@ import {
 import { enterHero, setHeroNavigate } from '../lib/hero';
 import Flight from './Flight';
 import ServicesSheet from './ServicesSheet';
+import SettingsSheet from './SettingsSheet';
 import StatusPill from './StatusPill';
 import Toaster from './Toaster';
 
@@ -80,6 +81,7 @@ export default function AppShell() {
       <Toaster />
       <Flight />
       <ServicesSheet />
+      <SettingsSheet />
       <ScrollRestoration />
     </>
   );

@@ -1,18 +1,11 @@
-import {
-  IconCheck,
-  IconDeviceDesktop,
-  IconMoon,
-  IconSun,
-} from '@tabler/icons-react';
+import { IconCheck } from '@tabler/icons-react';
 import { useState } from 'react';
 import { getRegions } from '../lib/catalog';
-import { useHealth } from '../lib/health';
-import { regionStore, themeStore, toggleService, useTheme } from '../lib/prefs';
+import { regionStore, toggleService } from '../lib/prefs';
 import { useServiceCatalog } from '../lib/services';
 import { img } from '../lib/tmdb';
 import { closeSheet, useSheet } from '../lib/ui';
 import { useQuery } from '../lib/useQuery';
-import Segmented from './Segmented';
 import Sheet from './Sheet';
 
 const INITIAL = 24;
@@ -26,41 +19,9 @@ function initials(name) {
     .toUpperCase();
 }
 
-function ApiStatusRow() {
-  const health = useHealth();
-  const tone = !health.online
-    ? 'offline'
-    : health.status === 'checking' ||
-        (health.retrying > 0 && health.status !== 'up')
-      ? 'retrying'
-      : health.status;
-  const text = {
-    up: `Connected${health.latency ? ` · ${Math.round(health.latency)}ms` : ''}`,
-    idle: 'Waiting for the first request',
-    retrying: 'Reconnecting',
-    down: health.lastError ?? 'Not responding',
-    offline: 'Offline',
-    'bad-key': 'API key rejected',
-    'missing-key': 'No API key configured',
-  }[tone];
-
-  return (
-    <div className="pref-row">
-      <div>
-        <strong>Connection to TMDB</strong>
-        <span className="status-line">
-          <span className="dot" data-status={tone} />
-          {text}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 export default function ServicesSheet() {
   const open = useSheet() === 'services';
   const { region, services, catalog, loading } = useServiceCatalog();
-  const theme = useTheme();
   const [showAll, setShowAll] = useState(false);
   const regions = useQuery('regions', (signal) => getRegions({ signal }), {
     enabled: open,
@@ -73,7 +34,7 @@ export default function ServicesSheet() {
   const visible = showAll ? pickedFirst : pickedFirst.slice(0, INITIAL);
 
   return (
-    <Sheet open={open} onClose={closeSheet} title="Services & settings">
+    <Sheet open={open} onClose={closeSheet} title="Your services">
       <div className="sheet-section-head">
         <h3>Streaming services</h3>
         <p>
@@ -138,7 +99,7 @@ export default function ServicesSheet() {
       )}
 
       <div className="sheet-section-head" style={{ marginTop: 28 }}>
-        <h3>Preferences</h3>
+        <h3>Availability</h3>
       </div>
       <div>
         <div className="pref-row">
@@ -162,39 +123,6 @@ export default function ServicesSheet() {
             ))}
           </select>
         </div>
-        <div className="pref-row">
-          <div>
-            <strong>Appearance</strong>
-            <span>Follow your device or pick one</span>
-          </div>
-          <Segmented
-            label="Appearance"
-            value={theme}
-            onChange={(value) => themeStore.set(value)}
-            options={[
-              {
-                value: 'system',
-                label: 'Match device',
-                icon: <IconDeviceDesktop stroke={1.8} />,
-              },
-              {
-                value: 'light',
-                label: 'Light',
-                icon: <IconSun stroke={1.8} />,
-              },
-              { value: 'dark', label: 'Dark', icon: <IconMoon stroke={1.8} /> },
-            ]}
-          />
-        </div>
-      </div>
-      <div className="sheet-section-head" style={{ marginTop: 28 }}>
-        <h3>Data</h3>
-      </div>
-      <div>
-        <ApiStatusRow />
-        <p className="attribution">
-          Streaming availability from JustWatch, via TMDB.
-        </p>
       </div>
     </Sheet>
   );

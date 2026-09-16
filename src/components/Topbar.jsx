@@ -3,8 +3,11 @@ import {
   IconBookmark,
   IconChevronDown,
   IconDeviceTv,
+  IconSettings,
 } from '@tabler/icons-react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router';
+import { healthTone, useHealth } from '../lib/health';
+import { useMediaQuery } from '../lib/hooks';
 import { useServiceCatalog } from '../lib/services';
 import { openSheet } from '../lib/ui';
 import { useVault } from '../lib/watchlist';
@@ -43,8 +46,24 @@ export function Wordmark() {
   );
 }
 
+function ServiceStackGhost({ count, max }) {
+  const shown = Math.min(count, max);
+  return (
+    <span className="pstack" aria-hidden="true">
+      {Array.from({ length: shown }, (_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: static placeholders
+        <span key={i} className="plogo plogo-ghost" />
+      ))}
+      {count > shown && <span className="pstack-more">+{count - shown}</span>}
+    </span>
+  );
+}
+
 export function ServicesButton() {
-  const { picked, region } = useServiceCatalog();
+  const { picked, region, services } = useServiceCatalog();
+  const narrow = useMediaQuery('(max-width: 419px)');
+  const max = narrow ? 3 : 4;
+  const pending = services.length > 0 && picked.length === 0;
   return (
     <button
       type="button"
@@ -52,20 +71,41 @@ export function ServicesButton() {
       onClick={() => openSheet('services')}
       aria-label={
         picked.length
-          ? `Your services: ${picked.map((p) => p.name).join(', ')}. Change services, region and appearance`
-          : 'Pick your streaming services'
+          ? `Your services: ${picked.map((p) => p.name).join(', ')}. Change services and region`
+          : pending
+            ? 'Your services. Change services and region'
+            : 'Pick your streaming services'
       }
     >
       {picked.length ? (
-        <ProviderStack providers={picked} max={4} size={24} />
+        <ProviderStack providers={picked} max={max} />
+      ) : pending ? (
+        <ServiceStackGhost count={services.length} max={max} />
       ) : (
         <IconDeviceTv stroke={1.8} />
       )}
       <span className="services-btn-label">
-        {picked.length ? 'Your services' : 'Pick your services'}
+        {picked.length || pending ? 'Your services' : 'Pick your services'}
         <small>{region}</small>
       </span>
       <IconChevronDown stroke={2} />
+    </button>
+  );
+}
+
+const PROBLEMS = new Set(['down', 'offline', 'bad-key', 'missing-key']);
+
+export function SettingsButton() {
+  const problem = PROBLEMS.has(healthTone(useHealth()));
+  return (
+    <button
+      type="button"
+      className="icon-btn"
+      onClick={() => openSheet('settings')}
+      aria-label={problem ? 'Settings, connection problem' : 'Settings'}
+    >
+      <IconSettings stroke={1.8} />
+      {problem && <span className="icon-btn-dot" />}
     </button>
   );
 }
@@ -119,6 +159,7 @@ export default function Topbar({ center, end }) {
               </span>
             )}
           </Link>
+          <SettingsButton />
         </div>
       </div>
     </header>

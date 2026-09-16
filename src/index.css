@@ -1,6 +1,18 @@
 @import "tailwindcss";
 
 /* Sizes --shadow-case to the case it sits on; a case in flight counter-scales it. */
+@property --btn-top {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
+@property --btn-bottom {
+  syntax: "<color>";
+  inherits: false;
+  initial-value: transparent;
+}
+
 @property --sk {
   syntax: "<number>";
   inherits: true;
@@ -25,8 +37,16 @@
   --accent-press: #c92120;
   --on-accent: #ffffff;
   --glass: rgb(250 250 249 / 0.62);
-  --glass-fill: linear-gradient(180deg, #ffffff, #f6f6f4);
-  --glass-hover: linear-gradient(180deg, #ffffff, #efefec);
+  --glass-top: #ffffff;
+  --glass-bottom: #f6f6f4;
+  --glass-hover-top: #ffffff;
+  --glass-hover-bottom: #efefec;
+  --glass-fill: linear-gradient(180deg, var(--glass-top), var(--glass-bottom));
+  --glass-hover: linear-gradient(
+    180deg,
+    var(--glass-hover-top),
+    var(--glass-hover-bottom)
+  );
   --glass-edge:
     inset 0 1px 0 rgb(255 255 255 / 0.55),
     inset 0 0 0 1px rgb(255 255 255 / 0.18);
@@ -94,8 +114,20 @@
     --accent: #ff4541;
     --accent-press: #e5302f;
     --glass: rgb(30 30 33 / 0.58);
-    --glass-fill: linear-gradient(180deg, #242427, #1b1b1e);
-    --glass-hover: linear-gradient(180deg, #2c2c30, #232326);
+    --glass-top: #242427;
+    --glass-bottom: #1b1b1e;
+    --glass-hover-top: #2c2c30;
+    --glass-hover-bottom: #232326;
+    --glass-fill: linear-gradient(
+      180deg,
+      var(--glass-top),
+      var(--glass-bottom)
+    );
+    --glass-hover: linear-gradient(
+      180deg,
+      var(--glass-hover-top),
+      var(--glass-hover-bottom)
+    );
     --glass-edge:
       inset 0 1px 0 rgb(255 255 255 / 0.1),
       inset 0 0 0 1px rgb(255 255 255 / 0.045);
@@ -135,8 +167,16 @@
   --accent: #ff4541;
   --accent-press: #e5302f;
   --glass: rgb(30 30 33 / 0.58);
-  --glass-fill: linear-gradient(180deg, #242427, #1b1b1e);
-  --glass-hover: linear-gradient(180deg, #2c2c30, #232326);
+  --glass-top: #242427;
+  --glass-bottom: #1b1b1e;
+  --glass-hover-top: #2c2c30;
+  --glass-hover-bottom: #232326;
+  --glass-fill: linear-gradient(180deg, var(--glass-top), var(--glass-bottom));
+  --glass-hover: linear-gradient(
+    180deg,
+    var(--glass-hover-top),
+    var(--glass-hover-bottom)
+  );
   --glass-edge:
     inset 0 1px 0 rgb(255 255 255 / 0.1),
     inset 0 0 0 1px rgb(255 255 255 / 0.045);
@@ -258,7 +298,9 @@ p {
   padding: 0 1.05em;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--glass-fill);
+  --btn-top: var(--glass-top);
+  --btn-bottom: var(--glass-bottom);
+  background: linear-gradient(180deg, var(--btn-top), var(--btn-bottom));
   box-shadow: var(--glass-edge), var(--shadow-sm);
   color: var(--ink);
   font: inherit;
@@ -269,6 +311,8 @@ p {
   transition:
     transform 160ms var(--ease-out),
     background-color 200ms ease,
+    --btn-top 200ms ease,
+    --btn-bottom 200ms ease,
     border-color 200ms ease,
     color 200ms ease;
 }
@@ -292,14 +336,16 @@ p {
 }
 
 .btn-ghost {
-  background: transparent;
+  --btn-top: transparent;
+  --btn-bottom: transparent;
   border-color: transparent;
   box-shadow: none;
 }
 
 @media (hover: hover) and (pointer: fine) {
   .btn:hover {
-    background: var(--glass-hover);
+    --btn-top: var(--glass-hover-top);
+    --btn-bottom: var(--glass-hover-bottom);
     border-color: var(--line-2);
   }
   .btn-solid:hover {
@@ -311,7 +357,8 @@ p {
     border-color: var(--accent-press);
   }
   .btn-ghost:hover {
-    background: var(--surface);
+    --btn-top: var(--surface);
+    --btn-bottom: var(--surface);
     border-color: transparent;
   }
 }
@@ -332,13 +379,18 @@ p {
   padding: 0;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--glass-fill);
+  --btn-top: var(--glass-top);
+  --btn-bottom: var(--glass-bottom);
+  background: linear-gradient(180deg, var(--btn-top), var(--btn-bottom));
   color: var(--ink);
   box-shadow: var(--glass-edge), var(--shadow-sm);
   text-decoration: none;
   transition:
     transform 160ms var(--ease-out),
-    background-color 200ms ease;
+    --btn-top 200ms ease,
+    --btn-bottom 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease;
 }
 
 .icon-btn:active {
@@ -347,15 +399,9 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .icon-btn:hover {
-    background: var(--glass-hover);
+    --btn-top: var(--glass-hover-top);
+    --btn-bottom: var(--glass-hover-bottom);
   }
-  .topbar .icon-btn:hover {
-    background: var(--glass-fill);
-  }
-}
-
-.topbar .icon-btn {
-  isolation: isolate;
 }
 
 .badge {
@@ -373,6 +419,18 @@ p {
   line-height: 18px;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  box-shadow: 0 0 0 2px var(--bg);
+  animation: pop-in 260ms var(--ease-out) both;
+}
+
+.icon-btn-dot {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
   box-shadow: 0 0 0 2px var(--bg);
   animation: pop-in 260ms var(--ease-out) both;
 }
@@ -747,8 +805,32 @@ p {
 
 .topbar-end {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 8px;
+}
+
+@media (max-width: 419px) {
+  .topbar-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+  .topbar-row > :nth-child(2) {
+    display: flex;
+    justify-content: center;
+    min-width: 0;
+  }
+  .topbar-end {
+    gap: 6px;
+  }
+  .topbar .icon-btn {
+    width: 40px;
+    height: 40px;
+  }
+  .topbar .wordmark-mark {
+    width: 30px;
+    height: 30px;
+  }
 }
 
 .detail-back .icon-btn {
@@ -770,7 +852,9 @@ p {
   padding: 6px 12px 6px 8px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--glass-fill);
+  --btn-top: var(--glass-top);
+  --btn-bottom: var(--glass-bottom);
+  background: linear-gradient(180deg, var(--btn-top), var(--btn-bottom));
   box-shadow: var(--glass-edge), var(--shadow-sm);
   color: var(--ink-2);
   font-size: 13px;
@@ -778,7 +862,9 @@ p {
   text-decoration: none;
   transition:
     transform 160ms var(--ease-out),
-    background-color 200ms ease,
+    --btn-top 200ms ease,
+    --btn-bottom 200ms ease,
+    border-color 200ms ease,
     color 200ms ease;
 }
 
@@ -794,7 +880,8 @@ p {
 
 @media (hover: hover) and (pointer: fine) {
   .back-pill:hover {
-    background: var(--glass-hover);
+    --btn-top: var(--glass-hover-top);
+    --btn-bottom: var(--glass-hover-bottom);
     color: var(--ink);
   }
   .back-pill:hover svg {
@@ -1066,6 +1153,10 @@ p {
 .pstack .plogo + .plogo,
 .pstack .plogo + .pstack-more {
   margin-left: calc(var(--size, 30px) * -0.3);
+}
+
+.pstack .plogo-ghost {
+  background: var(--skeleton);
 }
 
 .pstack-more {
@@ -1530,32 +1621,66 @@ a.search-pill:active {
   margin-top: 20px;
 }
 
-.tcard-remove {
+.tcard-remove.icon-btn {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 8px;
+  right: 8px;
   z-index: 2;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  background: rgb(18 18 18 / 0.62);
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 0.14),
+    0 2px 8px rgb(0 0 0 / 0.28);
+  color: #fff;
+  -webkit-backdrop-filter: blur(10px) saturate(1.4);
+  backdrop-filter: blur(10px) saturate(1.4);
+  transition:
+    opacity 200ms ease,
+    transform 260ms var(--ease-out),
+    background-color 160ms ease;
+}
+
+.tcard-remove::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
 }
 
 .tcard-remove svg {
-  width: 15px;
-  height: 15px;
+  width: 13px;
+  height: 13px;
+}
+
+.tcard-remove.icon-btn:active {
+  transform: scale(0.9);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .tcard-remove {
+  .tcard-remove.icon-btn {
     opacity: 0;
-    transform: scale(0.9);
-    transition:
-      opacity 180ms ease,
-      transform 180ms var(--ease-out);
+    transform: scale(0.85);
   }
-  .tcard:hover .tcard-remove,
-  .tcard:focus-within .tcard-remove {
+  .tcard:hover .tcard-remove.icon-btn,
+  .tcard:focus-within .tcard-remove.icon-btn {
     opacity: 1;
     transform: none;
+  }
+  .tcard:has(.tcard-link:hover, .tcard-remove:hover) .tcard-remove.icon-btn {
+    transform: translateY(-6px);
+  }
+  .tcard-remove.icon-btn:hover {
+    background: var(--accent);
+  }
+  .tcard .tcard-remove.icon-btn:active {
+    transform: translateY(-6px) scale(0.9);
+  }
+  .tcard:has(.tcard-remove:hover) .poster {
+    transform: translateY(-6px);
+  }
+  .tcard:has(.tcard-remove:hover) .sleeve-disc {
+    transform: translate(34%, -4px) rotate(0deg);
   }
 }
 
@@ -2351,7 +2476,11 @@ a.search-pill:active {
   box-shadow: var(--glass-edge), var(--shadow-md);
   transition:
     opacity 200ms ease,
-    transform 160ms var(--ease-out);
+    transform 160ms var(--ease-out),
+    --btn-top 200ms ease,
+    --btn-bottom 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease;
 }
 
 .row-nav-overlay .icon-btn:disabled {
@@ -2442,7 +2571,7 @@ a.search-pill:active {
   width: 17px;
   height: 17px;
   color: var(--ink-2);
-  transition: transform 240ms var(--ease-out);
+  transition: transform 200ms var(--ease-out);
 }
 
 .disclosure[aria-expanded="true"] svg {
@@ -2779,6 +2908,7 @@ a.link-card:active {
   font-size: 13.5px;
   font-weight: 500;
   text-decoration: none;
+  transition: color 200ms ease;
 }
 
 .connected-more svg {
@@ -4094,11 +4224,19 @@ a.link-card:active {
 }
 
 .sheet-head .icon-btn {
+  --btn-top: var(--surface);
+  --btn-bottom: var(--surface);
   width: 40px;
   height: 40px;
-  background: var(--surface);
   box-shadow: none;
   border-color: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .sheet-head .icon-btn:hover {
+    --btn-top: var(--surface-2);
+    --btn-bottom: var(--surface-2);
+  }
 }
 
 .sheet-scroll {
@@ -4108,6 +4246,9 @@ a.link-card:active {
   overscroll-behavior: contain;
   padding: 0 20px calc(24px + var(--safe-b));
   touch-action: pan-y;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-2) transparent;
+  scrollbar-gutter: stable;
 }
 
 @media (min-width: 720px) {
@@ -4500,8 +4641,6 @@ a.link-card:active {
 
 .services-btn {
   display: inline-flex;
-  position: relative;
-  isolation: isolate;
   align-items: center;
   gap: 8px;
   max-width: 100%;
@@ -4509,49 +4648,30 @@ a.link-card:active {
   padding: 4px 12px 4px 5px;
   border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--glass-fill);
+  --btn-top: var(--glass-top);
+  --btn-bottom: var(--glass-bottom);
+  background: linear-gradient(180deg, var(--btn-top), var(--btn-bottom));
   box-shadow: var(--glass-edge), var(--shadow-sm);
   color: var(--ink);
   font: inherit;
   text-align: left;
   transition:
     transform 160ms var(--ease-out),
-    border-color 240ms ease;
-}
-
-.services-btn::before,
-.topbar .icon-btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: inherit;
-  background: var(--glass-hover);
-  box-shadow: var(--glass-edge);
-  opacity: 0;
-  transition: opacity 260ms ease;
-  pointer-events: none;
+    --btn-top 200ms ease,
+    --btn-bottom 200ms ease,
+    border-color 200ms ease,
+    color 200ms ease;
 }
 
 .services-btn:active {
   transform: scale(0.97);
 }
 
-.services-btn > svg:last-child {
-  transition: transform 240ms var(--ease-out);
-}
-
 @media (hover: hover) and (pointer: fine) {
   .services-btn:hover {
+    --btn-top: var(--glass-hover-top);
+    --btn-bottom: var(--glass-hover-bottom);
     border-color: var(--line-2);
-  }
-  .services-btn:hover::before,
-  .topbar .icon-btn:hover::before {
-    opacity: 1;
-    transition-duration: 160ms;
-  }
-  .services-btn:hover > svg:last-child {
-    transform: translateY(1px);
   }
 }
 
@@ -4582,6 +4702,9 @@ a.link-card:active {
 
 .services-btn-label {
   display: grid;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 13.5px;
   font-weight: 500;
   line-height: 1.15;
@@ -4592,6 +4715,21 @@ a.link-card:active {
   color: var(--muted);
   font-size: 11px;
   font-weight: 400;
+}
+
+@media (max-width: 419px) {
+  .services-btn {
+    min-width: 0;
+    min-height: 40px;
+    gap: 6px;
+    padding-block: 3px;
+  }
+  .services-btn .pstack {
+    --size: 22px;
+  }
+  .services-btn > svg:last-child {
+    display: none;
+  }
 }
 
 @media (max-width: 380px) {
@@ -4755,7 +4893,10 @@ a.link-card:active {
     transition:
       transform 160ms var(--ease-out),
       opacity 200ms ease,
-      background-color 200ms ease;
+      --btn-top 200ms ease,
+      --btn-bottom 200ms ease,
+      border-color 200ms ease,
+      color 200ms ease;
   }
 
   .reel:hover .reel-nav .icon-btn,
@@ -4763,18 +4904,9 @@ a.link-card:active {
     opacity: 1;
   }
 
-  .reel-nav .icon-btn:hover svg {
-    transform: translateX(var(--nudge, 2px));
-  }
-
-  .reel-nav .icon-btn:first-child {
-    --nudge: -2px;
-  }
-
   .reel-nav .icon-btn svg {
     width: 20px;
     height: 20px;
-    transition: transform 200ms var(--ease-out);
   }
 }
 

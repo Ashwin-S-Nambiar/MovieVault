@@ -67,3 +67,14 @@ window.addEventListener('offline', () =>
 );
 
 export const useHealth = () => useStore(healthStore);
+
+export function healthTone(health) {
+  if (!health.online) return 'offline';
+  if (
+    health.status === 'checking' ||
+    (health.retrying > 0 && health.status !== 'up')
+  ) {
+    return 'retrying';
+  }
+  return health.status;
+}
