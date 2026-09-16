@@ -45,10 +45,10 @@ const writePending = (value) => {
 
 const viewport = () => window.innerWidth;
 
-export function markHero(key, source, rect) {
+export function markHero(key, source, rect, sk = 1) {
   writePending(
     key
-      ? { key, source, rect, viewport: viewport(), idx: historyIndex() }
+      ? { key, source, rect, sk, viewport: viewport(), idx: historyIndex() }
       : null,
   );
 }
@@ -114,6 +114,14 @@ function place(f, box) {
   ocase.style.height = `${box.height}px`;
   f.swingCase?.effect.setKeyframes(f.caseFrames(box.width / 2));
 }
+
+const skOf = (el) =>
+  Number.parseFloat(getComputedStyle(el).getPropertyValue('--sk')) || 1;
+
+const shade = (f, box, sk) => {
+  const scale = box.width > 0 ? f.home.width / box.width : 1;
+  f.parts?.ocase.style.setProperty('--sk', String(scale * sk));
+};
 
 const animate = (f, el, keyframes, options) => {
   if (!el) return null;
@@ -197,6 +205,11 @@ function release(f) {
   }
   settle(f);
 }
+
+// rAF and the document timeline stall while hidden, so release() is unreachable.
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && flight) release(flight);
+});
 
 function travel(f, keyframes, timing) {
   f.travel?.cancel();
@@ -302,7 +315,7 @@ export function launchHero(el, item, source, event) {
   }
   const away = el ? rectOf(el) : null;
   const rest = el ? rectOf(el.closest('.reel-item, .sleeve') ?? el) : null;
-  markHero(item.key, source, rest);
+  markHero(item.key, source, rest, el ? skOf(el) : 1);
   if (!el || !navigateTo || reducedMotion()) return false;
   event?.preventDefault();
   const hovered = el.classList.contains('case') && el.matches(':hover');
@@ -314,7 +327,6 @@ export function launchHero(el, item, source, event) {
     from: caseAround(away),
     pw: home.width / 2,
     angle: hovered ? -32 : 0,
-    bare: source === 'reel',
   });
   f.hidden.push(hide(el));
   f.timer = window.setTimeout(
@@ -343,7 +355,7 @@ export function departHero(el, item, leave) {
     item,
     home,
     guess,
-    bare: pending?.key === item.key && pending.source === 'reel',
+    guessSk: guess ? (pending.sk ?? 1) : 1,
     pw: home.width / 2,
   });
   f.hidden.push(hide(el));
@@ -366,21 +378,10 @@ export function attachFlight(id, node) {
     ocase: node.querySelector('.ocase'),
     cover: node.querySelector('.ocase-cover'),
     disc: node.querySelector('.disc'),
-    tray: node.querySelector('.ocase-tray'),
   };
   place(f, f.home);
   swing(f, f.dir === 'open');
   veil(f, false);
-  if (f.bare) {
-    animate(
-      f,
-      f.parts.tray,
-      f.dir === 'open'
-        ? [{ opacity: 0 }, { opacity: 1 }]
-        : [{ opacity: 1 }, { opacity: 0 }],
-      { ...flyTiming(f), pseudoElement: '::after' },
-    );
-  }
   if (f.dir === 'open') {
     travel(
       f,
@@ -388,6 +389,7 @@ export function attachFlight(id, node) {
       flyTiming(f),
     );
   } else if (f.guess) {
+    shade(f, caseAround(f.guess), f.guessSk);
     travel(
       f,
       [
@@ -435,6 +437,7 @@ export function takeHero(el, key, source) {
     if (flight !== f || !f.parts) return;
     if (!el.isConnected) return vanish(f);
     const target = rectOf(el);
+    shade(f, caseAround(target), skOf(el));
     if (!f.guess) {
       travel(
         f,
