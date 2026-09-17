@@ -4,11 +4,7 @@ import { Link, useNavigate } from 'react-router';
 import Case from '../components/Case';
 import Footer from '../components/Footer';
 import Img from '../components/Img';
-import {
-  ProviderStack,
-  useStreaming,
-  WatchBadge,
-} from '../components/Providers';
+import { Availability, useStreaming } from '../components/Providers';
 import Reel from '../components/Reel';
 import SaveButton from '../components/SaveButton';
 import Shelf from '../components/Shelf';
@@ -70,10 +66,13 @@ function Caption({ item, failed, onHover }) {
         </Swap>
       </div>
       <div className="reel-providers">
-        {providers?.length > 0 && (
-          <ProviderStack providers={providers} size={26} max={3} />
-        )}
-        {status && <WatchBadge status={status} />}
+        <Availability
+          id={settled?.key}
+          providers={providers}
+          status={status}
+          size={26}
+          max={3}
+        />
       </div>
       <div className="reel-cta">
         {item ? (

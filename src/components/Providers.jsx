@@ -4,7 +4,7 @@ import {
   IconShoppingBag,
   IconTicket,
 } from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { getProviders, getReleaseDates, providerRows } from '../lib/catalog';
 import { watchStatus } from '../lib/format';
 import { useInView } from '../lib/hooks';
@@ -25,16 +25,21 @@ export function ProviderStack({ providers, max = 3, size, onClick, label }) {
       aria-label={label ?? providers.map((p) => p.name).join(', ')}
       title={onClick ? undefined : providers.map((p) => p.name).join(', ')}
     >
-      {shown.map((p) => (
+      {shown.map((p, i) => (
         <img
           key={p.id}
           className="plogo"
           src={img(p.logo, 'w92')}
           alt=""
           loading="lazy"
+          style={{ '--n': i }}
         />
       ))}
-      {extra > 0 && <span className="pstack-more">+{extra}</span>}
+      {extra > 0 && (
+        <span className="pstack-more" style={{ '--n': shown.length }}>
+          +{extra}
+        </span>
+      )}
     </Tag>
   );
 }
@@ -83,6 +88,7 @@ export function useStreaming(item, enabled = true) {
           : null;
         if (controller.signal.aborted) return;
         setRows({
+          for: `${type}:${id}`,
           mine,
           buyable: [...mine, ...others].some(
             (p) => p.field === 'rent' || p.field === 'buy',
@@ -97,7 +103,57 @@ export function useStreaming(item, enabled = true) {
     return () => controller.abort();
   }, [type, id, date, year, region, services, enabled, attempt]);
 
-  return rows;
+  return rows?.for === `${type}:${id}` ? rows : null;
+}
+
+const EXIT_MS = 180;
+
+export function Availability({ id, providers, status, size, max, compact }) {
+  const hasProviders = providers?.length > 0;
+  const key =
+    hasProviders || status
+      ? [
+          id,
+          hasProviders && providers.map((p) => p.id).join(),
+          status?.label,
+        ].join('|')
+      : null;
+  const latest = useRef(null);
+  latest.current = { providers: hasProviders ? providers : null, status };
+  const [shown, setShown] = useState(() =>
+    key ? { key, ...latest.current } : null,
+  );
+  const [leaving, setLeaving] = useState(false);
+
+  useEffect(() => {
+    if (key) {
+      setShown({ key, ...latest.current });
+      setLeaving(false);
+      return;
+    }
+    setLeaving(true);
+    const timer = setTimeout(() => {
+      setShown(null);
+      setLeaving(false);
+    }, EXIT_MS);
+    return () => clearTimeout(timer);
+  }, [key]);
+
+  if (!shown) return null;
+
+  return (
+    <span
+      key={shown.key}
+      className="availability"
+      data-leaving={leaving}
+      aria-hidden={leaving || undefined}
+    >
+      {shown.providers && (
+        <ProviderStack providers={shown.providers} size={size} max={max} />
+      )}
+      {shown.status && <WatchBadge status={shown.status} compact={compact} />}
+    </span>
+  );
 }
 
 export function LazyProviders({ item, size = 20, max = 3, onResolve }) {
@@ -112,10 +168,14 @@ export function LazyProviders({ item, size = 20, max = 3, onResolve }) {
 
   return (
     <div ref={ref} className="tcard-providers">
-      {rows?.list.length > 0 && (
-        <ProviderStack providers={rows.list} size={size} max={max} />
-      )}
-      {status && <WatchBadge status={status} compact />}
+      <Availability
+        id={item.key}
+        providers={rows?.list}
+        status={status}
+        size={size}
+        max={max}
+        compact
+      />
     </div>
   );
 }
@@ -131,16 +191,23 @@ const STATUS_ICONS = {
 export function WatchBadge({ status, compact = false }) {
   const region = useRegion();
   const Icon = STATUS_ICONS[status.tone];
+  const label =
+    status.tone === 'none' ? `Not streaming in ${region}` : status.label;
+  const short = compact && status.short && status.short !== label;
   return (
     <span
       className="watch-badge"
       data-tone={status.tone}
       data-compact={compact}
+      title={short ? label : undefined}
     >
       <Icon stroke={1.8} />
-      <span className="watch-badge-text">
-        {status.tone === 'none' ? `Not streaming in ${region}` : status.label}
-      </span>
+      <span className="watch-badge-text">{label}</span>
+      {short && (
+        <span className="watch-badge-short" aria-hidden="true">
+          {status.short}
+        </span>
+      )}
     </span>
   );
 }

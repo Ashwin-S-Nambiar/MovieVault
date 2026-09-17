@@ -99,6 +99,12 @@ export const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 const DAY = 86_400_000;
 
+const month = (date) =>
+  new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+    month: 'short',
+    year: 'numeric',
+  });
+
 export function watchStatus(item, rows, release = rows?.release) {
   if (!item || !rows) return null;
   if (rows.list.length) return null;
@@ -109,15 +115,14 @@ export function watchStatus(item, rows, release = rows?.release) {
   if (!opened && item.year && item.year < today.slice(0, 4)) {
     return rows.buyable
       ? { tone: 'rent', label: 'Rent or buy' }
-      : { tone: 'none', label: 'Not streaming' };
+      : { tone: 'none', label: 'Not streaming', short: 'No streams' };
   }
   if (!opened && item.year) return null;
   if (!opened || opened > today) {
     return {
       tone: 'soon',
-      label: item.date
-        ? `Coming ${new Date(`${item.date}T00:00:00`).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}`
-        : 'Coming soon',
+      label: item.date ? `Coming ${month(item.date)}` : 'Coming soon',
+      short: item.date ? month(item.date) : 'Coming soon',
       digital: digitalSoon ? digital : null,
     };
   }
@@ -133,5 +138,5 @@ export function watchStatus(item, rows, release = rows?.release) {
     return { tone: 'cinema', label: 'In cinemas' };
   }
   if (rows.buyable) return { tone: 'rent', label: 'Rent or buy' };
-  return { tone: 'none', label: 'Not streaming' };
+  return { tone: 'none', label: 'Not streaming', short: 'No streams' };
 }

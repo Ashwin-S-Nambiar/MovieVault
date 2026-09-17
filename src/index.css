@@ -1595,6 +1595,7 @@ a.search-pill:active {
 
 .tcard-providers {
   --size: 20px;
+  container-type: inline-size;
   min-height: 30px;
   margin-top: 6px;
   padding: 0;
@@ -4970,10 +4971,25 @@ a.link-card:active {
   min-width: 0;
 }
 
-.watch-badge-text {
+.watch-badge-text,
+.watch-badge-short {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.watch-badge-short {
+  display: none;
+}
+
+@container (max-width: 140px) {
+  .watch-badge:has(.watch-badge-short) .watch-badge-text {
+    display: none;
+  }
+
+  .watch-badge-short {
+    display: inline;
+  }
 }
 
 .watch-badge svg {
@@ -4999,28 +5015,13 @@ a.link-card:active {
 }
 
 .watch-badge[data-tone="none"] {
-  gap: 7px;
-  padding-inline: 2px;
-  background: transparent;
-  color: var(--faint);
-}
-
-.watch-badge[data-tone="none"] svg {
-  display: none;
-}
-
-.watch-badge[data-tone="none"]::before {
-  content: "";
-  width: 6px;
-  height: 6px;
-  flex: none;
-  border-radius: 50%;
-  box-shadow: inset 0 0 0 1.5px currentColor;
+  background: var(--chip-lilac);
+  color: var(--ink);
 }
 
 .watch-badge[data-compact="true"] {
   min-height: 22px;
-  padding: 0 8px 0 6px;
+  padding: 0 7px 0 5px;
   gap: 4px;
   font-size: 11.5px;
 }
@@ -5032,6 +5033,40 @@ a.link-card:active {
 
 @keyframes badge-in {
   from {
+    opacity: 0;
+    transform: translateY(3px) scale(0.96);
+  }
+}
+
+.availability {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  max-width: 100%;
+  min-width: 0;
+  vertical-align: middle;
+  transform-origin: left center;
+}
+
+.availability .pstack > * {
+  animation: logo-pop 340ms var(--ease-out) both;
+  animation-delay: calc(var(--n, 0) * 45ms);
+}
+
+.availability[data-leaving="true"] {
+  pointer-events: none;
+  animation: availability-out 180ms var(--ease-out) both;
+}
+
+@keyframes logo-pop {
+  from {
+    opacity: 0;
+    transform: translateY(3px) scale(0.9);
+  }
+}
+
+@keyframes availability-out {
+  to {
     opacity: 0;
     transform: translateY(3px) scale(0.96);
   }
@@ -6114,5 +6149,16 @@ button.heat-cell:focus-visible {
   .status-pill,
   .disclose {
     transition-duration: 180ms !important;
+  }
+
+  .watch-badge,
+  .availability .pstack > * {
+    animation-name: fade-in !important;
+    animation-duration: 180ms !important;
+  }
+
+  .availability[data-leaving="true"] {
+    animation-name: fade-out !important;
+    animation-duration: 180ms !important;
   }
 }
