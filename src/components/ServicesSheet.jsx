@@ -93,7 +93,7 @@ export default function ServicesSheet() {
             className="btn"
             onClick={() => setShowAll((v) => !v)}
           >
-            <span className="swap">
+            <span className="label-stack">
               <span aria-hidden={showAll}>Show all {pickedFirst.length}</span>
               <span aria-hidden={!showAll}>Show fewer</span>
             </span>

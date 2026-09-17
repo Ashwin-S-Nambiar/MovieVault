@@ -355,7 +355,7 @@ function PersonView({ id }) {
                         }
                       }}
                     >
-                      <span className="swap">
+                      <span className="label-stack">
                         <span aria-hidden={bioOpen}>Read more</span>
                         <span aria-hidden={!bioOpen}>Show less</span>
                       </span>

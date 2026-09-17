@@ -6004,6 +6004,7 @@ button.heat-cell:focus-visible {
 
 .phero-bio[data-clamped="true"] {
   display: -webkit-box;
+  white-space: normal;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 4;
   line-clamp: 4;
@@ -6014,16 +6015,16 @@ button.heat-cell:focus-visible {
   margin: 6px 0 0 -0.85em;
 }
 
-.swap {
+.label-stack {
   display: grid;
   justify-items: center;
 }
 
-.swap > * {
+.label-stack > * {
   grid-area: 1 / 1;
 }
 
-.swap > [aria-hidden="true"] {
+.label-stack > [aria-hidden="true"] {
   visibility: hidden;
 }
 
