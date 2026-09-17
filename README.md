@@ -1,179 +1,186 @@
-# MovieVault
+<p align="center">
+  <a href="https://movievault.ashwin.co.in">
+    <img src="./assets/readme/hero.svg" width="100%" alt="MovieVault: where to stream anything. trending titles turn on a ring of dvd cases, drawn with the same geometry the live reel uses, and the one you tap flies open into its page">
+  </a>
+</p>
 
-<div align="center">
+<p align="center">
+  <a href="https://movievault.ashwin.co.in"><strong>movievault.ashwin.co.in</strong></a>
+  &nbsp;·&nbsp;
+  <a href="#what-it-does">what it does</a>
+  &nbsp;·&nbsp;
+  <a href="#the-reel-is-maths-not-a-dependency">the reel</a>
+  &nbsp;·&nbsp;
+  <a href="#running-it">running it</a>
+</p>
 
-![React](https://img.shields.io/badge/React_19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![React Router](https://img.shields.io/badge/React_Router_8-CA4245?style=for-the-badge&logo=reactrouter&logoColor=white)
-![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS_4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Vite](https://img.shields.io/badge/Vite_8-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![TMDB](https://img.shields.io/badge/TMDB-01B4E4?style=for-the-badge&logo=themoviedatabase&logoColor=white)
+<br>
 
-Find where any film, series or anime is streaming, follow whole universes in release order, and keep a vault of what to watch next.
+<p align="center">
+  <img src="./docs/screenshots/MovieVault.webp" width="100%" alt="the home page: trending films and series standing on a ring of dvd cases, the one in front larger and facing you">
+</p>
 
-[Features](#features) • [Design](#design) • [Tech stack](#tech-stack) • [Installation](#installation) • [Screenshots](#screenshots)
+the source of **[movievault.ashwin.co.in](https://movievault.ashwin.co.in)**. search any film, series or anime, see which of your services it streams on tonight, follow a whole franchise in release order, and keep a vault of what to watch next.
 
-</div>
+it is a react spa with no server behind it, talking straight to tmdb. the routes are not the interesting part. the interesting parts are the reel, which is a spring solved by hand rather than a dependency, and the case you tap, which is the same case that opens on the next page.
 
-## Features
+## what it does
 
-- **The reel.** Trending films and series sit on a 3D ring of DVD cases that turns on its own and pauses while you hover. Drag, flick, scroll sideways or use the arrow keys; tap the centre case and it flies into the detail page and opens to reveal the disc, then closes and flies back when you return.
-- **Where to watch.** Every title lists the services it streams, rents or sells on in your region, with the services you pay for first. Availability comes from JustWatch through TMDB.
-- **Your services.** Pick your streaming services and region once. Home shows what's popular on them, and search can filter to only what you can watch tonight.
-- **Films, series and anime.** One search across all three with type filters, sorting, infinite scroll and recent searches. Anime is recognised through TMDB's anime keyword, so it gets its own shelf and filter.
-- **Universes.** Franchises like the MCU, Star Wars, Middle-earth and Dune laid out as a timeline: every film in release order, what's upcoming, the span, the average rating and one tap to save them all.
-- **Connected titles.** Every detail page shows what came before and after it in release order, for films, series and anime alike, with a strip of the whole franchise and a link to its universe.
-- **Series detail.** Seasons with episode lists, the next episode's air date, networks and creators.
-- **Rich detail pages.** Local age ratings, runtime, tagline, genres, cast, crew, budget and box office, the official trailer and recommendations.
-- **The vault.** Save anything with a bookmark, filter it by type, sort it, and undo any removal.
-- **Honest API status.** The app watches the requests it really makes. Failed requests retry with backoff, and a small pill only appears when TMDB is unreachable, you're offline or the key is wrong, with a retry button.
-- **Settings.** A gear in the header opens appearance and the live TMDB connection status, and shows a dot when the connection is down.
-- **Light and dark.** Follows the system, or pick one in settings.
+| route | what it is |
+| --- | --- |
+| `/` | the reel of what is trending, and shelves of what is popular on your services |
+| `/search` | one search across films, series and anime, with filters, sorting and infinite scroll |
+| `/movie/:id`, `/tv/:id` | the case, opened: where to watch, cast, crew, trailer, seasons, and what came before and after it |
+| `/universes` | eighteen franchises as a grid of backdrops |
+| `/universe/:slug` | one franchise as a release-order timeline, with one tap to save all of it |
+| `/vault` | everything you saved, with where each one streams |
 
-## Design
+![jurassic park with its case open, the disc showing, beside where it streams and the universe it belongs to](./docs/screenshots/MovieVault-2.webp)
 
-- **Motion with a purpose.** The reel is positioned every frame with plain maths and settles on a critically damped spring, so drags hand their momentum straight into the glide. Pages move with the View Transitions API, so the case you tap is the case that opens, and it only flies back to where you actually came from.
-- **Calm loading.** Skeletons match the real layout and share one synchronised sweep, images fade in, and results stay on screen while new ones load, so nothing jumps or flashes.
-- **Restraint.** Warm off-white ground, near-black ink, one red for saving, and pastel chips for browsing.
-- **Typography.** One family: Geist for everything, Geist Mono for small numbers like years.
-- **Built for phones first.** A bottom search dock that rides above the keyboard, drag-to-dismiss sheets, 44px touch targets and safe-area padding, scaling up to a two-column detail page and a wider ring on desktop.
-- **Accessible.** Keyboard navigation throughout, focus management in dialogs, and `prefers-reduced-motion` respected everywhere.
+- **where to watch.** every title lists the services it streams, rents or sells on in your region, with the ones you pay for first. the data is justwatch's, through tmdb.
+- **your services.** pick them and your region once. home shows what is popular on them, and search can narrow to only what you can watch tonight.
+- **anime is its own thing.** tmdb has no anime type, so it is recognised through tmdb's anime keyword and gets its own shelf and filter.
+- **connected titles.** every detail page shows what came before and after it in release order, for films, series and anime alike, with a strip of the whole franchise and a link to its universe.
+- **the vault.** save anything with a bookmark, filter it, sort it, and undo a removal from the toast.
+- **settings.** appearance, and the live tmdb connection. the gear carries a dot when that connection is down.
+- **light and dark.** follows the system unless you pick one.
 
-## Tech stack
+## the reel is maths, not a dependency
 
-- **[React 19](https://react.dev/)** with a data router from **[React Router 8](https://reactrouter.com/)** for view transitions and scroll restoration
-- **[Tailwind CSS 4](https://tailwindcss.com/)** for the reset, with a hand-written token-based stylesheet
-- **[Vite 8](https://vite.dev/)** for development and builds
-- **[Tabler Icons](https://tabler.io/icons)**
-- **[TMDB API](https://developer.themoviedb.org/docs/getting-started)** for titles, providers, collections, credits, seasons and videos
-- **[Biome](https://biomejs.dev/)** for linting and formatting
+every case sits on a ring. its angle is its offset from the front times a fixed step, 30° on narrow screens and 22° from 720 px up, and the radius falls out of the case width so neighbours never overlap:
 
-No animation or data-fetching libraries: the carousel, sheets, toasts, request cache and stores are small modules in `src/lib` and `src/components`.
+```js
+radius = gap / (2 * Math.sin(step / 2)) // gap = 1.1 × case width
+```
 
-## Installation
+the ring's position eases toward its target on a critically damped spring, solved in closed form rather than stepped, so a long frame never makes it overshoot:
 
-### Prerequisites
+```js
+const decay = Math.exp(-w * dt);
+const c = v0 + w * x0;
+pos = target + (x0 + c * dt) * decay;
+vel = (v0 - w * c * dt) * decay;
+```
 
-- Node.js 22.22+ and npm
-- A free TMDB API key
+everything else follows from that.
 
-### Setup
+- **one spring, two feels.** a drag, a key or a tap sets `w` to 15, so the ring snaps. autoplay sets it to 6.5, so it glides.
+- **flicks carry.** release velocity comes from the last 90 ms of pointer samples rather than the last two events, goes straight into the spring as its starting velocity, and can carry the ring at most five cases.
+- **nothing renders per frame.** transforms go straight to the node. react only hears about it when the case in front changes.
+- **it stops when it stops.** once the ring is within 0.0006 of a case and barely moving, the rAF loop ends and the position is saved for the session, so coming back puts you where you were.
+- **autoplay waits its turn.** it holds while you hover the ring or the caption under it, while a case has focus, while the tab is hidden, and while less than 35% of the reel is on screen.
+- **a small ring to draw.** only the cases within 3.6 steps of the front are painted, and the outer ones fade from 2.3 steps out.
 
-1. **Clone the repository**
+## the case that opens is the case you tapped
 
-   ```bash
-   git clone https://github.com/Ashwin-S-Nambiar/MovieVault.git
-   cd MovieVault
-   ```
+tap the front case and it does not cross-fade. one case, drawn above both pages, flies from the reel to where the detail page will put it, swings open to show the disc, and hands over to the real one.
 
-2. **Install dependencies**
+it is a flip done with the web animations api. the page it lands on is not mounted yet when it takes off, so it flies to a probed layout box and **steers** onto the real one once it exists. going back, it closes and flies home, but only if home is where you actually came from: the take-off rect is stored with its history index and the viewport width, and if either no longer matches, it waits for the page to place its case and flies there instead, or simply fades if there is nowhere to land. a modifier click on a card skips all of it and opens a tab, and reduced motion skips all of it outright.
 
-   ```bash
-   npm install
-   ```
+every other navigation goes through the view transitions api, through react router's data router.
 
-3. **Add your API key**
+## requests are honest about failing
 
-   Get a key from [TMDB API settings](https://www.themoviedb.org/settings/api) and create a `.env` file in the root:
+there is no data fetching library either. `useQuery` is 95 lines.
 
-   ```env
-   VITE_TMDB_API_KEY=your_api_key_here
-   ```
+- **a cache that remembers.** results live for ten minutes in memory and in `sessionStorage`, so going back paints at once. results stay on screen while new ones load, so nothing flashes empty.
+- **retries that back off.** a failed request tries three times, waiting 400 ms and then 1 s, plus jitter. a rejected key or a 404 does not retry, because it will not get better.
+- **a pill only when it is true.** the app watches the requests it really makes, not a ping. the status pill only appears when tmdb is unreachable, you are offline, or the key is wrong, and its retry button replays every query that failed.
 
-4. **Start the dev server**
+<details>
+<summary><strong>more screenshots</strong></summary>
 
-   ```bash
-   npm run dev
-   ```
+<br>
 
-5. **Lint and format**
+![search results for batman across films and series](./docs/screenshots/MovieVault-1.webp)
 
-   ```bash
-   npm run check      # Lint, format and import-order checks
-   npm run check:fix  # Apply safe fixes and formatting
-   ```
+![resident evil: extinction with the previous and next film and the whole franchise in release order](./docs/screenshots/MovieVault-5.webp)
 
-   A pre-commit hook runs Biome on staged files, and GitHub Actions runs `biome ci` and the build on every push and pull request.
+![the search page before typing: a shelf of trending spines above browse cards](./docs/screenshots/MovieVault-6.webp)
 
-6. **Build for production**
+![every universe as a grid of backdrops](./docs/screenshots/MovieVault-8.webp)
 
-   ```bash
-   npm run build
-   npm run preview
-   ```
+![the star wars universe as a release-order timeline](./docs/screenshots/MovieVault-3.webp)
 
-### Project layout
+![saved titles in the vault, with where each one streams](./docs/screenshots/MovieVault-7.webp)
+
+![picking streaming services in the services sheet](./docs/screenshots/MovieVault-10.webp)
+
+![the settings sheet with appearance and the tmdb connection](./docs/screenshots/MovieVault-11.webp)
+
+![the reel in dark mode](./docs/screenshots/MovieVault-9.webp)
+
+![home, an anime detail page and anime search on iphones](./docs/screenshots/MovieVault-4.webp)
+
+</details>
+
+## the design
+
+- **restraint.** a warm off-white ground, near-black ink, one red for saving, and pastel chips for browsing.
+- **one family.** geist for everything, geist mono for small numbers like years.
+- **phones first.** a search dock that rides above the keyboard, sheets you drag to dismiss, 44 px touch targets and safe-area padding, scaling up to a two-column detail page and a wider ring.
+- **calm loading.** skeletons match the real layout and share one synchronised sweep, and images fade in rather than pop.
+- **accessible.** keyboard navigation throughout, focus held inside dialogs, and `prefers-reduced-motion` respected everywhere.
+
+## the stack
+
+| layer | choices |
+| --- | --- |
+| framework | [react 19](https://react.dev/) · [react router 8](https://reactrouter.com/) data router, for view transitions and scroll restoration |
+| styling | [tailwind css 4](https://tailwindcss.com/) for the reset, then one hand-written, token-based stylesheet · [tabler icons](https://tabler.io/icons) |
+| data | [tmdb api](https://developer.themoviedb.org/docs/getting-started) for titles, providers, collections, credits, seasons and videos · availability from [justwatch](https://www.justwatch.com/) |
+| tooling | [vite 8](https://vite.dev/) · [biome](https://biomejs.dev/) · a pre-commit hook · github actions |
+
+no animation library, no data-fetching library, no state library. the reel, the flight, the sheets, the toasts, the cache and the stores are small modules in `src/lib` and `src/components`.
+
+## running it
+
+you'll need node 22.22+ and a free [tmdb api key](https://www.themoviedb.org/settings/api).
+
+```sh
+git clone https://github.com/Ashwin-S-Nambiar/MovieVault.git
+cd MovieVault
+npm install
+```
+
+put the key in a `.env` at the root:
+
+```env
+VITE_TMDB_API_KEY=your_api_key_here
+```
+
+```sh
+npm run dev        # http://localhost:5173
+npm run check      # lint, format and import order
+npm run check:fix  # apply the safe fixes
+npm run build && npm run preview
+```
+
+a pre-commit hook runs biome on staged files, and ci runs `biome ci` and the build on every push and pull request.
+
+## the shape of it
 
 ```
 src/
-  components/  reel, cases, services and settings sheets, toasts, status pill, shelves, cards
-  lib/         TMDB client and catalogue, stores, hooks, universes
+  components/  the reel, cases, the flight, services and settings sheets,
+               toasts, the status pill, shelves, cards
+  lib/         tmdb client and catalogue, the query cache, health, stores,
+               hooks, the hero flight, universes
   pages/       home, search, title, vault, universes, universe, not found
-  index.css    design tokens, themes and every component style
+  index.css    tokens, themes, then every component, in one file
 ```
 
-## Contributing
+## known rough edges
 
-1. Fork the repository
-2. Create a branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push the branch: `git push origin feature/amazing-feature`
-5. Open a pull request
+- **one bundle.** the whole app ships as one chunk, about 133 KB gzipped, with no route splitting yet.
+- **no server rendering**, so the page is empty until react mounts.
+- **the key is public.** a tmdb read key sits in the client bundle, as it does in any static tmdb app. it can read tmdb and nothing else.
+- **universes are hand-picked.** the eighteen franchises are a list in [`src/lib/universes.js`](src/lib/universes.js), not something tmdb exposes.
 
-## Screenshots
+## credit
 
-<div align="center">
-
-### Home
-![The reel of trending titles on a ring of DVD cases](./docs/screenshots/MovieVault.webp)
-
-### Search
-![The shelf of trending spines above the browse cards and trending grid](./docs/screenshots/MovieVault-6.webp)
-
-![Search results for Batman across films and series](./docs/screenshots/MovieVault-1.webp)
-
-### Title
-![Jurassic Park with its case open, streaming services and its universe](./docs/screenshots/MovieVault-2.webp)
-
-### Connected titles
-![Resident Evil: Extinction with the previous and next film and the whole franchise in release order](./docs/screenshots/MovieVault-5.webp)
-
-### Universes
-![Every universe as a grid of backdrops](./docs/screenshots/MovieVault-8.webp)
-
-![The Star Wars universe as a release-order timeline](./docs/screenshots/MovieVault-3.webp)
-
-### Vault
-![Saved titles with where each one streams](./docs/screenshots/MovieVault-7.webp)
-
-### Services and settings
-![Picking streaming services in the services sheet](./docs/screenshots/MovieVault-10.webp)
-
-![The settings sheet with appearance and the TMDB connection](./docs/screenshots/MovieVault-11.webp)
-
-### Dark mode
-![The reel in dark mode](./docs/screenshots/MovieVault-9.webp)
-
-### On a phone
-![Home, an anime detail page and anime search on iPhones](./docs/screenshots/MovieVault-4.webp)
-
-</div>
-
-## Live demo
-
-<div align="center">
-
-[![Visit Site](https://img.shields.io/badge/Visit_Site-000?style=for-the-badge&logo=vercel&logoColor=white)](https://movievault.ashwin.co.in)
-
-</div>
-
-## Attribution
-
-This product uses the TMDB API but is not endorsed or certified by TMDB. Streaming availability is provided by JustWatch.
+this product uses the tmdb api but is not endorsed or certified by tmdb. streaming availability is provided by justwatch.
 
 ---
 
-<div align="center">
-
-Made by Ashwin S Nambiar
-
-</div>
+[movievault.ashwin.co.in](https://movievault.ashwin.co.in) · [ashwin.co.in](https://ashwin.co.in) · [notes](https://notes.ashwin.co.in) · [x](https://x.com/ashwinnambiar11) · [github](https://github.com/Ashwin-S-Nambiar)
