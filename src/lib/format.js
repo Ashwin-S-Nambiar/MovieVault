@@ -24,6 +24,9 @@ export const titleHref = (item) =>
 export const personHref = (person) =>
   `/person/${person.id}${person.name ? `-${slugify(person.name)}` : ''}`;
 
+export const entityHref = (kind, entity) =>
+  `/${kind}/${entity.id}${entity.name ? `-${slugify(entity.name)}` : ''}`;
+
 export const parseId = (param) => {
   const match = /^([1-9]\d*)(?:-.*)?$/.exec(param ?? '');
   return match ? Number(match[1]) : null;
@@ -103,6 +106,12 @@ export function watchStatus(item, rows, release = rows?.release) {
   const digital = release?.digital;
   const digitalSoon = digital && digital > today;
   const opened = release?.theatrical ?? item.date;
+  if (!opened && item.year && item.year < today.slice(0, 4)) {
+    return rows.buyable
+      ? { tone: 'rent', label: 'Rent or buy' }
+      : { tone: 'none', label: 'Not streaming' };
+  }
+  if (!opened && item.year) return null;
   if (!opened || opened > today) {
     return {
       tone: 'soon',
@@ -113,7 +122,11 @@ export function watchStatus(item, rows, release = rows?.release) {
     };
   }
   if (item.type === 'movie' && digitalSoon) {
-    return { tone: 'cinema', label: 'In cinemas', digital };
+    return {
+      tone: 'digital',
+      label: `Digital ${new Date(`${digital}T00:00:00`).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}`,
+      digital,
+    };
   }
   const age = (Date.now() - Date.parse(opened)) / DAY;
   if (item.type === 'movie' && !digital && age <= 120) {

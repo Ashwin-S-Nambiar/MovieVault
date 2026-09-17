@@ -34,6 +34,8 @@ it is a react spa with no server behind it, talking straight to tmdb. the routes
 | `/universes` | eighteen franchises as a grid of backdrops |
 | `/universe/:slug` | one franchise as a release-order timeline, with one tap to save all of it |
 | `/person/:id` | an actor or director: what they're known for, and every credit in order |
+| `/company/:id`, `/network/:id` | everything from a studio or network, like a24 or hbo |
+| `/keyword/:id` | everything tmdb tags with a theme, like time travel or heist |
 | `/vault` | everything you saved, with where each one streams |
 
 ![jurassic park with its case open, the disc showing, beside where it streams and the universe it belongs to](./docs/screenshots/MovieVault-2.webp)
@@ -43,8 +45,11 @@ it is a react spa with no server behind it, talking straight to tmdb. the routes
 - **anime is its own thing.** tmdb has no anime type, so it is recognised through tmdb's anime keyword and gets its own shelf and filter.
 - **connected titles.** every detail page shows what came before and after it in release order, for films, series and anime alike, with a strip of the whole franchise and a link to its universe.
 - **episode ratings.** every series has a ratings graph in the style of a contribution chart: one row per season, one square per episode, darker for better. a season too long to read as one row, like the 366 episodes in bleach's first, is split into its arcs using tmdb's fan-made episode groups, or at the gaps between broadcast seasons when there are none.
-- **when it lands.** films between cinema and streaming show their digital release date for your region.
+- **when it lands.** films between cinema and streaming show their digital release date for your region, on their page and as a "digital 29 sep" badge on cards and in the vault.
 - **people.** cast, directors and writers link to their own pages, and search finds them too.
+- **episodes up close.** tap an episode for its still, rating, director, writers, guest stars and clips, and step through the season from there.
+- **every video.** the trailer opens with the teasers, clips, featurettes and behind-the-scenes videos lined up underneath.
+- **studios, networks and tags.** the details show studio and network logos, and those and a title's tags each open a page of everything else under them.
 - **what's new.** home shows new episodes of series in your vault, what's in cinemas near you, and what just came out on digital.
 - **anime numbering.** anime that restart their episode numbers each season also show the running number, so season 2 episode 1 reads as #26.
 - **links out.** imdb, wikipedia, the official site and socials, where tmdb knows them.
@@ -173,17 +178,17 @@ a pre-commit hook runs biome on staged files, and ci runs `biome ci` and the bui
 src/
   components/  the reel, cases, the flight, services and settings sheets,
                toasts, the status pill, shelves, cards, the seasons list,
-               the ratings graph
+               the ratings graph, the episode sheet
   lib/         tmdb client and catalogue, the query cache, health, stores,
                hooks, the hero flight, episodes and their splits, universes
-  pages/       home, search, title, person, vault, universes, universe,
-               not found
+  pages/       home, search, title, person, studio, network and tag
+               browsing, vault, universes, universe, not found
   index.css    tokens, themes, then every component, in one file
 ```
 
 ## known rough edges
 
-- **mostly one bundle.** the app ships as one chunk, about 143 KB gzipped. only the ratings graph is split out, and it loads when you open it.
+- **mostly one bundle.** the app ships as one chunk, about 145 KB gzipped. only the ratings graph and the episode sheet are split out, and they load when you open them.
 - **no server rendering**, so the page is empty until react mounts.
 - **the key is public.** a tmdb key sits in the client bundle, as it does in any static tmdb app. the app only ever reads with it, and nothing you do here is sent anywhere but tmdb.
 - **universes are hand-picked.** the eighteen franchises are a list in [`src/lib/universes.js`](src/lib/universes.js), not something tmdb exposes.

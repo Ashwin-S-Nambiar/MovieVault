@@ -1,5 +1,5 @@
 import { IconChartDots3, IconChevronRight } from '@tabler/icons-react';
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense, useCallback, useState } from 'react';
 import { getSeason } from '../lib/catalog';
 import {
   getEpisodeGuide,
@@ -18,13 +18,22 @@ import { Poster } from './Case';
 import Segmented from './Segmented';
 
 const EpisodeRatings = lazy(() => import('./EpisodeRatings'));
+const EpisodeSheet = lazy(() => import('./EpisodeSheet'));
 
 const EPISODE_PAGE = 24;
 
 const episodeCount = (n) =>
   `${n.toLocaleString()} episode${n === 1 ? '' : 's'}`;
 
-function SeasonRow({ raw, season, name, poster, sub, episodes: preset }) {
+function SeasonRow({
+  raw,
+  season,
+  name,
+  poster,
+  sub,
+  episodes: preset,
+  onEpisode,
+}) {
   const tvId = raw.id;
   const [open, setOpen] = useState(false);
   const count = preset?.length ?? season.episode_count;
@@ -75,6 +84,7 @@ function SeasonRow({ raw, season, name, poster, sub, episodes: preset }) {
                 limit={limit}
                 onNewest={setNewest}
                 onMore={() => setLimit((n) => n + EPISODE_PAGE * 2)}
+                onOpen={(index) => onEpisode(episodes, index)}
               />
             )
           )}
@@ -84,7 +94,15 @@ function SeasonRow({ raw, season, name, poster, sub, episodes: preset }) {
   );
 }
 
-function EpisodeList({ episodes, parts, newest, limit, onNewest, onMore }) {
+function EpisodeList({
+  episodes,
+  parts,
+  newest,
+  limit,
+  onNewest,
+  onMore,
+  onOpen,
+}) {
   const long = episodes.length > EPISODE_PAGE;
   const ordered = newest ? [...episodes].reverse() : episodes;
   const shown = ordered.slice(0, limit);
@@ -125,19 +143,27 @@ function EpisodeList({ episodes, parts, newest, limit, onNewest, onMore }) {
                 <span>{yearSpan(partStats(part.episodes))}</span>
               </li>
             ),
-            <li key={ep.id} className="episode">
-              <span className="episode-num">
-                {String(ep.number).padStart(2, '0')}
-              </span>
-              <div>
-                <strong style={{ fontWeight: 500 }}>{ep.name}</strong>
-                <span className="muted">
-                  {ep.absolute ? ` · #${ep.absolute}` : ''}
-                  {ep.runtime ? ` · ${runtime(ep.runtime)}` : ''}
-                  {ep.air ? ` · ${longDate(ep.air)}` : ''}
+            <li key={ep.id}>
+              <button
+                type="button"
+                className="episode"
+                onClick={() => onOpen(episodes.indexOf(ep))}
+              >
+                <span className="episode-num">
+                  {String(ep.number).padStart(2, '0')}
                 </span>
-                {ep.overview && <p>{ep.overview}</p>}
-              </div>
+                <span>
+                  <strong className="episode-name">{ep.name}</strong>
+                  <span className="muted">
+                    {ep.absolute ? ` · #${ep.absolute}` : ''}
+                    {ep.runtime ? ` · ${runtime(ep.runtime)}` : ''}
+                    {ep.air ? ` · ${longDate(ep.air)}` : ''}
+                  </span>
+                  {ep.overview && (
+                    <span className="episode-overview">{ep.overview}</span>
+                  )}
+                </span>
+              </button>
             </li>,
           ];
         })}
@@ -176,6 +202,19 @@ export default function Seasons({ raw }) {
   const [ref, inView] = useInView({ rootMargin: '400px' });
   const [ratingsOpen, setRatingsOpen] = useState(false);
   const [ratingsUsed, setRatingsUsed] = useState(false);
+  const [episode, setEpisode] = useState(null);
+  const openEpisode = useCallback(
+    (list, index) => setEpisode({ list, index }),
+    [],
+  );
+  const moveEpisode = useCallback(
+    (index) => setEpisode((e) => ({ ...e, index })),
+    [],
+  );
+  const closeEpisode = useCallback(
+    () => setEpisode((e) => ({ ...e, index: -1 })),
+    [],
+  );
   const split = needsSplit(raw);
   const guide = useQuery(
     `guide-${raw.id}`,
@@ -263,9 +302,21 @@ export default function Seasons({ raw }) {
               poster={row.poster}
               episodes={row.episodes}
               sub={row.sub.filter(Boolean).join(' · ')}
+              onEpisode={openEpisode}
             />
           ))}
         </ul>
+      )}
+      {episode && (
+        <Suspense fallback={null}>
+          <EpisodeSheet
+            tvId={raw.id}
+            list={episode.list}
+            index={episode.index}
+            onIndex={moveEpisode}
+            onClose={closeEpisode}
+          />
+        </Suspense>
       )}
       {ratingsUsed && (
         <Suspense fallback={null}>

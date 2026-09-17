@@ -50,6 +50,7 @@ export function useStreaming(item, enabled = true) {
   const type = item?.type;
   const id = item?.id;
   const date = item?.date;
+  const year = item?.year;
   useReconnect(failed, () => setAttempt((n) => n + 1));
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: attempt re-runs the fetch
@@ -72,7 +73,9 @@ export function useStreaming(item, enabled = true) {
         const recent =
           type === 'movie' &&
           !list.length &&
-          (!date || Date.now() - Date.parse(date) < 240 * DAY);
+          (date
+            ? Date.now() - Date.parse(date) < 240 * DAY
+            : !year || Number(year) >= new Date().getFullYear() - 1);
         const release = recent
           ? await getReleaseDates(id, region, {
               signal: controller.signal,
@@ -92,7 +95,7 @@ export function useStreaming(item, enabled = true) {
         if (!controller.signal.aborted) setFailed(true);
       });
     return () => controller.abort();
-  }, [type, id, date, region, services, enabled, attempt]);
+  }, [type, id, date, year, region, services, enabled, attempt]);
 
   return rows;
 }
@@ -119,6 +122,7 @@ export function LazyProviders({ item, size = 20, max = 3, onResolve }) {
 
 const STATUS_ICONS = {
   soon: IconCalendarEvent,
+  digital: IconCalendarEvent,
   cinema: IconTicket,
   rent: IconShoppingBag,
   none: IconEyeOff,

@@ -30,12 +30,14 @@ import {
   certification,
   getTitle,
   pickTrailer,
+  pickVideos,
   providerRows,
   releaseDates,
   trending,
 } from '../lib/catalog';
 import {
   compactMoney,
+  entityHref,
   longDate,
   parseId,
   personHref,
@@ -102,7 +104,7 @@ const STATUS_NOTES = {
 function statusNote(status) {
   if (!status.digital) return STATUS_NOTES[status.tone];
   const date = longDate(status.digital);
-  return status.tone === 'cinema'
+  return status.tone === 'digital'
     ? `Showing in cinemas. Out on digital ${date}.`
     : `Not released yet. Out on digital ${date}.`;
 }
@@ -286,6 +288,59 @@ function Names({ people }) {
   ));
 }
 
+function Entities({ kind, list, max = 3 }) {
+  if (!list?.length) return null;
+  return (
+    <span className="entity-links">
+      {list.slice(0, max).map((e) => (
+        <Link
+          key={e.id}
+          to={entityHref(kind, e)}
+          className={e.logo_path ? 'entity-link' : 'hover-underline'}
+          title={e.name}
+          viewTransition
+        >
+          {e.logo_path ? (
+            <img src={img(e.logo_path, 'w154')} alt={e.name} loading="lazy" />
+          ) : (
+            e.name
+          )}
+        </Link>
+      ))}
+      {list.length > max && (
+        <span className="muted">+{list.length - max} more</span>
+      )}
+    </span>
+  );
+}
+
+function Tags({ raw }) {
+  const tags = (raw.keywords?.keywords ?? raw.keywords?.results ?? []).slice(
+    0,
+    12,
+  );
+  if (!tags.length) return null;
+  return (
+    <div className="tags">
+      <span className="tags-label">Tags</span>
+      {tags.map((tag) => (
+        <Link
+          key={tag.id}
+          to={entityHref('keyword', tag)}
+          className="chip tag-chip"
+          viewTransition
+        >
+          {tag.name}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+const isEmpty = (v) =>
+  (v?.type === Names && !v.props.people.length) ||
+  (v?.type === Entities && !v.props.list?.length);
+
 function Facts({ raw, type }) {
   const region = useRegion();
   const crew = raw.credits?.crew ?? [];
@@ -318,10 +373,12 @@ function Facts({ raw, type }) {
           ['Box office', compactMoney(raw.revenue)],
           [
             'Studio',
-            raw.production_companies
-              ?.slice(0, 2)
-              .map((c) => c.name)
-              .join(', '),
+            <Entities
+              key="s"
+              kind="company"
+              list={raw.production_companies}
+              max={2}
+            />,
           ],
         ]
       : [
@@ -333,27 +390,21 @@ function Facts({ raw, type }) {
           ['Last aired', longDate(raw.last_air_date)],
           ['Episodes', raw.number_of_episodes],
           ['Status', raw.status],
+          ['Network', <Entities key="n" kind="network" list={raw.networks} />],
           [
-            'Network',
-            [
-              raw.networks
-                ?.slice(0, 3)
-                .map((n) => n.name)
-                .join(', '),
-              raw.networks?.length > 3
-                ? `+${raw.networks.length - 3} more`
-                : '',
-            ]
-              .filter(Boolean)
-              .join(' '),
+            'Studio',
+            <Entities
+              key="s"
+              kind="company"
+              list={raw.production_companies}
+              max={2}
+            />,
           ],
           ['Language', language],
           ['Episode length', runtime(raw.episode_run_time?.[0])],
         ];
 
-  const shown = facts.filter(
-    ([, v]) => v && !(v.type === Names && !v.props.people.length),
-  );
+  const shown = facts.filter(([, v]) => v && !isEmpty(v));
   if (!shown.length) return null;
 
   return (
@@ -367,6 +418,7 @@ function Facts({ raw, type }) {
           </div>
         ))}
       </dl>
+      <Tags raw={raw} />
       <ExternalLinks ids={raw.external_ids} homepage={raw.homepage} />
     </section>
   );
@@ -382,6 +434,7 @@ function TitleView({ type, id }) {
   const stageRef = useRef(null);
   const [open, setOpen] = useState(() => isArriving(`${type}-${id}`));
   const [trailerOpen, setTrailerOpen] = useState(false);
+  const [videoKey, setVideoKey] = useState(null);
   const transitioning = useViewTransitionState(location.pathname);
   const arrived = useRef(transitioning);
 
@@ -474,6 +527,9 @@ function TitleView({ type, id }) {
 
   const cert = raw ? certification(raw, type, region) : null;
   const trailer = raw ? pickTrailer(raw) : null;
+  const videos = raw ? pickVideos(raw) : [];
+  const playing =
+    videos.find((v) => v.key === videoKey) ?? trailer ?? videos[0] ?? null;
   const genres = raw?.genres ?? [];
   const recommendations = toItems(raw?.recommendations?.results, type).filter(
     (r) => r.poster,
@@ -643,14 +699,20 @@ function TitleView({ type, id }) {
 
             {raw && (
               <div className="detail-actions">
-                {trailer && (
+                {playing && (
                   <button
                     type="button"
                     className="btn btn-solid"
-                    onClick={() => setTrailerOpen(true)}
+                    onClick={() => {
+                      setVideoKey(null);
+                      setTrailerOpen(true);
+                    }}
                   >
                     <IconPlayerPlayFilled />
-                    Trailer
+                    {trailer ? 'Trailer' : 'Videos'}
+                    {videos.length > 1 && (
+                      <span className="btn-count">{videos.length}</span>
+                    )}
                   </button>
                 )}
                 <button type="button" className="btn" onClick={share}>
@@ -710,22 +772,50 @@ function TitleView({ type, id }) {
 
       <Footer />
 
-      {trailer && (
+      {playing && (
         <Sheet
           open={trailerOpen}
           onClose={() => setTrailerOpen(false)}
-          title={trailer.name}
+          title={playing.name}
           wide
         >
           {trailerOpen && (
             <div className="trailer">
               <iframe
-                src={`https://www.youtube-nocookie.com/embed/${trailer.key}?autoplay=1&rel=0`}
-                title={trailer.name}
+                key={playing.key}
+                src={`https://www.youtube-nocookie.com/embed/${playing.key}?autoplay=1&rel=0`}
+                title={playing.name}
                 allow="autoplay; encrypted-media; picture-in-picture"
                 allowFullScreen
               />
             </div>
+          )}
+          {videos.length > 1 && (
+            <section className="videos">
+              <h3 className="block-title">More videos</h3>
+              <ul className="video-list">
+                {videos.map((v) => (
+                  <li key={v.key}>
+                    <button
+                      type="button"
+                      className="video-item"
+                      aria-pressed={v.key === playing.key}
+                      onClick={() => setVideoKey(v.key)}
+                    >
+                      <span className="video-thumb">
+                        <Img
+                          src={`https://i.ytimg.com/vi/${v.key}/mqdefault.jpg`}
+                          loading="lazy"
+                        />
+                        <IconPlayerPlayFilled />
+                      </span>
+                      <span className="video-name">{v.name}</span>
+                      <span className="video-type">{v.type}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
           )}
         </Sheet>
       )}

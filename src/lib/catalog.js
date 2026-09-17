@@ -550,6 +550,28 @@ export function certification(raw, type, region) {
   return null;
 }
 
+const VIDEO_ORDER = [
+  'Trailer',
+  'Teaser',
+  'Clip',
+  'Featurette',
+  'Behind the Scenes',
+  'Bloopers',
+  'Opening Credits',
+];
+
+export function pickVideos(raw, limit = 16) {
+  return (raw.videos?.results ?? [])
+    .filter((v) => v.site === 'YouTube' && VIDEO_ORDER.includes(v.type))
+    .sort(
+      (a, b) =>
+        VIDEO_ORDER.indexOf(a.type) - VIDEO_ORDER.indexOf(b.type) ||
+        Number(b.official) - Number(a.official) ||
+        (b.published_at ?? '').localeCompare(a.published_at ?? ''),
+    )
+    .slice(0, limit);
+}
+
 export function pickTrailer(raw) {
   const videos = (raw.videos?.results ?? []).filter(
     (v) => v.site === 'YouTube',
@@ -593,5 +615,59 @@ export const getPerson = (id, { signal } = {}) =>
   tmdb(
     `/person/${id}`,
     { append_to_response: 'combined_credits,external_ids' },
+    { signal },
+  );
+
+export async function getLogo(item, { signal } = {}) {
+  const known = peekLogo(item);
+  if (known !== undefined) return known;
+  const lang = baseLanguage();
+  const images = await tmdb(
+    `/${item.type}/${item.id}/images`,
+    { include_image_language: lang === 'en' ? 'en,null' : `${lang},en,null` },
+    { signal },
+  );
+  return pickLogo({ images });
+}
+
+export const ENTITY = {
+  company: {
+    path: 'company',
+    filter: 'with_companies',
+    types: ['movie', 'tv'],
+  },
+  network: { path: 'network', filter: 'with_networks', types: ['tv'] },
+  keyword: { path: 'keyword', filter: 'with_keywords', types: ['movie', 'tv'] },
+};
+
+export const getEntity = (kind, id, { signal } = {}) =>
+  tmdb(`/${ENTITY[kind].path}/${id}`, {}, { signal });
+
+export async function browseEntity(
+  kind,
+  id,
+  { type, page: n = 1, sort = 'popularity.desc', signal } = {},
+) {
+  const dateField =
+    type === 'movie' ? 'primary_release_date' : 'first_air_date';
+  const params = {
+    [ENTITY[kind].filter]: id,
+    page: n,
+    include_adult: false,
+    sort_by: sort === 'newest' ? `${dateField}.desc` : sort,
+  };
+  if (sort === 'newest') {
+    params[`${dateField}.lte`] = new Date().toISOString().slice(0, 10);
+  }
+  if (sort === 'vote_average.desc') params['vote_count.gte'] = 200;
+  const data = await tmdb(`/discover/${type}`, params, { signal });
+  const result = page(data, type);
+  return { ...result, items: result.items.filter(hasPoster) };
+}
+
+export const getEpisode = (tvId, season, episode, { signal } = {}) =>
+  tmdb(
+    `/tv/${tvId}/season/${season}/episode/${episode}`,
+    { append_to_response: 'credits,videos,images' },
     { signal },
   );

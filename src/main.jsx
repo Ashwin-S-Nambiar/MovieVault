@@ -4,6 +4,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import './index.css';
 import AppShell from './components/AppShell';
+import Browse from './pages/Browse';
 import Home from './pages/Home';
 import NotFound, { RouteError } from './pages/NotFound';
 import Person from './pages/Person';
@@ -23,6 +24,9 @@ const router = createBrowserRouter([
       { path: 'movie/:id', element: <Title type="movie" /> },
       { path: 'tv/:id', element: <Title type="tv" /> },
       { path: 'person/:id', element: <Person /> },
+      { path: 'company/:id', element: <Browse kind="company" /> },
+      { path: 'network/:id', element: <Browse kind="network" /> },
+      { path: 'keyword/:id', element: <Browse kind="keyword" /> },
       { path: 'vault', element: <Vault /> },
       { path: 'watchlist', element: <Navigate to="/vault" replace /> },
       { path: 'universes', element: <Universes /> },
