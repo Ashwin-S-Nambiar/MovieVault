@@ -5969,6 +5969,7 @@ button.heat-cell:focus-visible {
 }
 
 .phero-face {
+  align-self: start;
   display: grid;
   place-items: center;
   width: 132px;
