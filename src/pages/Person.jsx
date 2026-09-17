@@ -4,6 +4,7 @@ import {
   IconBookmarkFilled,
 } from '@tabler/icons-react';
 import { useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { Poster } from '../components/Case';
 import ExternalLinks from '../components/ExternalLinks';
@@ -342,9 +343,22 @@ function PersonView({ id }) {
                       type="button"
                       className="btn btn-ghost btn-sm phero-more"
                       aria-expanded={bioOpen}
-                      onClick={() => setBioOpen((v) => !v)}
+                      onClick={(e) => {
+                        const btn = e.currentTarget;
+                        const top = btn.getBoundingClientRect().top;
+                        flushSync(() => setBioOpen((v) => !v));
+                        if (bioOpen) {
+                          window.scrollBy(
+                            0,
+                            btn.getBoundingClientRect().top - top,
+                          );
+                        }
+                      }}
                     >
-                      {bioOpen ? 'Show less' : 'Read more'}
+                      <span className="swap">
+                        <span aria-hidden={bioOpen}>Read more</span>
+                        <span aria-hidden={!bioOpen}>Show less</span>
+                      </span>
                     </button>
                   )}
                 </>

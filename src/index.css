@@ -6014,6 +6014,19 @@ button.heat-cell:focus-visible {
   margin: 6px 0 0 -0.85em;
 }
 
+.swap {
+  display: grid;
+  justify-items: center;
+}
+
+.swap > * {
+  grid-area: 1 / 1;
+}
+
+.swap > [aria-hidden="true"] {
+  visibility: hidden;
+}
+
 .pfilm-head {
   flex-wrap: wrap;
 }
