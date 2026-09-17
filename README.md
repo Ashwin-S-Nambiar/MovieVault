@@ -20,7 +20,7 @@
   <img src="./docs/screenshots/MovieVault.webp" width="100%" alt="the home page: trending films and series standing on a ring of dvd cases, the one in front larger and facing you">
 </p>
 
-the source of **[movievault.ashwin.co.in](https://movievault.ashwin.co.in)**. search any film, series or anime, see which of your services it streams on tonight, follow a whole franchise in release order, and keep a vault of what to watch next.
+the source of **[movievault.ashwin.co.in](https://movievault.ashwin.co.in)**. search any film, series, anime or person, see which of your services a title streams on tonight, follow a whole franchise in release order, and keep a vault of what to watch next.
 
 it is a react spa with no server behind it, talking straight to tmdb. the routes are not the interesting part. the interesting parts are the reel, which is a spring solved by hand rather than a dependency, and the case you tap, which is the same case that opens on the next page.
 
@@ -95,7 +95,7 @@ every other navigation goes through the view transitions api, through react rout
 
 ## requests are honest about failing
 
-there is no data fetching library either. `useQuery` is 95 lines.
+there is no data fetching library either. `useQuery` is 99 lines.
 
 - **a cache that remembers.** results live for ten minutes in memory and in `sessionStorage`, so going back paints at once. results stay on screen while new ones load, so nothing flashes empty.
 - **retries that back off.** a failed request tries three times, waiting 400 ms and then 1 s, plus jitter. a rejected key or a 404 does not retry, because it will not get better.
@@ -111,6 +111,14 @@ there is no data fetching library either. `useQuery` is 95 lines.
 ![resident evil: extinction with the previous and next film and the whole franchise in release order](./docs/screenshots/MovieVault-5.webp)
 
 ![the search page before typing: a shelf of trending spines above browse cards](./docs/screenshots/MovieVault-6.webp)
+
+![tom hanks: his portrait, films, series and years active, a clamped bio and links out](./docs/screenshots/MovieVault-12.webp)
+
+![breaking bad's ratings graph: one row per season, one square per episode, darker for better](./docs/screenshots/MovieVault-13.webp)
+
+![the episode sheet for ozymandias: its still, rating, director and writer](./docs/screenshots/MovieVault-14.webp)
+
+![a24's studio page: its logo, where it is based, and its films sorted by popularity](./docs/screenshots/MovieVault-15.webp)
 
 ![every universe as a grid of backdrops](./docs/screenshots/MovieVault-8.webp)
 
