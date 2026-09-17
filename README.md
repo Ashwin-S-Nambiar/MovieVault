@@ -40,14 +40,24 @@ it is a react spa with no server behind it, talking straight to tmdb. the routes
 
 ![jurassic park with its case open, the disc showing, beside where it streams and the universe it belongs to](./docs/screenshots/MovieVault-2.webp)
 
-- **where to watch.** every title lists the services it streams, rents or sells on in your region, with the ones you pay for first. pick your services once and home and search narrow to what you can watch tonight. the data is justwatch's, through tmdb.
-- **connected titles.** every detail page shows what came before and after it in release order, with a strip of the whole franchise and a link to its universe.
-- **episode ratings.** every series has a ratings graph in the style of a contribution chart: one row per season, one square per episode, darker for better. a season too long for one row, like the 366 episodes in bleach's first, is split into its arcs.
-- **anime is its own thing.** tmdb has no anime type, so it is recognised through tmdb's anime keyword and gets its own shelf, filter and running episode numbers.
-- **what's new.** home shows new episodes of series in your vault, what's in cinemas near you, and what just came out on digital, with digital release dates on cards.
+- **where to watch.** every title lists the services it streams, rents or sells on in your region, with the ones you pay for first. the data is justwatch's, through tmdb.
+- **your services.** pick them and your region once. home shows what is popular on them, and search can narrow to only what you can watch tonight.
+- **anime is its own thing.** tmdb has no anime type, so it is recognised through tmdb's anime keyword and gets its own shelf and filter.
+- **connected titles.** every detail page shows what came before and after it in release order, for films, series and anime alike, with a strip of the whole franchise and a link to its universe.
+- **episode ratings.** every series has a ratings graph in the style of a contribution chart: one row per season, one square per episode, darker for better. a season too long to read as one row, like the 366 episodes in bleach's first, is split into its arcs using tmdb's fan-made episode groups, or at the gaps between broadcast seasons when there are none.
+- **when it lands.** films between cinema and streaming show their digital release date for your region, on their page and as a "digital 29 sep" badge on cards and in the vault.
+- **people.** cast, directors and writers link to their own pages, and search finds them too.
+- **episodes up close.** tap an episode for its still, rating, director, writers, guest stars and clips, and step through the season from there.
+- **every video.** the trailer opens with the teasers, clips, featurettes and behind-the-scenes videos lined up underneath.
+- **studios, networks and tags.** the details show studio and network logos, and those and a title's tags each open a page of everything else under them.
+- **what's new.** home shows new episodes of series in your vault, what's in cinemas near you, and what just came out on digital.
+- **anime numbering.** anime that restart their episode numbers each season also show the running number, so season 2 episode 1 reads as #26.
+- **links out.** imdb, wikipedia, the official site and socials, where tmdb knows them.
 - **the vault.** save anything with a bookmark, filter it, sort it, and undo a removal from the toast.
-
-also: pages for people, studios, networks and tags, episode sheets, every trailer and clip, watch-app buttons for nuvio and stremio, tmdb content in your language, and light and dark themes.
+- **watch apps.** turn on nuvio or stremio in settings and title pages get a button that opens the title there.
+- **your language.** titles, descriptions, posters and logos can come from tmdb in your language. the app itself stays in english.
+- **settings.** appearance, language, watch apps, and the live tmdb connection. the gear carries a dot when that connection is down.
+- **light and dark.** follows the system unless you pick one.
 
 ## the reel is maths, not a dependency
 
