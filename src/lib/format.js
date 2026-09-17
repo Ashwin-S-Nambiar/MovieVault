@@ -58,6 +58,8 @@ export function toItem(raw, fallbackType) {
     rating: raw.vote_average ? Math.round(raw.vote_average * 10) / 10 : null,
     votes: raw.vote_count ?? 0,
     popularity: raw.popularity ?? 0,
+    genres: raw.genre_ids ?? raw.genres?.map((g) => g.id) ?? [],
+    language: raw.original_language ?? null,
   };
 }
 

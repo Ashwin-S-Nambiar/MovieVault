@@ -6,6 +6,7 @@ import {
   retryFailed,
   startReconnect,
 } from './health';
+import { languageStore } from './prefs';
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = 'https://api.themoviedb.org/3';
@@ -36,6 +37,10 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 function buildUrl(path, params = {}) {
   const url = new URL(`${BASE_URL}${path}`);
   url.searchParams.set('api_key', API_KEY ?? '');
+  const language = languageStore.get();
+  if (language !== 'en-US' && params.language === undefined) {
+    url.searchParams.set('language', language);
+  }
   for (const [key, value] of Object.entries(params)) {
     if (value !== undefined && value !== null && value !== '') {
       url.searchParams.set(key, String(value));

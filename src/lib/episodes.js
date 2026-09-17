@@ -1,3 +1,4 @@
+import { isAnime } from './format';
 import { tmdb } from './tmdb';
 import { primeQuery } from './useQuery';
 
@@ -29,6 +30,18 @@ export const toEpisode = (ep, overview = true) => ({
   rating: ep.vote_average ?? 0,
   votes: ep.vote_count ?? 0,
 });
+
+export function withAbsolute(raw, episodes) {
+  const first = episodes[0];
+  if (!first || !isAnime(raw) || first.number !== 1) return episodes;
+  let offset = 0;
+  for (const s of regularSeasons(raw)) {
+    if (s.season_number === first.season) break;
+    offset += s.episode_count;
+  }
+  if (!offset) return episodes;
+  return episodes.map((ep) => ({ ...ep, absolute: offset + ep.number }));
+}
 
 const chunk = (list, size) =>
   Array.from({ length: Math.ceil(list.length / size) }, (_, i) =>
@@ -175,7 +188,10 @@ export async function getRatings(raw, { signal } = {}) {
     return data
       ? splitSeason(
           s,
-          (data.episodes ?? []).map((ep) => toEpisode(ep, false)),
+          withAbsolute(
+            raw,
+            (data.episodes ?? []).map((ep) => toEpisode(ep, false)),
+          ),
         )
       : [];
   });

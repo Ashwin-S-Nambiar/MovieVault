@@ -6,6 +6,7 @@ import {
 import { useState } from 'react';
 import { Link, useLocation, useNavigate, useParams } from 'react-router';
 import { Poster } from '../components/Case';
+import ExternalLinks from '../components/ExternalLinks';
 import Footer from '../components/Footer';
 import Img from '../components/Img';
 import { toggleSaved } from '../components/SaveButton';
@@ -348,6 +349,11 @@ function PersonView({ id }) {
                   )}
                 </>
               )}
+              <ExternalLinks
+                ids={person.external_ids}
+                homepage={person.homepage}
+                person
+              />
             </div>
           </div>
         )}

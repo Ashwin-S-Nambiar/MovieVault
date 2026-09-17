@@ -14,6 +14,7 @@ import {
   useViewTransitionState,
 } from 'react-router';
 import Connected from '../components/Connected';
+import ExternalLinks from '../components/ExternalLinks';
 import Footer from '../components/Footer';
 import Img from '../components/Img';
 import OpenCase from '../components/OpenCase';
@@ -366,6 +367,7 @@ function Facts({ raw, type }) {
           </div>
         ))}
       </dl>
+      <ExternalLinks ids={raw.external_ids} homepage={raw.homepage} />
     </section>
   );
 }

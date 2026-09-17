@@ -25,11 +25,18 @@ export const servicesStore = createPersistedStore(
 );
 export const themeStore = createPersistedStore('mv:theme', 'system');
 export const appsStore = createPersistedStore('mv:apps', []);
+export const languageStore = createPersistedStore('mv:language', 'en-US');
 
 export const useRegion = () => useStore(regionStore);
 export const useServices = () => useStore(servicesStore);
 export const useTheme = () => useStore(themeStore);
 export const useApps = () => useStore(appsStore);
+export const useLanguage = () => useStore(languageStore);
+
+export const deviceLanguage = () => {
+  const tag = navigator.language || 'en-US';
+  return tag.includes('-') ? tag : `${tag}-${region}`;
+};
 
 export function toggleApp(id) {
   appsStore.set((list) =>

@@ -40,6 +40,7 @@ export default function TitleCard({
   onlyMine = false,
   onRemove,
   onOpen,
+  note,
 }) {
   const posterRef = useRef(null);
   const [returning] = useState(() => isHero(item.key, 'card'));
@@ -85,6 +86,12 @@ export default function TitleCard({
             {item.year && <span>{item.year}</span>}
             {item.kind !== 'movie' && <span>{TYPE_LABEL[item.kind]}</span>}
           </div>
+          {note && (
+            <div className="tcard-note" data-tone={note.tone}>
+              <i />
+              {note.text}
+            </div>
+          )}
         </div>
       </Link>
       {providers && <LazyProviders item={item} onResolve={onResolve} />}

@@ -21,7 +21,9 @@ function levelOf(ep) {
 
 function label(part, index) {
   const ep = part.episodes[index];
-  if (part.short === `S${ep.season}`) return `S${ep.season} E${ep.number}`;
+  if (part.short === `S${ep.season}`) {
+    return `S${ep.season} E${ep.number}${ep.absolute ? ` (#${ep.absolute})` : ''}`;
+  }
   return `${part.short} E${index + 1} (#${ep.number})`;
 }
 

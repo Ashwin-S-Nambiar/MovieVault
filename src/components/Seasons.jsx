@@ -8,6 +8,7 @@ import {
   regularSeasons,
   splitSeason,
   toEpisode,
+  withAbsolute,
   yearSpan,
 } from '../lib/episodes';
 import { longDate, runtime } from '../lib/format';
@@ -23,7 +24,8 @@ const EPISODE_PAGE = 24;
 const episodeCount = (n) =>
   `${n.toLocaleString()} episode${n === 1 ? '' : 's'}`;
 
-function SeasonRow({ tvId, season, name, poster, sub, episodes: preset }) {
+function SeasonRow({ raw, season, name, poster, sub, episodes: preset }) {
+  const tvId = raw.id;
   const [open, setOpen] = useState(false);
   const count = preset?.length ?? season.episode_count;
   const [newest, setNewest] = useState(count > EPISODE_PAGE);
@@ -33,7 +35,12 @@ function SeasonRow({ tvId, season, name, poster, sub, episodes: preset }) {
     (signal) => getSeason(tvId, season.season_number, { signal }),
     { enabled: open && !preset },
   );
-  const loaded = fetched.data?.episodes?.map((ep) => toEpisode(ep));
+  const loaded = fetched.data?.episodes
+    ? withAbsolute(
+        raw,
+        fetched.data.episodes.map((ep) => toEpisode(ep)),
+      )
+    : undefined;
   const episodes = preset ?? loaded;
   const parts = !preset && loaded ? splitSeason(season, loaded) : null;
 
@@ -125,6 +132,7 @@ function EpisodeList({ episodes, parts, newest, limit, onNewest, onMore }) {
               <div>
                 <strong style={{ fontWeight: 500 }}>{ep.name}</strong>
                 <span className="muted">
+                  {ep.absolute ? ` · #${ep.absolute}` : ''}
                   {ep.runtime ? ` · ${runtime(ep.runtime)}` : ''}
                   {ep.air ? ` · ${longDate(ep.air)}` : ''}
                 </span>
@@ -249,7 +257,7 @@ export default function Seasons({ raw }) {
           {rows.map((row) => (
             <SeasonRow
               key={row.key}
-              tvId={raw.id}
+              raw={raw}
               season={row.season}
               name={row.name}
               poster={row.poster}

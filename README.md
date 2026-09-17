@@ -29,7 +29,7 @@ it is a react spa with no server behind it, talking straight to tmdb. the routes
 | route | what it is |
 | --- | --- |
 | `/` | the reel of what is trending, and shelves of what is popular on your services |
-| `/search` | one search across films, series and anime, with filters, sorting and infinite scroll |
+| `/search` | one search across films, series, anime and people, with genre, language, length and free-to-watch filters. paste an imdb link and it finds the title |
 | `/movie/:id`, `/tv/:id` | the case, opened: where to watch, cast, crew, trailer, seasons, and what came before and after it |
 | `/universes` | eighteen franchises as a grid of backdrops |
 | `/universe/:slug` | one franchise as a release-order timeline, with one tap to save all of it |
@@ -44,10 +44,14 @@ it is a react spa with no server behind it, talking straight to tmdb. the routes
 - **connected titles.** every detail page shows what came before and after it in release order, for films, series and anime alike, with a strip of the whole franchise and a link to its universe.
 - **episode ratings.** every series has a ratings graph in the style of a contribution chart: one row per season, one square per episode, darker for better. a season too long to read as one row, like the 366 episodes in bleach's first, is split into its arcs using tmdb's fan-made episode groups, or at the gaps between broadcast seasons when there are none.
 - **when it lands.** films between cinema and streaming show their digital release date for your region.
-- **people.** cast, directors and writers link to their own pages.
+- **people.** cast, directors and writers link to their own pages, and search finds them too.
+- **what's new.** home shows new episodes of series in your vault, what's in cinemas near you, and what just came out on digital.
+- **anime numbering.** anime that restart their episode numbers each season also show the running number, so season 2 episode 1 reads as #26.
+- **links out.** imdb, wikipedia, the official site and socials, where tmdb knows them.
 - **the vault.** save anything with a bookmark, filter it, sort it, and undo a removal from the toast.
 - **watch apps.** turn on nuvio or stremio in settings and title pages get a button that opens the title there.
-- **settings.** appearance, watch apps, and the live tmdb connection. the gear carries a dot when that connection is down.
+- **your language.** titles, descriptions, posters and logos can come from tmdb in your language. the app itself stays in english.
+- **settings.** appearance, language, watch apps, and the live tmdb connection. the gear carries a dot when that connection is down.
 - **light and dark.** follows the system unless you pick one.
 
 ## the reel is maths, not a dependency
@@ -168,18 +172,20 @@ a pre-commit hook runs biome on staged files, and ci runs `biome ci` and the bui
 ```
 src/
   components/  the reel, cases, the flight, services and settings sheets,
-               toasts, the status pill, shelves, cards
+               toasts, the status pill, shelves, cards, the seasons list,
+               the ratings graph
   lib/         tmdb client and catalogue, the query cache, health, stores,
-               hooks, the hero flight, universes
-  pages/       home, search, title, vault, universes, universe, not found
+               hooks, the hero flight, episodes and their splits, universes
+  pages/       home, search, title, person, vault, universes, universe,
+               not found
   index.css    tokens, themes, then every component, in one file
 ```
 
 ## known rough edges
 
-- **one bundle.** the whole app ships as one chunk, about 133 KB gzipped, with no route splitting yet.
+- **mostly one bundle.** the app ships as one chunk, about 143 KB gzipped. only the ratings graph is split out, and it loads when you open it.
 - **no server rendering**, so the page is empty until react mounts.
-- **the key is public.** a tmdb read key sits in the client bundle, as it does in any static tmdb app. it can read tmdb and nothing else.
+- **the key is public.** a tmdb key sits in the client bundle, as it does in any static tmdb app. the app only ever reads with it, and nothing you do here is sent anywhere but tmdb.
 - **universes are hand-picked.** the eighteen franchises are a list in [`src/lib/universes.js`](src/lib/universes.js), not something tmdb exposes.
 
 ## credit

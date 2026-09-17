@@ -25,11 +25,13 @@ import TitleCard, { CardSkeletons } from '../components/TitleCard';
 import Topbar from '../components/Topbar';
 import {
   discover,
+  getGenres,
+  imdbId,
   prefetchTitle,
   searchTitles,
   trending,
 } from '../lib/catalog';
-import { titleHref } from '../lib/format';
+import { personHref, titleHref } from '../lib/format';
 import { isHero, launchHero, takeHero } from '../lib/hero';
 import {
   useDebouncedValue,
@@ -42,6 +44,71 @@ import { useRegion, useServices } from '../lib/prefs';
 import { img } from '../lib/tmdb';
 import { openSheet, recentStore, rememberSearch, useRecent } from '../lib/ui';
 import { useQuery, useReconnect } from '../lib/useQuery';
+
+const LANGUAGES = [
+  'en',
+  'ja',
+  'ko',
+  'hi',
+  'es',
+  'fr',
+  'zh',
+  'de',
+  'it',
+  'ta',
+  'te',
+  'ml',
+  'pt',
+  'tr',
+  'th',
+];
+
+const languageName = (code) => {
+  try {
+    return new Intl.DisplayNames(undefined, { type: 'language' }).of(code);
+  } catch {
+    return code;
+  }
+};
+
+const LENGTHS = {
+  movie: [
+    { value: 'any', label: 'Any' },
+    { value: 'short', label: 'Under 1h 40' },
+    { value: 'long', label: 'Over 2h 30' },
+  ],
+  tv: [
+    { value: 'any', label: 'Any' },
+    { value: 'short', label: 'Half hour' },
+    { value: 'long', label: 'Hour long' },
+  ],
+};
+
+function People({ people }) {
+  if (!people.length) return null;
+  return (
+    <section className="search-people content-in">
+      <h2 className="block-title">People</h2>
+      <div className="shelf-track people">
+        {people.map((p) => (
+          <Link key={p.id} to={personHref(p)} className="person" viewTransition>
+            <div className="person-face">
+              {p.photo ? (
+                <Img src={img(p.photo, 'w185')} loading="lazy" />
+              ) : (
+                p.name[0]
+              )}
+            </div>
+            <div>
+              <div className="person-name">{p.name}</div>
+              {p.role && <div className="person-role">{p.role}</div>}
+            </div>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
 
 const TYPES = [
   { value: 'all', label: 'All' },
@@ -100,6 +167,7 @@ const pagedCache = new Map();
 const blank = (key, loading) => ({
   key,
   items: [],
+  people: [],
   page: 0,
   totalPages: 1,
   total: 0,
@@ -139,6 +207,7 @@ function usePaged(key, fetchPage, enabled) {
             key: run.key,
             stale: false,
             items: page === 1 ? fresh : [...s.items, ...fresh],
+            people: page === 1 ? (result.people ?? []) : s.people,
             page: result.page,
             totalPages: result.totalPages,
             total: result.total,
@@ -442,6 +511,19 @@ export default function Search() {
     ? params.get('sort')
     : 'relevance';
   const mine = params.get('mine') === '1';
+  const genreNames = (params.get('genre') ?? '').split(',').filter(Boolean);
+  const language = LANGUAGES.includes(params.get('lang'))
+    ? params.get('lang')
+    : null;
+  const length = ['short', 'long'].includes(params.get('len'))
+    ? params.get('len')
+    : 'any';
+  const free = params.get('free') === '1';
+  const filterCount =
+    genreNames.length +
+    (language ? 1 : 0) +
+    (length !== 'any' ? 1 : 0) +
+    (free ? 1 : 0);
 
   const [text, setText] = useState(q);
   const debounced = useDebouncedValue(text.trim(), 280);
@@ -453,7 +535,13 @@ export default function Search() {
         (prev) => {
           const next = new URLSearchParams(prev);
           for (const [k, v] of Object.entries(patch)) {
-            if (v == null || v === '' || v === 'all' || v === 'relevance')
+            if (
+              v == null ||
+              v === '' ||
+              v === 'all' ||
+              v === 'relevance' ||
+              v === 'any'
+            )
               next.delete(k);
             else next.set(k, v);
           }
@@ -486,6 +574,16 @@ export default function Search() {
   }, []);
 
   const trend = useQuery('trending', (signal) => trending({ signal }));
+  const genreType = type === 'movie' ? 'movie' : type === 'all' ? 'all' : 'tv';
+  const genreList = useQuery(`genres-${genreType}`, (signal) =>
+    getGenres(genreType, { signal }),
+  );
+  const genreIds = genreNames
+    .map((name) => genreList.data?.find((g) => g.name === name)?.id)
+    .filter(Boolean);
+  const imdb = imdbId(q);
+  const setFilter = (patch) =>
+    update(!q && type === 'all' ? { type: 'movie', ...patch } : patch);
   const browsing = !q && type !== 'all';
   const enabled = Boolean(q) || browsing;
   const discoverSort =
@@ -501,6 +599,7 @@ export default function Search() {
       q ? '' : type,
       q ? '' : sort,
       !q && mine ? `${region}:${services.join(',')}` : '',
+      q ? '' : [genreIds.join('.'), language, length, free && region].join(':'),
     ].join('|'),
     (page, signal) =>
       q
@@ -509,15 +608,24 @@ export default function Search() {
             page,
             sort: discoverSort,
             providers: mine ? services : undefined,
-            region: mine ? region : undefined,
+            region: mine || free ? region : undefined,
+            genres: genreIds,
+            language,
+            length,
+            free,
             signal,
           }),
-    enabled,
+    enabled && (!genreNames.length || Boolean(genreList.data) || Boolean(q)),
   );
 
   const filtered = q
     ? sortItems(
-        results.items.filter((i) => type === 'all' || i.kind === type),
+        results.items.filter(
+          (i) =>
+            (type === 'all' || i.kind === type) &&
+            (!genreIds.length || genreIds.some((g) => i.genres?.includes(g))) &&
+            (!language || i.language === language),
+        ),
         sort,
       )
     : results.items;
@@ -562,7 +670,11 @@ export default function Search() {
             onClick={() => setFiltersOpen(true)}
           >
             <IconFilter2 stroke={1.8} />
-            {(mine || sort !== 'relevance') && <span className="badge">•</span>}
+            {(mine || sort !== 'relevance' || filterCount > 0) && (
+              <span className="badge">
+                {filterCount + (mine ? 1 : 0) + (sort !== 'relevance' ? 1 : 0)}
+              </span>
+            )}
           </button>
         }
       />
@@ -579,7 +691,9 @@ export default function Search() {
                   className="section-sub results"
                   data-stale={Boolean(results.stale)}
                 >
-                  {results.total > 0 ? (
+                  {imdb && results.total > 0 ? (
+                    'From an IMDb link'
+                  ) : results.total > 0 ? (
                     q ? (
                       `${results.total.toLocaleString()} matches`
                     ) : (
@@ -600,6 +714,8 @@ export default function Search() {
               />
             </div>
 
+            {q && <People people={results.people ?? []} />}
+
             {results.error && !filtered.length ? (
               <div className="state">
                 <h2>Search is having a moment</h2>
@@ -608,13 +724,20 @@ export default function Search() {
                   Try again
                 </button>
               </div>
-            ) : !busy && enabled && filtered.length === 0 ? (
+            ) : !busy &&
+              enabled &&
+              filtered.length === 0 &&
+              !results.people?.length ? (
               <div className="state">
                 <h2>Nothing matched</h2>
                 <p>
-                  {type !== 'all'
-                    ? `No ${HEADINGS[type].toLowerCase()} for that. Try All, or check the spelling.`
-                    : 'Check the spelling or try the original title.'}
+                  {imdb
+                    ? "TMDB doesn't know that IMDb id yet."
+                    : filterCount > 0
+                      ? 'Nothing matches these filters. Try loosening them.'
+                      : type !== 'all'
+                        ? `No ${HEADINGS[type].toLowerCase()} for that. Try All, or check the spelling.`
+                        : 'Check the spelling or try the original title.'}
                 </p>
               </div>
             ) : (
@@ -685,7 +808,7 @@ export default function Search() {
                     else close();
                   }
                 }}
-                placeholder="Movies, series and anime"
+                placeholder="Movies, series, anime or an IMDb link"
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}
@@ -748,6 +871,86 @@ export default function Search() {
             onChange={(value) => update({ sort: value })}
           />
         </div>
+        {genreList.data?.length > 0 && (
+          <div className="filter-group">
+            <strong>Genres</strong>
+            <div className="filter-chips">
+              {genreList.data.map((g) => {
+                const on = genreNames.includes(g.name);
+                return (
+                  <button
+                    key={g.name}
+                    type="button"
+                    className="chip filter-chip"
+                    aria-pressed={on}
+                    onClick={() =>
+                      setFilter({
+                        genre: (on
+                          ? genreNames.filter((n) => n !== g.name)
+                          : [...genreNames, g.name]
+                        ).join(','),
+                      })
+                    }
+                  >
+                    {g.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {type !== 'anime' && (
+          <div className="filter-group">
+            <div className="pref-row" style={{ border: 0, padding: 0 }}>
+              <div>
+                <strong>Original language</strong>
+              </div>
+              <select
+                className="select"
+                value={language ?? ''}
+                aria-label="Original language"
+                onChange={(e) => setFilter({ lang: e.target.value })}
+              >
+                <option value="">Any</option>
+                {LANGUAGES.map((code) => (
+                  <option key={code} value={code}>
+                    {languageName(code)}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+        <div className="filter-group" data-disabled={Boolean(q)}>
+          <strong>
+            {type === 'movie' ? 'Runtime' : 'Episode length'}
+            {q && <small> · when browsing</small>}
+          </strong>
+          <Segmented
+            label="Length"
+            options={LENGTHS[type === 'movie' ? 'movie' : 'tv']}
+            value={length}
+            onChange={(value) => setFilter({ len: value })}
+          />
+        </div>
+        <div className="filter-group" data-disabled={Boolean(q)}>
+          <div className="pref-row" style={{ border: 0, padding: 0 }}>
+            <div>
+              <strong>
+                Free to watch{q && <small> · when browsing</small>}
+              </strong>
+              <span>Free or with ads in {region}</span>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              className="switch"
+              aria-checked={free}
+              aria-label="Free to watch"
+              onClick={() => setFilter({ free: free ? null : '1' })}
+            />
+          </div>
+        </div>
         <div className="filter-group">
           <div className="pref-row" style={{ border: 0, padding: 0 }}>
             <div>
@@ -779,14 +982,33 @@ export default function Search() {
             Edit services
           </button>
         </div>
-        <button
-          type="button"
-          className="btn btn-solid"
-          style={{ width: '100%', minHeight: 48, marginTop: 8 }}
-          onClick={() => setFiltersOpen(false)}
-        >
-          Show results
-        </button>
+        <div className="filter-actions">
+          {(filterCount > 0 || mine || sort !== 'relevance') && (
+            <button
+              type="button"
+              className="btn"
+              onClick={() =>
+                update({
+                  genre: null,
+                  lang: null,
+                  len: null,
+                  free: null,
+                  mine: null,
+                  sort: null,
+                })
+              }
+            >
+              Reset
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn btn-solid"
+            onClick={() => setFiltersOpen(false)}
+          >
+            Show results
+          </button>
+        </div>
       </Sheet>
     </main>
   );

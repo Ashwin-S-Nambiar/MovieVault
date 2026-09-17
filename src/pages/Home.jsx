@@ -15,8 +15,15 @@ import Shelf from '../components/Shelf';
 import Swap from '../components/Swap';
 import TitleCard from '../components/TitleCard';
 import Topbar, { ServicesButton } from '../components/Topbar';
-import { discover, prefetchTitle, trending } from '../lib/catalog';
-import { TYPE_LABEL, titleHref, watchStatus } from '../lib/format';
+import {
+  discover,
+  newOnDigital,
+  nowPlaying,
+  prefetchTitle,
+  recentEpisodes,
+  trending,
+} from '../lib/catalog';
+import { longDate, TYPE_LABEL, titleHref, watchStatus } from '../lib/format';
 import { launchHero } from '../lib/hero';
 import { useDebouncedValue, useReducedMotion } from '../lib/hooks';
 import { usePageMeta } from '../lib/meta';
@@ -24,6 +31,7 @@ import { useRegion, useServices } from '../lib/prefs';
 import { img } from '../lib/tmdb';
 import { UNIVERSES } from '../lib/universes';
 import { useQuery } from '../lib/useQuery';
+import { useVault } from '../lib/watchlist';
 
 function Caption({ item, failed, onHover }) {
   const settled = useDebouncedValue(item, 220);
@@ -176,6 +184,47 @@ function useDiscover(kind, extra = {}) {
   );
 }
 
+const dayName = (date) =>
+  new Date(`${date}T00:00:00`).toLocaleDateString(undefined, {
+    weekday: 'long',
+  });
+
+function episodeNote({ date, upcoming }) {
+  const today = new Date().toISOString().slice(0, 10);
+  if (date === today) return { text: 'New episode today' };
+  if (upcoming) return { tone: 'soon', text: `Next episode ${dayName(date)}` };
+  return { text: `New episode ${longDate(date).replace(/,? \d{4}$/, '')}` };
+}
+
+function EpisodeShelf() {
+  const vault = useVault();
+  const series = vault.filter((item) => item.type === 'tv');
+  const ids = series.map((item) => item.id).join('.');
+  const query = useQuery(
+    `episodes-${ids}`,
+    (signal) => recentEpisodes(series, { signal }),
+    { enabled: series.length > 0 },
+  );
+  if (!series.length || !query.data?.length) return null;
+  return (
+    <Shelf
+      title="New episodes for you"
+      sub="From series in your vault"
+      to="/vault"
+      className="content-in"
+    >
+      {query.data?.map(({ item, ...episode }, i) => (
+        <TitleCard
+          key={item.key}
+          item={item}
+          index={i}
+          note={episodeNote(episode)}
+        />
+      ))}
+    </Shelf>
+  );
+}
+
 function ItemShelf({ title, sub, to, query, providers = true }) {
   return (
     <Shelf
@@ -207,6 +256,13 @@ export default function Home() {
   const mineSeries = useDiscover('tv', { mine: true });
   const anime = useDiscover('anime');
   const topRated = useDiscover('movie', { sort: 'vote_average.desc' });
+  const region = useRegion();
+  const cinemas = useQuery(`now-playing-${region}`, (signal) =>
+    nowPlaying(region, { signal }),
+  );
+  const digital = useQuery(`digital-${region}`, (signal) =>
+    newOnDigital(region, { signal }),
+  );
 
   const onActive = useCallback((item) => {
     setActive(item);
@@ -254,6 +310,7 @@ export default function Home() {
       </section>
 
       <div ref={moreRef} className="page home-more">
+        <EpisodeShelf />
         {services.length > 0 && (
           <ItemShelf
             title="Films on your services"
@@ -270,6 +327,17 @@ export default function Home() {
             query={mineSeries}
           />
         )}
+
+        <ItemShelf
+          title="In cinemas now"
+          sub="Showing near you this week"
+          query={cinemas}
+        />
+        <ItemShelf
+          title="New on digital"
+          sub="Just out to rent, buy or stream"
+          query={digital}
+        />
 
         <Shelf
           title="Follow a universe"

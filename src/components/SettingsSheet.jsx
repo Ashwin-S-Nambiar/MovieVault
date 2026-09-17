@@ -1,10 +1,84 @@
 import { IconDeviceDesktop, IconMoon, IconSun } from '@tabler/icons-react';
 import { APPS } from '../lib/apps';
 import { healthTone, useHealth } from '../lib/health';
-import { themeStore, toggleApp, useApps, useTheme } from '../lib/prefs';
+import {
+  deviceLanguage,
+  languageStore,
+  themeStore,
+  toggleApp,
+  useApps,
+  useLanguage,
+  useTheme,
+} from '../lib/prefs';
 import { closeSheet, useSheet } from '../lib/ui';
 import Segmented from './Segmented';
 import Sheet from './Sheet';
+
+const LANGUAGES = [
+  'en-US',
+  'ja-JP',
+  'ko-KR',
+  'hi-IN',
+  'ta-IN',
+  'te-IN',
+  'ml-IN',
+  'es-ES',
+  'es-MX',
+  'fr-FR',
+  'de-DE',
+  'it-IT',
+  'pt-BR',
+  'zh-CN',
+  'tr-TR',
+  'th-TH',
+];
+
+function nativeName(tag) {
+  if (tag === 'en-US') return 'English';
+  try {
+    const name = new Intl.DisplayNames([tag], { type: 'language' }).of(tag);
+    return name.charAt(0).toLocaleUpperCase(tag) + name.slice(1);
+  } catch {
+    return tag;
+  }
+}
+
+function changeLanguage(tag) {
+  languageStore.set(tag);
+  try {
+    for (const key of Object.keys(sessionStorage)) {
+      if (key.startsWith('mv:q:')) sessionStorage.removeItem(key);
+    }
+  } catch {}
+  window.location.reload();
+}
+
+function LanguageRow() {
+  const language = useLanguage();
+  const device = deviceLanguage();
+  const tags = LANGUAGES.includes(device) ? LANGUAGES : [...LANGUAGES, device];
+  return (
+    <div className="pref-row">
+      <div>
+        <strong>Titles and descriptions</strong>
+        <span>From TMDB, where a translation exists</span>
+      </div>
+      <select
+        className="select"
+        value={tags.includes(language) ? language : 'en-US'}
+        aria-label="Language for titles and descriptions"
+        onChange={(event) => changeLanguage(event.target.value)}
+      >
+        {tags.map((tag) => (
+          <option key={tag} value={tag}>
+            {nativeName(tag)}
+            {tag === device && tag !== 'en-US' ? ' (device)' : ''}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
 function ApiStatusRow() {
   const health = useHealth();
@@ -67,6 +141,7 @@ export default function SettingsSheet() {
             ]}
           />
         </div>
+        <LanguageRow />
       </div>
       <div className="sheet-section-head" style={{ marginTop: 28 }}>
         <h3>Watch apps</h3>
