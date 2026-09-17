@@ -17,5 +17,19 @@ export default defineConfig(({ mode }) => {
         transformIndexHtml: (html) => html.replaceAll('%SITE_URL%', site),
       },
     ],
+    server: {
+      proxy: {
+        '/tmdb-img': {
+          target: 'https://image.tmdb.org',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/tmdb-img/, '/t/p'),
+        },
+        '/tmdb': {
+          target: 'https://api.themoviedb.org',
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/tmdb/, '/3'),
+        },
+      },
+    },
   };
 });

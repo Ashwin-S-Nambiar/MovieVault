@@ -9,8 +9,8 @@ import {
 import { languageStore } from './prefs';
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
-const BASE_URL = 'https://api.themoviedb.org/3';
-const IMAGE_URL = 'https://image.tmdb.org/t/p';
+const BASE_URL = '/tmdb';
+const IMAGE_URL = '/tmdb-img';
 const TTL = 10 * 60 * 1000;
 const MAX_ATTEMPTS = 3;
 const TIMEOUT = 10_000;
@@ -36,7 +36,7 @@ class TmdbError extends Error {
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function buildUrl(path, params = {}) {
-  const url = new URL(`${BASE_URL}${path}`);
+  const url = new URL(`${BASE_URL}${path}`, location.origin);
   url.searchParams.set('api_key', API_KEY ?? '');
   const language = languageStore.get();
   if (language !== 'en-US' && params.language === undefined) {

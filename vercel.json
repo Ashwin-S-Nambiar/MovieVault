@@ -2,8 +2,36 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
     {
-      "source": "/((?!assets/)(?!.*\\.[A-Za-z0-9]+$).*)",
+      "source": "/tmdb/:path*",
+      "destination": "https://api.themoviedb.org/3/:path*"
+    },
+    {
+      "source": "/tmdb-img/:path*",
+      "destination": "https://image.tmdb.org/t/p/:path*"
+    },
+    {
+      "source": "/((?!assets/)(?!tmdb/)(?!tmdb-img/)(?!.*\\.[A-Za-z0-9]+$).*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/tmdb/:path*",
+      "headers": [
+        { "key": "x-vercel-enable-rewrite-caching", "value": "1" },
+        { "key": "CDN-Cache-Control", "value": "max-age=600" }
+      ]
+    },
+    {
+      "source": "/tmdb-img/:path*",
+      "headers": [
+        { "key": "x-vercel-enable-rewrite-caching", "value": "1" },
+        { "key": "CDN-Cache-Control", "value": "max-age=31536000, immutable" },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ]
 }
