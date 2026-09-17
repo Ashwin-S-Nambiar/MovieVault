@@ -4655,13 +4655,14 @@ a.link-card:active {
 
 .status-pill {
   position: fixed;
-  top: calc(var(--safe-t) + 12px);
+  top: calc(var(--safe-t) + 72px);
   left: 50%;
   z-index: 90;
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: calc(100vw - 32px);
+  width: max-content;
+  max-width: min(calc(100vw - 32px), 420px);
   padding: 8px 8px 8px 14px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -4692,7 +4693,15 @@ a.link-card:active {
 }
 
 .status-pill .status-text {
+  min-width: 0;
   padding-right: 6px;
+  text-wrap: balance;
+}
+
+.status-pill .spinner,
+.status-pill .dot,
+.status-pill .btn {
+  flex: none;
 }
 
 .toaster {
@@ -4757,11 +4766,21 @@ a.link-card:active {
 }
 
 .toast-text {
+  display: -webkit-box;
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  text-wrap: pretty;
+}
+
+.toast .btn,
+.toast-poster {
+  flex: none;
 }
 
 .toast .btn {

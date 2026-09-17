@@ -13,6 +13,7 @@ const BASE_URL = 'https://api.themoviedb.org/3';
 const IMAGE_URL = 'https://image.tmdb.org/t/p';
 const TTL = 10 * 60 * 1000;
 const MAX_ATTEMPTS = 3;
+const TIMEOUT = 10_000;
 
 const cache = new Map();
 const inflight = new Map();
@@ -62,7 +63,7 @@ async function fetchWithRetry(url) {
     const started = performance.now();
     let response;
     try {
-      response = await fetch(url);
+      response = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT) });
       if (response.ok) {
         const data = await response.json();
         reportSuccess(performance.now() - started);
