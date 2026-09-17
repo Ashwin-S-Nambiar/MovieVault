@@ -21,7 +21,10 @@ export function slugify(text = '') {
 export const titleHref = (item) =>
   `/${item.type}/${item.id}${item.title ? `-${slugify(item.title)}` : ''}`;
 
-export const parseId = (param) => Number.parseInt(param ?? '', 10);
+export const parseId = (param) => {
+  const match = /^([1-9]\d*)(?:-.*)?$/.exec(param ?? '');
+  return match ? Number(match[1]) : null;
+};
 
 export function isAnime(raw) {
   const genres = raw.genre_ids ?? raw.genres?.map((g) => g.id) ?? [];

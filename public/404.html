@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="robots" content="noindex" />
+    <title>Page not found · MovieVault</title>
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" type="image/svg+xml" href="/film.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&display=swap" />
+    <style>
+      :root {
+        --bg: #fafaf9;
+        --ink: #111110;
+        --muted: #74736d;
+        --line: rgb(17 17 16 / 0.14);
+        color-scheme: light dark;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0b0b0c;
+          --ink: #f3f3f1;
+          --muted: #93928c;
+          --line: rgb(255 255 255 / 0.14);
+        }
+      }
+      body {
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 18px;
+        min-height: 100svh;
+        margin: 0;
+        padding: 80px clamp(16px, 4vw, 40px);
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Geist, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        text-align: center;
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(88px, 22vw, 200px);
+        font-weight: 600;
+        line-height: 0.85;
+        letter-spacing: -0.07em;
+      }
+      p {
+        max-width: 34ch;
+        margin: 0;
+        color: var(--muted);
+        font-size: 16px;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+      a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 0 18px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        color: var(--ink);
+        font-weight: 500;
+        text-decoration: none;
+      }
+      a:first-child {
+        border-color: transparent;
+        background: var(--ink);
+        color: var(--bg);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>404</h1>
+    <p>This case is empty. The page you're after was moved or never existed.</p>
+    <nav>
+      <a href="/">Back to home</a>
+      <a href="/search">Search</a>
+    </nav>
+  </body>
+</html>

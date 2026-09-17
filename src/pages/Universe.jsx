@@ -15,7 +15,7 @@ import {
   getKeywordUniverse,
   prefetchTitle,
 } from '../lib/catalog';
-import { longDate, TYPE_LABEL, titleHref } from '../lib/format';
+import { longDate, parseId, TYPE_LABEL, titleHref } from '../lib/format';
 import { isHero, launchHero, takeHero } from '../lib/hero';
 import { backdropImage, usePageMeta } from '../lib/meta';
 import { img } from '../lib/tmdb';
@@ -23,12 +23,13 @@ import { toast } from '../lib/ui';
 import { findUniverse } from '../lib/universes';
 import { useQuery } from '../lib/useQuery';
 import { addToVault, useVault } from '../lib/watchlist';
+import NotFound from './NotFound';
 
 const today = () => new Date().toISOString().slice(0, 10);
 
 function useUniverse(slug) {
   const curated = findUniverse(slug);
-  const collectionId = curated?.collection ?? Number.parseInt(slug, 10);
+  const collectionId = curated?.collection ?? parseId(slug);
 
   return useQuery(`universe-v3-${slug}`, async (signal) => {
     if (curated?.keyword) {
@@ -93,8 +94,15 @@ export default function Universe() {
   const loading = query.loading && !data;
   const name = data?.name ?? curated?.name;
   const backdrop = data?.backdrop ?? curated?.backdrop;
+  const failed = query.error && !data;
+  const notFound = failed && query.error.status === 404;
+
   usePageMeta({
-    title: name ? `${name} universe` : 'Universe',
+    title: notFound
+      ? 'Universe not found'
+      : name
+        ? `${name} universe`
+        : 'Universe',
     description:
       data?.overview ||
       (name
@@ -103,15 +111,29 @@ export default function Universe() {
     image: backdropImage(backdrop),
   });
 
-  if (query.error && !data) {
+  if (notFound) {
+    return (
+      <NotFound
+        title="Universe not found"
+        message="We couldn't find that universe. It may have been renamed or never existed."
+      />
+    );
+  }
+
+  if (failed) {
     return (
       <main className="nf route">
         <Topbar />
-        <p className="nf-code">404</p>
-        <p>We couldn't find that universe.</p>
-        <Link to="/universes" className="btn" viewTransition>
-          All universes
-        </Link>
+        <p className="nf-code">:(</p>
+        <p>We couldn't load this universe.</p>
+        <div className="detail-actions">
+          <button type="button" className="btn btn-solid" onClick={query.retry}>
+            Try again
+          </button>
+          <Link to="/universes" className="btn" viewTransition>
+            All universes
+          </Link>
+        </div>
       </main>
     );
   }

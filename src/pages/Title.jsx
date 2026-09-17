@@ -49,6 +49,7 @@ import { useRegion, useServices } from '../lib/prefs';
 import { img } from '../lib/tmdb';
 import { openSheet, toast } from '../lib/ui';
 import { useQuery } from '../lib/useQuery';
+import NotFound from './NotFound';
 
 const regionName = (code) => {
   try {
@@ -471,10 +472,16 @@ function TitleView({ type, id }) {
     return () => clearTimeout(timer);
   }, [reduced, transitioning]);
 
+  const failed = query.error && !raw;
+  const notFound = failed && query.error.status === 404;
+  const missingTitle = `${TYPE_LABEL[type]} not found`;
+
   usePageMeta({
-    title: item?.title
-      ? `${item.title}${item.year ? ` (${item.year})` : ''}`
-      : TYPE_LABEL[type],
+    title: notFound
+      ? missingTitle
+      : item?.title
+        ? `${item.title}${item.year ? ` (${item.year})` : ''}`
+        : TYPE_LABEL[type],
     description:
       raw?.overview || item?.overview
         ? `${raw?.overview || item.overview}`
@@ -483,27 +490,25 @@ function TitleView({ type, id }) {
     type: type === 'movie' ? 'video.movie' : 'video.tv_show',
   });
 
-  if (query.error && !raw) {
-    const notFound = query.error.status === 404;
+  if (notFound) {
+    return (
+      <NotFound
+        title={missingTitle}
+        message={`There's no ${TYPE_LABEL[type].toLowerCase()} with that id on TMDB.`}
+      />
+    );
+  }
+
+  if (failed) {
     return (
       <main className="nf route">
         <Topbar />
-        <p className="nf-code">{notFound ? '404' : ':('}</p>
-        <p>
-          {notFound
-            ? `There's no ${TYPE_LABEL[type].toLowerCase()} with that id on TMDB.`
-            : "We couldn't load this title."}
-        </p>
+        <p className="nf-code">:(</p>
+        <p>We couldn't load this title.</p>
         <div className="detail-actions">
-          {!notFound && (
-            <button
-              type="button"
-              className="btn btn-solid"
-              onClick={query.retry}
-            >
-              Try again
-            </button>
-          )}
+          <button type="button" className="btn btn-solid" onClick={query.retry}>
+            Try again
+          </button>
           <Link to="/" className="btn" viewTransition>
             Go home
           </Link>
@@ -797,14 +802,10 @@ export default function Title({ type }) {
 
   if (!numeric) {
     return (
-      <main className="nf route">
-        <Topbar />
-        <p className="nf-code">404</p>
-        <p>That link doesn't point to a title.</p>
-        <Link to="/" className="btn" viewTransition>
-          Go home
-        </Link>
-      </main>
+      <NotFound
+        title="Title not found"
+        message="That link doesn't point to a film or series."
+      />
     );
   }
 

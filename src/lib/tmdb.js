@@ -52,22 +52,30 @@ async function fetchWithRetry(url) {
     }
 
     const started = performance.now();
+    let response;
     try {
-      const response = await fetch(url);
+      response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         reportSuccess(performance.now() - started);
         return data;
       }
-      lastError = new TmdbError(
-        response.status === 401
-          ? 'The TMDB API key was rejected'
-          : `TMDB responded with ${response.status}`,
-        response.status,
-      );
-      if (response.status !== 429 && response.status < 500) break;
     } catch {
       lastError = new TmdbError('Could not reach TMDB', 0);
+      continue;
+    }
+
+    const { status } = response;
+    lastError = new TmdbError(
+      status === 401
+        ? 'The TMDB API key was rejected'
+        : `TMDB responded with ${status}`,
+      status,
+    );
+    if (status === 401) break;
+    if (status !== 429 && status < 500) {
+      reportSuccess(performance.now() - started);
+      throw lastError;
     }
   }
 

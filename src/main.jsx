@@ -5,7 +5,7 @@ import { RouterProvider } from 'react-router/dom';
 import './index.css';
 import AppShell from './components/AppShell';
 import Home from './pages/Home';
-import NotFound from './pages/NotFound';
+import NotFound, { RouteError } from './pages/NotFound';
 import Search from './pages/Search';
 import Title from './pages/Title';
 import Universe from './pages/Universe';
@@ -15,7 +15,7 @@ import Vault from './pages/Vault';
 const router = createBrowserRouter([
   {
     element: <AppShell />,
-    errorElement: <NotFound />,
+    errorElement: <RouteError />,
     children: [
       { index: true, element: <Home /> },
       { path: 'search', element: <Search /> },
