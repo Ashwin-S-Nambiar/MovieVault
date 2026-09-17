@@ -93,7 +93,7 @@ export function ServicesButton() {
   );
 }
 
-const PROBLEMS = new Set(['down', 'offline', 'bad-key', 'missing-key']);
+const PROBLEMS = new Set(['down', 'offline', 'bad-key']);
 
 export function SettingsButton() {
   const problem = PROBLEMS.has(healthTone(useHealth()));

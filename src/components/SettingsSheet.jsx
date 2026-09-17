@@ -90,7 +90,6 @@ function ApiStatusRow() {
     down: health.lastError ?? 'Not responding',
     offline: 'Offline',
     'bad-key': 'API key rejected',
-    'missing-key': 'No API key configured',
   }[tone];
 
   return (

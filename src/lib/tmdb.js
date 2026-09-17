@@ -8,7 +8,6 @@ import {
 } from './health';
 import { languageStore } from './prefs';
 
-const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 const BASE_URL = '/tmdb';
 const IMAGE_URL = '/tmdb-img';
 const TTL = 10 * 60 * 1000;
@@ -17,8 +16,6 @@ const TIMEOUT = 10_000;
 
 const cache = new Map();
 const inflight = new Map();
-
-export const hasApiKey = Boolean(API_KEY);
 
 export const img = (path, size = 'w342') =>
   path ? `${IMAGE_URL}/${size}${path}` : null;
@@ -37,7 +34,6 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function buildUrl(path, params = {}) {
   const url = new URL(`${BASE_URL}${path}`, location.origin);
-  url.searchParams.set('api_key', API_KEY ?? '');
   const language = languageStore.get();
   if (language !== 'en-US' && params.language === undefined) {
     url.searchParams.set('language', language);
@@ -93,7 +89,7 @@ async function fetchWithRetry(url) {
 }
 
 export async function reconnect() {
-  if (!API_KEY || !startReconnect()) return;
+  if (!startReconnect()) return;
   try {
     await fetchWithRetry(buildUrl('/configuration'));
     retryFailed();
@@ -110,10 +106,6 @@ export function peek(path, params) {
 }
 
 export function tmdb(path, params, { signal } = {}) {
-  if (!API_KEY) {
-    return Promise.reject(new TmdbError('Missing VITE_TMDB_API_KEY', 401));
-  }
-
   const url = buildUrl(path, params);
   const hit = cache.get(url);
   if (hit && Date.now() - hit.at < TTL) return Promise.resolve(hit.data);

@@ -7,10 +7,8 @@ const agent = new Agent({ keepAlive: true, maxSockets: 8 });
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  const site = (loadEnv(mode, process.cwd()).VITE_SITE_URL ?? '').replace(
-    /\/$/,
-    '',
-  );
+  const env = loadEnv(mode, process.cwd(), '');
+  const site = (env.VITE_SITE_URL ?? '').replace(/\/$/, '');
   return {
     plugins: [
       react(),
@@ -32,7 +30,11 @@ export default defineConfig(({ mode }) => {
           target: 'https://api.themoviedb.org',
           changeOrigin: true,
           agent,
-          rewrite: (path) => path.replace(/^\/tmdb/, '/3'),
+          rewrite: (path) => {
+            const url = new URL(path.replace(/^\/tmdb/, '/3'), 'http://x');
+            url.searchParams.set('api_key', env.TMDB_API_KEY ?? '');
+            return url.pathname + url.search;
+          },
         },
       },
     },

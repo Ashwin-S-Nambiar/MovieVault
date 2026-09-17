@@ -3,9 +3,6 @@ import { useHealth } from '../lib/health';
 import { reconnect } from '../lib/tmdb';
 
 function describe(status, online, retrying) {
-  if (status === 'missing-key') {
-    return { tone: 'missing-key', text: 'Add VITE_TMDB_API_KEY to .env' };
-  }
   if (status === 'bad-key') {
     return { tone: 'bad-key', text: 'TMDB rejected the API key' };
   }

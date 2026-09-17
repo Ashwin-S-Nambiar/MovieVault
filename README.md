@@ -168,7 +168,7 @@ npm install
 put the key in a `.env` at the root:
 
 ```env
-VITE_TMDB_API_KEY=your_api_key_here
+TMDB_API_KEY=your_api_key_here
 ```
 
 ```sh

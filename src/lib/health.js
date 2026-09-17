@@ -1,7 +1,7 @@
 import { createStore, useStore } from './store';
 
 export const healthStore = createStore({
-  status: import.meta.env.VITE_TMDB_API_KEY ? 'idle' : 'missing-key',
+  status: 'idle',
   online: navigator.onLine,
   retrying: 0,
   failures: 0,
@@ -19,7 +19,7 @@ export const isDown = () => healthStore.get().status === 'down';
 
 export function startReconnect() {
   const { status } = healthStore.get();
-  if (status === 'checking' || status === 'missing-key') return false;
+  if (status === 'checking') return false;
   healthStore.set((s) => ({ ...s, status: 'checking', retrying: 0 }));
   return true;
 }
@@ -51,23 +51,19 @@ export function reportSuccess(ms) {
 }
 
 export function reportFailure(error) {
-  healthStore.set((s) =>
-    s.status === 'missing-key'
-      ? s
-      : {
-          ...s,
-          retrying: 0,
-          failures: s.failures + 1,
-          lastError: error?.message ?? 'Request failed',
-          status:
-            error?.status === 401
-              ? 'bad-key'
-              : s.status === 'up' && recentlyOk(s)
-                ? 'up'
-                : 'down',
-          checkedAt: Date.now(),
-        },
-  );
+  healthStore.set((s) => ({
+    ...s,
+    retrying: 0,
+    failures: s.failures + 1,
+    lastError: error?.message ?? 'Request failed',
+    status:
+      error?.status === 401
+        ? 'bad-key'
+        : s.status === 'up' && recentlyOk(s)
+          ? 'up'
+          : 'down',
+    checkedAt: Date.now(),
+  }));
 }
 
 window.addEventListener('online', () =>

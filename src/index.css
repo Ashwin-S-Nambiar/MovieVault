@@ -4538,7 +4538,6 @@ a.link-card:active {
 
 .dot[data-status="down"],
 .dot[data-status="bad-key"],
-.dot[data-status="missing-key"],
 .dot[data-status="offline"] {
   background: var(--accent);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
