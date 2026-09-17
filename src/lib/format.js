@@ -21,6 +21,9 @@ export function slugify(text = '') {
 export const titleHref = (item) =>
   `/${item.type}/${item.id}${item.title ? `-${slugify(item.title)}` : ''}`;
 
+export const personHref = (person) =>
+  `/person/${person.id}${person.name ? `-${slugify(person.name)}` : ''}`;
+
 export const parseId = (param) => {
   const match = /^([1-9]\d*)(?:-.*)?$/.exec(param ?? '');
   return match ? Number(match[1]) : null;
@@ -91,20 +94,27 @@ export const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
 
 const DAY = 86_400_000;
 
-export function watchStatus(item, rows) {
+export function watchStatus(item, rows, release = rows?.release) {
   if (!item || !rows) return null;
   if (rows.list.length) return null;
   const today = new Date().toISOString().slice(0, 10);
-  if (!item.date || item.date > today) {
+  const digital = release?.digital;
+  const digitalSoon = digital && digital > today;
+  const opened = release?.theatrical ?? item.date;
+  if (!opened || opened > today) {
     return {
       tone: 'soon',
       label: item.date
         ? `Coming ${new Date(`${item.date}T00:00:00`).toLocaleDateString(undefined, { month: 'short', year: 'numeric' })}`
         : 'Coming soon',
+      digital: digitalSoon ? digital : null,
     };
   }
-  const age = (Date.now() - Date.parse(item.date)) / DAY;
-  if (item.type === 'movie' && age <= 120) {
+  if (item.type === 'movie' && digitalSoon) {
+    return { tone: 'cinema', label: 'In cinemas', digital };
+  }
+  const age = (Date.now() - Date.parse(opened)) / DAY;
+  if (item.type === 'movie' && !digital && age <= 120) {
     return { tone: 'cinema', label: 'In cinemas' };
   }
   if (rows.buyable) return { tone: 'rent', label: 'Rent or buy' };

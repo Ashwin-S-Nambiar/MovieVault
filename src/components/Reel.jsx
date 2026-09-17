@@ -1,6 +1,6 @@
 import { IconArrowLeft, IconArrowRight } from '@tabler/icons-react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { launchHero, takeHero } from '../lib/hero';
+import { isLanding, launchHero, takeHero } from '../lib/hero';
 import { useReducedMotion } from '../lib/hooks';
 import Case from './Case';
 
@@ -34,7 +34,8 @@ export default function Reel({
   paused = false,
 }) {
   const n = items.length;
-  const saved = memory.get(memoryKey) ?? 0;
+  const landing = items.findIndex((item) => isLanding(item.key));
+  const saved = landing >= 0 ? landing : (memory.get(memoryKey) ?? 0);
   const rootRef = useRef(null);
   const ringRef = useRef(null);
   const itemRefs = useRef([]);

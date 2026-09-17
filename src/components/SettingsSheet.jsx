@@ -1,6 +1,7 @@
 import { IconDeviceDesktop, IconMoon, IconSun } from '@tabler/icons-react';
+import { APPS } from '../lib/apps';
 import { healthTone, useHealth } from '../lib/health';
-import { themeStore, useTheme } from '../lib/prefs';
+import { themeStore, toggleApp, useApps, useTheme } from '../lib/prefs';
 import { closeSheet, useSheet } from '../lib/ui';
 import Segmented from './Segmented';
 import Sheet from './Sheet';
@@ -34,6 +35,7 @@ function ApiStatusRow() {
 export default function SettingsSheet() {
   const open = useSheet() === 'settings';
   const theme = useTheme();
+  const apps = useApps();
 
   return (
     <Sheet open={open} onClose={closeSheet} title="Settings">
@@ -65,6 +67,36 @@ export default function SettingsSheet() {
             ]}
           />
         </div>
+      </div>
+      <div className="sheet-section-head" style={{ marginTop: 28 }}>
+        <h3>Watch apps</h3>
+        <p>
+          Show an Open button on title pages for the apps you have installed.
+        </p>
+      </div>
+      <div>
+        {APPS.map((app) => {
+          const on = apps.includes(app.id);
+          return (
+            <div key={app.id} className="pref-row">
+              <div className="app-row">
+                <img className="app-icon" src={app.icon} alt="" />
+                <div>
+                  <strong>{app.name}</strong>
+                  <span>{app.platforms}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                className="switch"
+                aria-checked={on}
+                aria-label={`Show Open in ${app.name}`}
+                onClick={() => toggleApp(app.id)}
+              />
+            </div>
+          );
+        })}
       </div>
       <div className="sheet-section-head" style={{ marginTop: 28 }}>
         <h3>Data</h3>

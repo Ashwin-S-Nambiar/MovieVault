@@ -21,6 +21,9 @@ export const hasApiKey = Boolean(API_KEY);
 export const img = (path, size = 'w342') =>
   path ? `${IMAGE_URL}/${size}${path}` : null;
 
+export const logoImg = (path, size = 'w300') =>
+  img(path, path?.endsWith('.svg') ? 'original' : size);
+
 class TmdbError extends Error {
   constructor(message, status) {
     super(message);
@@ -94,6 +97,11 @@ export async function reconnect() {
 window.addEventListener('online', () => {
   if (isDown()) reconnect();
 });
+
+export function peek(path, params) {
+  const hit = cache.get(buildUrl(path, params));
+  return hit && Date.now() - hit.at < TTL ? hit.data : null;
+}
 
 export function tmdb(path, params, { signal } = {}) {
   if (!API_KEY) {

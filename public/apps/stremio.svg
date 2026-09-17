@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="125" height="125" viewBox="0 0 124.926 124.927" role="img" aria-labelledby="stremio-title">
+  <title id="stremio-title">Stremio</title>
+  <defs>
+    <linearGradient id="stremio-fill" x1="1" y1="1" x2="0.296" y2="0.296" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#1155d9"/>
+      <stop offset="1" stop-color="#7b5bf5"/>
+    </linearGradient>
+  </defs>
+  <rect width="88.336" height="88.336" rx="6" transform="translate(62.463 0) rotate(45)" fill="url(#stremio-fill)"/>
+  <path d="M22.236,1.1a1,1,0,0,1,1.611,0L44.912,29.739a1,1,0,0,1-.806,1.592H1.977a1,1,0,0,1-.806-1.592Z" transform="translate(84.489 39.422) rotate(90)" fill="#fff"/>
+</svg>

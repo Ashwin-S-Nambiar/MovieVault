@@ -5,7 +5,7 @@ import {
   IconTicket,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
-import { getProviders, providerRows } from '../lib/catalog';
+import { getProviders, getReleaseDates, providerRows } from '../lib/catalog';
 import { watchStatus } from '../lib/format';
 import { useInView } from '../lib/hooks';
 import { useRegion, useServices } from '../lib/prefs';
@@ -39,6 +39,8 @@ export function ProviderStack({ providers, max = 3, size, onClick, label }) {
   );
 }
 
+const DAY = 86_400_000;
+
 export function useStreaming(item, enabled = true) {
   const region = useRegion();
   const services = useServices();
@@ -47,6 +49,7 @@ export function useStreaming(item, enabled = true) {
   const [attempt, setAttempt] = useState(0);
   const type = item?.type;
   const id = item?.id;
+  const date = item?.date;
   useReconnect(failed, () => setAttempt((n) => n + 1));
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: attempt re-runs the fetch
@@ -56,28 +59,40 @@ export function useStreaming(item, enabled = true) {
     setRows(null);
     setFailed(false);
     getProviders(type, id, { signal: controller.signal })
-      .then((data) => {
+      .then(async (data) => {
         const { mine, others, streaming } = providerRows(
           data.results?.[region],
           services,
         );
         const mineIds = new Set(mine.map((p) => p.id));
+        const list = [
+          ...mine.filter((p) => p.field !== 'rent' && p.field !== 'buy'),
+          ...streaming.filter((p) => !mineIds.has(p.id)),
+        ];
+        const recent =
+          type === 'movie' &&
+          !list.length &&
+          (!date || Date.now() - Date.parse(date) < 240 * DAY);
+        const release = recent
+          ? await getReleaseDates(id, region, {
+              signal: controller.signal,
+            }).catch(() => null)
+          : null;
+        if (controller.signal.aborted) return;
         setRows({
           mine,
           buyable: [...mine, ...others].some(
             (p) => p.field === 'rent' || p.field === 'buy',
           ),
-          list: [
-            ...mine.filter((p) => p.field !== 'rent' && p.field !== 'buy'),
-            ...streaming.filter((p) => !mineIds.has(p.id)),
-          ],
+          list,
+          release,
         });
       })
       .catch(() => {
         if (!controller.signal.aborted) setFailed(true);
       });
     return () => controller.abort();
-  }, [type, id, region, services, enabled, attempt]);
+  }, [type, id, date, region, services, enabled, attempt]);
 
   return rows;
 }

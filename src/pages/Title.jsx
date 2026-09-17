@@ -5,7 +5,7 @@ import {
   IconShare2,
   IconStarFilled,
 } from '@tabler/icons-react';
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import {
   Link,
   useLocation,
@@ -13,29 +13,31 @@ import {
   useParams,
   useViewTransitionState,
 } from 'react-router';
-import { Poster } from '../components/Case';
 import Connected from '../components/Connected';
 import Footer from '../components/Footer';
 import Img from '../components/Img';
 import OpenCase from '../components/OpenCase';
 import { WatchBadge } from '../components/Providers';
 import SaveButton from '../components/SaveButton';
-import Segmented from '../components/Segmented';
+import Seasons from '../components/Seasons';
 import Sheet from '../components/Sheet';
 import Shelf, { RowNav } from '../components/Shelf';
 import TitleCard from '../components/TitleCard';
 import Topbar from '../components/Topbar';
+import { APPS, watchLaunch } from '../lib/apps';
 import {
   certification,
-  getSeason,
   getTitle,
   pickTrailer,
   providerRows,
+  releaseDates,
+  trending,
 } from '../lib/catalog';
 import {
   compactMoney,
   longDate,
   parseId,
+  personHref,
   plural,
   runtime,
   TYPE_LABEL,
@@ -45,7 +47,7 @@ import {
 import { departHero, isArriving } from '../lib/hero';
 import { trackEdges, useMediaQuery, useReducedMotion } from '../lib/hooks';
 import { backdropImage, usePageMeta } from '../lib/meta';
-import { useRegion, useServices } from '../lib/prefs';
+import { useApps, useRegion, useServices } from '../lib/prefs';
 import { img } from '../lib/tmdb';
 import { openSheet, toast } from '../lib/ui';
 import { useQuery } from '../lib/useQuery';
@@ -96,6 +98,14 @@ const STATUS_NOTES = {
   none: 'Not on any service in your region right now.',
 };
 
+function statusNote(status) {
+  if (!status.digital) return STATUS_NOTES[status.tone];
+  const date = longDate(status.digital);
+  return status.tone === 'cinema'
+    ? `Showing in cinemas. Out on digital ${date}.`
+    : `Not released yet. Out on digital ${date}.`;
+}
+
 function ProviderRow({ p, mine, link }) {
   return (
     <li>
@@ -115,6 +125,7 @@ function ProviderRow({ p, mine, link }) {
 
 function Availability({ raw, item }) {
   const region = useRegion();
+  const release = item.type === 'movie' ? releaseDates(raw, region) : null;
   const services = useServices();
   const [showOthers, setShowOthers] = useState(false);
   const rows = providerRows(
@@ -126,10 +137,14 @@ function Availability({ raw, item }) {
   const rest = (rows.mine.length ? rows.others : rows.others.slice(3)).filter(
     (p) => !shownIds.has(p.id) && p.name,
   );
-  const status = watchStatus(item, {
-    list: rows.streaming,
-    buyable: rows.streaming.length < rows.mine.length + rows.others.length,
-  });
+  const status = watchStatus(
+    item,
+    {
+      list: rows.streaming,
+      buyable: rows.streaming.length < rows.mine.length + rows.others.length,
+    },
+    release,
+  );
 
   return (
     <section className="block">
@@ -139,7 +154,7 @@ function Availability({ raw, item }) {
       {status && (
         <div className="availability-status">
           <WatchBadge status={status} />
-          <span>{STATUS_NOTES[status.tone]}</span>
+          <span>{statusNote(status)}</span>
         </div>
       )}
       {primary.length === 0 ? (
@@ -203,116 +218,6 @@ function Availability({ raw, item }) {
   );
 }
 
-const EPISODE_PAGE = 24;
-
-function Season({ tvId, season }) {
-  const [open, setOpen] = useState(false);
-  const [newest, setNewest] = useState(season.episode_count > EPISODE_PAGE);
-  const [limit, setLimit] = useState(EPISODE_PAGE);
-  const episodes = useQuery(
-    `season-${tvId}-${season.season_number}`,
-    (signal) => getSeason(tvId, season.season_number, { signal }),
-    { enabled: open },
-  );
-  const item = { title: season.name, poster: season.poster_path };
-
-  return (
-    <li className="season">
-      <button
-        type="button"
-        className="season-head"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <Poster item={item} size="w92" />
-        <span>
-          <span className="season-name">{season.name}</span>
-          <br />
-          <span className="season-sub">
-            {[
-              season.air_date?.slice(0, 4),
-              `${season.episode_count.toLocaleString()} episode${season.episode_count === 1 ? '' : 's'}`,
-              season.vote_average
-                ? `★ ${season.vote_average.toFixed(1)}`
-                : null,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-          </span>
-        </span>
-        <IconChevronRight stroke={1.8} />
-      </button>
-      <div className="disclose" data-open={open}>
-        <div>
-          {episodes.loading && !episodes.data ? (
-            <div className="sentinel">
-              <span className="spinner" />
-            </div>
-          ) : (
-            <EpisodeList
-              episodes={episodes.data?.episodes ?? []}
-              newest={newest}
-              limit={limit}
-              onNewest={setNewest}
-              onMore={() => setLimit((n) => n + EPISODE_PAGE * 2)}
-            />
-          )}
-        </div>
-      </div>
-    </li>
-  );
-}
-
-function EpisodeList({ episodes, newest, limit, onNewest, onMore }) {
-  const long = episodes.length > EPISODE_PAGE;
-  const ordered = newest ? [...episodes].reverse() : episodes;
-  const shown = ordered.slice(0, limit);
-
-  return (
-    <>
-      {long && (
-        <div className="episodes-bar">
-          <span>
-            {shown.length.toLocaleString()} of{' '}
-            {episodes.length.toLocaleString()}
-          </span>
-          <Segmented
-            label="Episode order"
-            value={newest ? 'newest' : 'oldest'}
-            onChange={(value) => onNewest(value === 'newest')}
-            options={[
-              { value: 'newest', label: 'Newest' },
-              { value: 'oldest', label: 'First' },
-            ]}
-          />
-        </div>
-      )}
-      <ol className="episodes">
-        {shown.map((ep) => (
-          <li key={ep.id} className="episode">
-            <span className="episode-num">
-              {String(ep.episode_number).padStart(2, '0')}
-            </span>
-            <div>
-              <strong style={{ fontWeight: 500 }}>{ep.name}</strong>
-              <span className="muted">
-                {ep.runtime ? ` · ${runtime(ep.runtime)}` : ''}
-                {ep.air_date ? ` · ${longDate(ep.air_date)}` : ''}
-              </span>
-              {ep.overview && <p>{ep.overview}</p>}
-            </div>
-          </li>
-        ))}
-      </ol>
-      {shown.length < episodes.length && (
-        <button type="button" className="btn episodes-more" onClick={onMore}>
-          Show {Math.min(EPISODE_PAGE * 2, episodes.length - shown.length)} more
-        </button>
-      )}
-    </>
-  );
-}
-
 function Cast({ raw, type }) {
   const track = useRef(null);
   const people =
@@ -345,7 +250,7 @@ function Cast({ raw, type }) {
         className="shelf-track people"
       >
         {people.slice(0, 16).map((p) => (
-          <div key={p.id} className="person">
+          <Link key={p.id} to={personHref(p)} className="person" viewTransition>
             <div className="person-face">
               {p.photo ? (
                 <Img src={img(p.photo, 'w185')} loading="lazy" />
@@ -357,23 +262,37 @@ function Cast({ raw, type }) {
               <div className="person-name">{p.name}</div>
               {p.role && <div className="person-role">{p.role}</div>}
             </div>
-          </div>
+          </Link>
         ))}
       </div>
     </section>
   );
 }
 
+const uniquePeople = (list) => [
+  ...new Map(list.map((p) => [p.id, p])).values(),
+];
+
+function Names({ people }) {
+  if (!people.length) return null;
+  return people.map((p, i) => (
+    <Fragment key={p.id}>
+      {i > 0 && ', '}
+      <Link to={personHref(p)} className="hover-underline" viewTransition>
+        {p.name}
+      </Link>
+    </Fragment>
+  ));
+}
+
 function Facts({ raw, type }) {
+  const region = useRegion();
   const crew = raw.credits?.crew ?? [];
-  const directors = crew.filter((c) => c.job === 'Director').map((c) => c.name);
-  const writers = [
-    ...new Set(
-      crew
-        .filter((c) => ['Screenplay', 'Writer', 'Novel'].includes(c.job))
-        .map((c) => c.name),
-    ),
-  ];
+  const directors = uniquePeople(crew.filter((c) => c.job === 'Director'));
+  const writers = uniquePeople(
+    crew.filter((c) => ['Screenplay', 'Writer', 'Novel'].includes(c.job)),
+  ).slice(0, 3);
+  const release = type === 'movie' ? releaseDates(raw, region) : null;
   const language = (() => {
     try {
       return new Intl.DisplayNames(undefined, { type: 'language' }).of(
@@ -387,9 +306,10 @@ function Facts({ raw, type }) {
   const facts =
     type === 'movie'
       ? [
-          ['Directed by', directors.join(', ')],
-          ['Written by', writers.slice(0, 3).join(', ')],
+          ['Directed by', <Names key="d" people={directors} />],
+          ['Written by', <Names key="w" people={writers} />],
           ['Released', longDate(raw.release_date)],
+          ['On digital', release?.digital && longDate(release.digital)],
           ['Runtime', runtime(raw.runtime)],
           ['Status', raw.status],
           ['Language', language],
@@ -404,7 +324,10 @@ function Facts({ raw, type }) {
           ],
         ]
       : [
-          ['Created by', raw.created_by?.map((c) => c.name).join(', ')],
+          [
+            'Created by',
+            <Names key="c" people={uniquePeople(raw.created_by ?? [])} />,
+          ],
           ['First aired', longDate(raw.first_air_date)],
           ['Last aired', longDate(raw.last_air_date)],
           ['Episodes', raw.number_of_episodes],
@@ -427,7 +350,9 @@ function Facts({ raw, type }) {
           ['Episode length', runtime(raw.episode_run_time?.[0])],
         ];
 
-  const shown = facts.filter(([, v]) => v);
+  const shown = facts.filter(
+    ([, v]) => v && !(v.type === Names && !v.props.people.length),
+  );
   if (!shown.length) return null;
 
   return (
@@ -449,6 +374,7 @@ function TitleView({ type, id }) {
   const location = useLocation();
   const navigate = useNavigate();
   const region = useRegion();
+  const apps = useApps();
   const desktop = useMediaQuery('(min-width: 960px)');
   const reduced = useReducedMotion();
   const stageRef = useRef(null);
@@ -464,6 +390,18 @@ function TitleView({ type, id }) {
   const item = query.data?.item ?? location.state?.item ?? null;
 
   useStageScroll(stageRef, !desktop && !reduced);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only on the first entry
+  useEffect(() => {
+    if (location.key !== 'default') return;
+    const warm = () => trending().catch(() => {});
+    if ('requestIdleCallback' in window) {
+      const handle = requestIdleCallback(warm, { timeout: 3000 });
+      return () => cancelIdleCallback(handle);
+    }
+    const timer = setTimeout(warm, 1500);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (transitioning) return;
@@ -523,12 +461,12 @@ function TitleView({ type, id }) {
         ? navigate(-1, { viewTransition })
         : navigate('/', { viewTransition });
     const stage = stageRef.current;
-    const inView =
-      desktop || (stage && window.scrollY < stage.offsetHeight * 0.2);
-    const flown =
-      open &&
-      inView &&
-      departHero(stage?.querySelector('.ocase'), item, () => leave(false));
+    const ocase = stage?.querySelector('.ocase');
+    const rect = ocase?.getBoundingClientRect();
+    const inView = desktop
+      ? rect && rect.bottom > 80 && rect.top < window.innerHeight - 80
+      : stage && window.scrollY < stage.offsetHeight * 0.2;
+    const flown = open && inView && departHero(ocase, item, () => leave(false));
     if (!flown) leave(true);
   };
 
@@ -538,10 +476,6 @@ function TitleView({ type, id }) {
   const recommendations = toItems(raw?.recommendations?.results, type).filter(
     (r) => r.poster,
   );
-  const seasons = (raw?.seasons ?? []).filter(
-    (s) => s.season_number > 0 || raw.seasons.length === 1,
-  );
-
   const meta = [
     ['kind', item && TYPE_LABEL[item.kind]],
     ['year', item?.year],
@@ -721,6 +655,19 @@ function TitleView({ type, id }) {
                   <IconShare2 stroke={1.8} />
                   Share
                 </button>
+                {APPS.filter((app) => apps.includes(app.id)).map((app) => (
+                  <a
+                    key={app.id}
+                    className="btn"
+                    href={app.link(item, raw.external_ids?.imdb_id)}
+                    onClick={() =>
+                      watchLaunch(app, item, raw.external_ids?.imdb_id)
+                    }
+                  >
+                    <img className="app-icon" src={app.icon} alt="" />
+                    {app.name}
+                  </a>
+                ))}
               </div>
             )}
 
@@ -735,19 +682,7 @@ function TitleView({ type, id }) {
 
             {raw && <Connected type={type} raw={raw} />}
 
-            {type === 'tv' && seasons.length > 0 && (
-              <section className="block">
-                <h2 className="block-title">
-                  Seasons{' '}
-                  <small>{`${raw.number_of_episodes.toLocaleString()} episodes`}</small>
-                </h2>
-                <ul className="seasons">
-                  {seasons.map((s) => (
-                    <Season key={s.id} tvId={raw.id} season={s} />
-                  ))}
-                </ul>
-              </section>
-            )}
+            {type === 'tv' && raw && <Seasons raw={raw} />}
 
             {raw && <Cast raw={raw} type={type} />}
             {raw && <Facts raw={raw} type={type} />}

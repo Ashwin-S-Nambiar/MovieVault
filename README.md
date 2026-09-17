@@ -33,6 +33,7 @@ it is a react spa with no server behind it, talking straight to tmdb. the routes
 | `/movie/:id`, `/tv/:id` | the case, opened: where to watch, cast, crew, trailer, seasons, and what came before and after it |
 | `/universes` | eighteen franchises as a grid of backdrops |
 | `/universe/:slug` | one franchise as a release-order timeline, with one tap to save all of it |
+| `/person/:id` | an actor or director: what they're known for, and every credit in order |
 | `/vault` | everything you saved, with where each one streams |
 
 ![jurassic park with its case open, the disc showing, beside where it streams and the universe it belongs to](./docs/screenshots/MovieVault-2.webp)
@@ -41,8 +42,12 @@ it is a react spa with no server behind it, talking straight to tmdb. the routes
 - **your services.** pick them and your region once. home shows what is popular on them, and search can narrow to only what you can watch tonight.
 - **anime is its own thing.** tmdb has no anime type, so it is recognised through tmdb's anime keyword and gets its own shelf and filter.
 - **connected titles.** every detail page shows what came before and after it in release order, for films, series and anime alike, with a strip of the whole franchise and a link to its universe.
+- **episode ratings.** every series has a ratings graph in the style of a contribution chart: one row per season, one square per episode, darker for better. a season too long to read as one row, like the 366 episodes in bleach's first, is split into its arcs using tmdb's fan-made episode groups, or at the gaps between broadcast seasons when there are none.
+- **when it lands.** films between cinema and streaming show their digital release date for your region.
+- **people.** cast, directors and writers link to their own pages.
 - **the vault.** save anything with a bookmark, filter it, sort it, and undo a removal from the toast.
-- **settings.** appearance, and the live tmdb connection. the gear carries a dot when that connection is down.
+- **watch apps.** turn on nuvio or stremio in settings and title pages get a button that opens the title there.
+- **settings.** appearance, watch apps, and the live tmdb connection. the gear carries a dot when that connection is down.
 - **light and dark.** follows the system unless you pick one.
 
 ## the reel is maths, not a dependency

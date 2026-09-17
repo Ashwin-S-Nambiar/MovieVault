@@ -1,5 +1,5 @@
 import { toItem, toItems } from './format';
-import { tmdb } from './tmdb';
+import { logoImg, peek, tmdb } from './tmdb';
 import { UNIVERSES, universeHref } from './universes';
 
 const ANIME_KEYWORD = 210024;
@@ -61,21 +61,50 @@ export async function searchTitles(query, { page: n = 1, signal } = {}) {
 
 const APPEND = {
   movie:
-    'credits,release_dates,watch/providers,videos,recommendations,images,keywords',
-  tv: 'aggregate_credits,content_ratings,watch/providers,videos,recommendations,images,keywords',
+    'credits,release_dates,watch/providers,videos,recommendations,images,keywords,external_ids',
+  tv: 'aggregate_credits,content_ratings,watch/providers,videos,recommendations,images,keywords,external_ids,episode_groups',
+};
+
+const titleParams = (type) => ({
+  append_to_response: APPEND[type],
+  include_image_language: 'en,null',
+});
+
+export function pickLogo(raw) {
+  const logos = raw.images?.logos ?? [];
+  const logo =
+    logos.find((l) => l.iso_639_1 === 'en' && l.aspect_ratio >= 1.2) ??
+    logos.find((l) => l.aspect_ratio >= 1.2) ??
+    logos[0];
+  return logo?.file_path ?? null;
+}
+
+const withLogo = (raw, type) => {
+  const item = toItem(raw, type);
+  return item && { ...item, logo: pickLogo(raw) };
 };
 
 export async function getTitle(type, id, { signal } = {}) {
-  const raw = await tmdb(
-    `/${type}/${id}`,
-    { append_to_response: APPEND[type], include_image_language: 'en,null' },
-    { signal },
-  );
-  return { raw, item: toItem(raw, type) };
+  const raw = await tmdb(`/${type}/${id}`, titleParams(type), { signal });
+  return { raw, item: withLogo(raw, type) };
+}
+
+export function peekLogo(item) {
+  if (!item) return null;
+  if (item.logo !== undefined) return item.logo;
+  const raw = peek(`/${item.type}/${item.id}`, titleParams(item.type));
+  return raw ? pickLogo(raw) : undefined;
 }
 
 export const prefetchTitle = (item) =>
-  getTitle(item.type, item.id).catch(() => {});
+  getTitle(item.type, item.id)
+    .then(({ item: full }) => {
+      if (!full?.logo) return;
+      const image = new Image();
+      image.crossOrigin = 'anonymous';
+      image.src = logoImg(full.logo);
+    })
+    .catch(() => {});
 
 export const getProviders = (type, id, { signal } = {}) =>
   tmdb(`/${type}/${id}/watch/providers`, {}, { signal });
@@ -373,3 +402,37 @@ export function pickTrailer(raw) {
     null
   );
 }
+
+const RELEASE = { theatrical: [2, 3], digital: [4], physical: [5] };
+
+export function releaseDates(raw, region) {
+  const results = raw.release_dates?.results ?? [];
+  for (const code of [region, 'US']) {
+    const dates = results.find((r) => r.iso_3166_1 === code)?.release_dates;
+    if (!dates?.length) continue;
+    const first = (types) =>
+      dates
+        .filter((d) => types.includes(d.type) && d.release_date)
+        .map((d) => d.release_date.slice(0, 10))
+        .sort()[0] ?? null;
+    return {
+      region: code,
+      theatrical: first(RELEASE.theatrical),
+      digital: first(RELEASE.digital),
+      physical: first(RELEASE.physical),
+    };
+  }
+  return null;
+}
+
+export const getReleaseDates = (id, region, { signal } = {}) =>
+  tmdb(`/movie/${id}/release_dates`, {}, { signal }).then((data) =>
+    releaseDates({ release_dates: data }, region),
+  );
+
+export const getPerson = (id, { signal } = {}) =>
+  tmdb(
+    `/person/${id}`,
+    { append_to_response: 'combined_credits,external_ids' },
+    { signal },
+  );

@@ -6,6 +6,7 @@ import './index.css';
 import AppShell from './components/AppShell';
 import Home from './pages/Home';
 import NotFound, { RouteError } from './pages/NotFound';
+import Person from './pages/Person';
 import Search from './pages/Search';
 import Title from './pages/Title';
 import Universe from './pages/Universe';
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
       { path: 'search', element: <Search /> },
       { path: 'movie/:id', element: <Title type="movie" /> },
       { path: 'tv/:id', element: <Title type="tv" /> },
+      { path: 'person/:id', element: <Person /> },
       { path: 'vault', element: <Vault /> },
       { path: 'watchlist', element: <Navigate to="/vault" replace /> },
       { path: 'universes', element: <Universes /> },

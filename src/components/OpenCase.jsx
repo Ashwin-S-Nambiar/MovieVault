@@ -1,6 +1,8 @@
 import { useLayoutEffect, useRef } from 'react';
+import { peekLogo } from '../lib/catalog';
 import { arriveHero } from '../lib/hero';
-import { img } from '../lib/tmdb';
+import { useLogoTone } from '../lib/logo';
+import { img, logoImg } from '../lib/tmdb';
 import { Art } from './Case';
 
 export default function OpenCase({
@@ -13,6 +15,8 @@ export default function OpenCase({
 }) {
   const ref = useRef(null);
   const key = item?.key;
+  const logo = peekLogo(item);
+  const tone = useLogoTone(logo);
 
   useLayoutEffect(() => {
     if (hero && key) arriveHero(ref.current, key);
@@ -37,7 +41,19 @@ export default function OpenCase({
           {poster && <img src={poster} alt="" draggable={false} />}
           {item && (
             <div>
-              <strong>{item.title}</strong>
+              {logo ? (
+                <img
+                  key={logo}
+                  className="ocase-logo"
+                  data-tone={tone ?? undefined}
+                  src={logoImg(logo)}
+                  crossOrigin="anonymous"
+                  alt={item.title}
+                  draggable={false}
+                />
+              ) : (
+                logo === null && <strong>{item.title}</strong>
+              )}
               <hr />
               <p>{overview ?? item.overview}</p>
             </div>

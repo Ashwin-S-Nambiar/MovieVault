@@ -53,8 +53,15 @@ export function markHero(key, source, rect, sk = 1) {
   );
 }
 
+export const isLanding = (key) =>
+  flight?.dir === 'close' &&
+  !flight.guess &&
+  !flight.arrived &&
+  flight.item.key === key;
+
 export const isHero = (key, source) => {
   if (flight?.dir === 'open') return false;
+  if (isLanding(key)) return true;
   const pending = readPending();
   return (
     pending != null &&
@@ -279,14 +286,23 @@ function begin(state) {
 }
 
 function vanish(f) {
-  if (!f.parts) return settle(f);
+  if (!f.parts || f.vanishing) return f.parts ? undefined : settle(f);
+  f.vanishing = true;
+  window.clearTimeout(f.fallback);
   f.travel?.pause();
   veil(f, true);
   for (const el of f.hidden) el.style.visibility = '';
-  const out = animate(f, f.parts.wrap, [{ opacity: 1 }, { opacity: 0 }], {
-    duration: 280,
-    easing: 'ease',
-  });
+  const from = getComputedStyle(f.parts.wrap).transform;
+  const base = from === 'none' ? '' : `${from} `;
+  const out = animate(
+    f,
+    f.parts.wrap,
+    [
+      { opacity: 1, transform: base || 'none' },
+      { opacity: 0, transform: `${base}translateY(18px) scale(0.92)` },
+    ],
+    { duration: 340, easing: 'cubic-bezier(0.23, 1, 0.32, 1)' },
+  );
   out.finished.then(
     () => settle(f),
     () => {},
@@ -401,8 +417,19 @@ export function attachFlight(id, node) {
   }
 }
 
+const UNCLAIMED_MS = 220;
+
 export const enterHero = () => {
-  if (flight?.parts) veil(flight, true);
+  const f = flight;
+  if (!f?.parts) return;
+  veil(f, true);
+  if (f.dir === 'close' && !f.guess && !f.arrived && !f.entered) {
+    f.entered = true;
+    window.clearTimeout(f.fallback);
+    f.fallback = window.setTimeout(() => {
+      if (flight === f && !f.arrived) vanish(f);
+    }, UNCLAIMED_MS);
+  }
 };
 
 export const isArriving = (key) =>
@@ -425,11 +452,27 @@ export function arriveHero(el, key) {
   return true;
 }
 
+const onScreen = (el) => {
+  const r = el.getBoundingClientRect();
+  return (
+    r.width > 0 &&
+    r.bottom > 0 &&
+    r.right > 0 &&
+    r.top < window.innerHeight &&
+    r.left < window.innerWidth
+  );
+};
+
 export function takeHero(el, key, source) {
   if (!el || !isHero(key, source)) return false;
-  writePending(null);
   const f = flight;
-  if (f?.dir !== 'close' || f.item.key !== key || f.arrived) return false;
+  const unguided = isLanding(key);
+  if (unguided && !onScreen(el)) return false;
+  if (!unguided) writePending(null);
+  if (f?.dir !== 'close' || f.item.key !== key || f.arrived || f.vanishing) {
+    return false;
+  }
+  window.clearTimeout(f.fallback);
   f.arrived = el;
   f.hidden.push(hide(el));
   enterHero();

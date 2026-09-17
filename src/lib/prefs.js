@@ -24,10 +24,18 @@ export const servicesStore = createPersistedStore(
   DEFAULT_SERVICES[region] ?? [8, 119, 337, 350],
 );
 export const themeStore = createPersistedStore('mv:theme', 'system');
+export const appsStore = createPersistedStore('mv:apps', []);
 
 export const useRegion = () => useStore(regionStore);
 export const useServices = () => useStore(servicesStore);
 export const useTheme = () => useStore(themeStore);
+export const useApps = () => useStore(appsStore);
+
+export function toggleApp(id) {
+  appsStore.set((list) =>
+    list.includes(id) ? list.filter((x) => x !== id) : [...list, id],
+  );
+}
 
 export function toggleService(id) {
   servicesStore.set((list) =>

@@ -26,6 +26,10 @@ function recall(key) {
   }
 }
 
+export const primeQuery = (key, data) => {
+  if (!fresh(key)) remember(key, data);
+};
+
 const fresh = (key) => {
   const hit = recall(key);
   return hit && Date.now() - hit.at < TTL ? hit : null;
