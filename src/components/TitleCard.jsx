@@ -1,9 +1,9 @@
 import { IconX } from '@tabler/icons-react';
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { use, useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { prefetchTitle } from '../lib/catalog';
 import { TYPE_LABEL, titleHref } from '../lib/format';
-import { isHero, launchHero, takeHero } from '../lib/hero';
+import { HeroSlot, isHero, launchHero, takeHero } from '../lib/hero';
 import { Disc, Poster } from './Case';
 import { LazyProviders } from './Providers';
 
@@ -43,7 +43,9 @@ export default function TitleCard({
   note,
 }) {
   const posterRef = useRef(null);
-  const [returning] = useState(() => isHero(item.key, 'card'));
+  const slot = use(HeroSlot);
+  const source = slot ? `card:${slot}` : 'card';
+  const [returning] = useState(() => isHero(item.key, source));
   const [hidden, setHidden] = useState(false);
   const [peeked, setPeeked] = useState(false);
 
@@ -53,8 +55,8 @@ export default function TitleCard({
   );
 
   useLayoutEffect(() => {
-    if (returning) takeHero(posterRef.current, item.key, 'card');
-  }, [returning, item.key]);
+    if (returning) takeHero(posterRef.current, item.key, source);
+  }, [returning, item.key, source]);
 
   if (hidden) return null;
 
@@ -70,7 +72,7 @@ export default function TitleCard({
           prefetchTitle(item);
         }}
         onClick={(event) => {
-          launchHero(posterRef.current, item, 'card', event);
+          launchHero(posterRef.current, item, source, event);
           onOpen?.(item);
         }}
       >

@@ -1,3 +1,4 @@
+import { createContext } from 'react';
 import { flushSync } from 'react-dom';
 import { titleHref } from './format';
 import { createStore } from './store';
@@ -17,6 +18,8 @@ const LAND = 'cubic-bezier(0.3, 0.1, 0.1, 1)';
 const STEER = 'cubic-bezier(0.25, 0.8, 0.25, 1)';
 
 export const flightStore = createStore(null);
+
+export const HeroSlot = createContext('');
 
 let flight = null;
 let nextId = 1;
@@ -61,14 +64,11 @@ export const isLanding = (key) =>
 
 export const isHero = (key, source) => {
   if (flight?.dir === 'open') return false;
-  if (isLanding(key)) return true;
   const pending = readPending();
-  return (
-    pending != null &&
-    pending.key === key &&
-    pending.source === source &&
-    pending.idx === historyIndex()
-  );
+  if (pending?.key === key && pending.idx === historyIndex()) {
+    return pending.source === source;
+  }
+  return isLanding(key);
 };
 
 const reducedMotion = () =>

@@ -33,7 +33,7 @@ export default function StatusPill() {
     if (problem) {
       const delay = problem.tone === 'retrying' ? 700 : 0;
       const timer = setTimeout(() => {
-        wasBad.current = true;
+        wasBad.current = problem.tone !== 'retrying';
         setShown(problem);
       }, delay);
       return () => clearTimeout(timer);

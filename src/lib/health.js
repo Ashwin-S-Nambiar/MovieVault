@@ -8,8 +8,12 @@ export const healthStore = createStore({
   lastError: null,
   latency: null,
   checkedAt: null,
+  okAt: 0,
   epoch: 0,
 });
+
+const GRACE = 10_000;
+const recentlyOk = (s) => Date.now() - s.okAt < GRACE;
 
 export const isDown = () => healthStore.get().status === 'down';
 
@@ -26,7 +30,7 @@ export function retryFailed() {
 
 export function reportRetry() {
   healthStore.set((s) =>
-    s.status === 'down' || s.status === 'checking'
+    s.status === 'down' || s.status === 'checking' || recentlyOk(s)
       ? s
       : { ...s, retrying: s.retrying + 1 },
   );
@@ -41,6 +45,8 @@ export function reportSuccess(ms) {
     lastError: null,
     latency: s.latency == null ? ms : Math.round(s.latency * 0.8 + ms * 0.2),
     checkedAt: Date.now(),
+    okAt: Date.now(),
+    epoch: s.failures > 0 ? s.epoch + 1 : s.epoch,
   }));
 }
 
@@ -53,7 +59,12 @@ export function reportFailure(error) {
           retrying: 0,
           failures: s.failures + 1,
           lastError: error?.message ?? 'Request failed',
-          status: error?.status === 401 ? 'bad-key' : 'down',
+          status:
+            error?.status === 401
+              ? 'bad-key'
+              : s.status === 'up' && recentlyOk(s)
+                ? 'up'
+                : 'down',
           checkedAt: Date.now(),
         },
   );

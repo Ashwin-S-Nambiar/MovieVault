@@ -5,6 +5,7 @@ import {
 } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
+import { HeroSlot } from '../lib/hero';
 import { CardSkeletons } from './TitleCard';
 
 export function RowNav({ track, label = 'row', overlay = false }) {
@@ -158,7 +159,11 @@ export default function Shelf({
         </div>
       ) : (
         <div ref={track} className={`shelf-track ${className}`}>
-          {loading ? <CardSkeletons count={skeleton} /> : children}
+          {loading ? (
+            <CardSkeletons count={skeleton} />
+          ) : (
+            <HeroSlot value={title}>{children}</HeroSlot>
+          )}
         </div>
       )}
     </section>

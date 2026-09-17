@@ -254,7 +254,9 @@ export default function Universe() {
                   viewTransition
                   onClick={(event) =>
                     launchHero(
-                      document.querySelector('.tl-item .poster'),
+                      document.querySelector(
+                        `[data-key="${released[0].key}"] .poster`,
+                      ),
                       released[0],
                       'timeline',
                       event,
@@ -294,6 +296,7 @@ export default function Universe() {
                 <li key={p.key}>
                   <div
                     className="tl-item"
+                    data-key={p.key}
                     data-upcoming={upcoming}
                     ref={(el) => {
                       if (el && isHero(p.key, 'timeline')) {
