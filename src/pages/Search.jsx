@@ -15,10 +15,17 @@ import {
   useRef,
   useState,
 } from 'react';
-import { Link, useLocation, useNavigate, useSearchParams } from 'react-router';
+import {
+  Link,
+  useLocation,
+  useNavigate,
+  useNavigationType,
+  useSearchParams,
+} from 'react-router';
 import { usePillTransition } from '../components/AppShell';
 import { Art } from '../components/Case';
 import Img from '../components/Img';
+import SearchDockLayer from '../components/SearchDockLayer';
 import Segmented from '../components/Segmented';
 import Sheet from '../components/Sheet';
 import TitleCard, { CardSkeletons } from '../components/TitleCard';
@@ -442,6 +449,7 @@ function Landing({ trendingItems, loading }) {
 export default function Search() {
   const navigate = useNavigate();
   const location = useLocation();
+  const navigationType = useNavigationType();
   const region = useRegion();
   const services = useServices();
   const keyboard = useKeyboardInset();
@@ -513,7 +521,8 @@ export default function Search() {
     }
   }, [q]);
 
-  const focusOnArrival = useRef(!q);
+  // Returning to results must not reopen the keyboard and move the landing spot.
+  const focusOnArrival = useRef(!q && navigationType !== 'POP');
   useEffect(() => {
     if (focusOnArrival.current)
       inputRef.current?.focus({ preventScroll: true });
@@ -722,10 +731,7 @@ export default function Search() {
         )}
       </div>
 
-      <div
-        className="search-dock"
-        style={keyboard ? { bottom: keyboard + 10 } : undefined}
-      >
+      <SearchDockLayer style={keyboard ? { bottom: keyboard + 10 } : undefined}>
         <search>
           <form
             className="search-dock-row"
@@ -794,7 +800,7 @@ export default function Search() {
             </button>
           </form>
         </search>
-      </div>
+      </SearchDockLayer>
 
       <Sheet
         open={filtersOpen}

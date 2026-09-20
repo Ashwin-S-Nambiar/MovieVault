@@ -281,7 +281,9 @@ function begin(state) {
     startedAt: performance.now(),
     ...state,
   };
-  flushSync(() => flightStore.set({ id: flight.id, item: state.item }));
+  flushSync(() =>
+    flightStore.set({ id: flight.id, item: state.item, dir: state.dir }),
+  );
   return flight;
 }
 

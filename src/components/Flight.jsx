@@ -14,7 +14,13 @@ export default function Flight() {
   if (!flight) return null;
 
   return (
-    <div ref={ref} key={flight.id} className="flight" aria-hidden="true">
+    <div
+      ref={ref}
+      key={flight.id}
+      className="flight"
+      data-direction={flight.dir}
+      aria-hidden="true"
+    >
       <div className="flight-veil" />
       <div className="flight-case">
         <OpenCase item={flight.item} />

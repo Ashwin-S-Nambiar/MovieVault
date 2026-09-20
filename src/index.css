@@ -5295,6 +5295,11 @@ a.link-card:active {
   opacity: 0;
 }
 
+/* A returning case lands underneath the dock, just like the real poster. */
+.flight[data-direction="close"] {
+  z-index: 39;
+}
+
 .flight-case {
   position: absolute;
   transform-origin: 0 0;

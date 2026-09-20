@@ -10,6 +10,7 @@ import {
 } from 'react-router';
 import { enterHero, setHeroNavigate } from '../lib/hero';
 import Flight from './Flight';
+import SearchDockLayer from './SearchDockLayer';
 import ServicesSheet from './ServicesSheet';
 import SettingsSheet from './SettingsSheet';
 import StatusPill from './StatusPill';
@@ -30,7 +31,7 @@ export function usePillTransition() {
 function SearchDock() {
   const pill = usePillTransition();
   return (
-    <div className="search-dock">
+    <SearchDockLayer>
       <Link
         to="/search"
         className="search-pill"
@@ -42,7 +43,7 @@ function SearchDock() {
         <span className="grow">Search titles…</span>
         <kbd className="kbd">/</kbd>
       </Link>
-    </div>
+    </SearchDockLayer>
   );
 }
 
