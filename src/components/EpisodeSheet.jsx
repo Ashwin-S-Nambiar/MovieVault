@@ -73,7 +73,7 @@ function EpisodeBody({ tvId, ep }) {
         )}
       </div>
 
-      <p className="ep-meta">
+      <p className="ep-meta inline-meta">
         {[
           `S${ep.season} E${ep.number}`,
           ep.absolute && `#${ep.absolute}`,
@@ -81,7 +81,9 @@ function EpisodeBody({ tvId, ep }) {
           longDate(data?.air_date ?? ep.air),
         ]
           .filter(Boolean)
-          .join(' · ')}
+          .map((value) => (
+            <span key={value}>{value}</span>
+          ))}
         {rating ? (
           <span className="ep-rating">
             <IconStarFilled />

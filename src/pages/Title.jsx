@@ -612,7 +612,7 @@ function TitleView({ type, id }) {
                     <span className="skeleton ghost-heading" />
                   )}
                 </h1>
-                <div className="detail-meta">
+                <div className="detail-meta inline-meta">
                   {item ? (
                     meta.map(([key, value]) => <span key={key}>{value}</span>)
                   ) : (

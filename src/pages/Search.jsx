@@ -742,7 +742,9 @@ export default function Search() {
                 <IconSearch stroke={1.8} />
                 <span className="spinner" />
               </span>
-              <span className="sr-only">Search movies, series and anime</span>
+              <span className="sr-only">
+                Search movies, series and anime, or paste an IMDb link
+              </span>
               <input
                 ref={inputRef}
                 type="search"
@@ -754,7 +756,7 @@ export default function Search() {
                     else close();
                   }
                 }}
-                placeholder="Movies, series, anime or an IMDb link"
+                placeholder="Search titles…"
                 autoComplete="off"
                 autoCorrect="off"
                 spellCheck={false}

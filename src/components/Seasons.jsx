@@ -64,8 +64,11 @@ function SeasonRow({
         <Poster item={{ title: name, poster }} size="w92" />
         <span>
           <span className="season-name">{name}</span>
-          <br />
-          <span className="season-sub">{sub}</span>
+          <span className="season-sub inline-meta">
+            {sub.map((value) => (
+              <span key={value}>{value}</span>
+            ))}
+          </span>
         </span>
         <IconChevronRight stroke={1.8} />
       </button>
@@ -153,11 +156,21 @@ function EpisodeList({
                   {String(ep.number).padStart(2, '0')}
                 </span>
                 <span>
-                  <strong className="episode-name">{ep.name}</strong>
-                  <span className="muted">
-                    {ep.absolute ? ` · #${ep.absolute}` : ''}
-                    {ep.runtime ? ` · ${runtime(ep.runtime)}` : ''}
-                    {ep.air ? ` · ${longDate(ep.air)}` : ''}
+                  <span className="inline-meta">
+                    <span>
+                      <strong className="episode-name">{ep.name}</strong>
+                    </span>
+                    {[
+                      ep.absolute && `#${ep.absolute}`,
+                      runtime(ep.runtime),
+                      longDate(ep.air),
+                    ]
+                      .filter(Boolean)
+                      .map((value) => (
+                        <span className="muted" key={value}>
+                          {value}
+                        </span>
+                      ))}
                   </span>
                   {ep.overview && (
                     <span className="episode-overview">{ep.overview}</span>
@@ -301,7 +314,7 @@ export default function Seasons({ raw }) {
               name={row.name}
               poster={row.poster}
               episodes={row.episodes}
-              sub={row.sub.filter(Boolean).join(' · ')}
+              sub={row.sub.filter(Boolean)}
               onEpisode={openEpisode}
             />
           ))}

@@ -467,7 +467,8 @@ p {
   color: var(--ink-2);
   font-size: 12.5px;
   font-weight: 500;
-  white-space: nowrap;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   text-decoration: none;
 }
 
@@ -496,6 +497,9 @@ p {
   position: relative;
   display: inline-grid;
   min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
+  scrollbar-width: none;
   margin: 0;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
@@ -591,6 +595,8 @@ p {
 
 .select {
   appearance: none;
+  min-width: 0;
+  max-width: 100%;
   min-height: 38px;
   padding: 0 2.2em 0 0.95em;
   border: 1px solid var(--line);
@@ -2378,11 +2384,30 @@ a.search-pill:active {
   letter-spacing: -0.01em;
 }
 
-.detail-meta {
+.inline-meta {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 2px 0;
+  gap: 2px 14px;
+  /* Separators occupy only the gaps; clipping hides them at each line start. */
+  overflow: hidden;
+}
+
+.inline-meta > span {
+  position: relative;
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.inline-meta > span + span::before {
+  content: "·";
+  position: absolute;
+  left: -9px;
+  color: var(--faint);
+}
+
+.detail-meta {
   margin-top: 8px;
   color: var(--muted);
   font-size: 13px;
@@ -2392,12 +2417,6 @@ a.search-pill:active {
   display: inline-flex;
   align-items: center;
   white-space: nowrap;
-}
-
-.detail-meta > span + span::before {
-  content: "·";
-  margin-inline: 6px;
-  color: var(--faint);
 }
 
 .detail-meta svg {
@@ -2566,7 +2585,7 @@ a.search-pill:active {
 
 .provider {
   display: grid;
-  grid-template-columns: 40px 1fr auto;
+  grid-template-columns: 40px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
   min-height: 52px;
@@ -2581,6 +2600,7 @@ a.search-pill:active {
 }
 
 .provider-name {
+  overflow-wrap: anywhere;
   font-size: 15px;
   font-weight: 450;
 }
@@ -2725,6 +2745,7 @@ a.search-pill:active {
 }
 
 .facts dd {
+  overflow-wrap: anywhere;
   margin: 2px 0 0;
   font-size: 14.5px;
 }
@@ -3044,6 +3065,7 @@ a.link-card:active {
 
 .episodes-bar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -3975,6 +3997,8 @@ a.link-card:active {
 
 .toolbar-end {
   display: flex;
+  flex-wrap: wrap;
+  max-width: 100%;
   gap: 8px;
 }
 
@@ -4303,6 +4327,8 @@ a.link-card:active {
 }
 
 .sheet-head h2 {
+  min-width: 0;
+  overflow-wrap: anywhere;
   margin: 0;
   font-size: 22px;
   font-weight: 600;
@@ -4310,6 +4336,7 @@ a.link-card:active {
 }
 
 .sheet-head .icon-btn {
+  flex: none;
   --btn-top: var(--surface);
   --btn-bottom: var(--surface);
   width: 40px;
@@ -4499,11 +4526,21 @@ a.link-card:active {
 
 .pref-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   padding: 14px 0;
   border-top: 1px solid var(--line);
+}
+
+.pref-row > div:first-child {
+  flex: 1 1 150px;
+  min-width: 0;
+}
+
+.pref-row > .select {
+  flex: 0 1 auto;
 }
 
 .pref-row strong {
@@ -5589,6 +5626,21 @@ a.person:active .person-face {
   min-width: 0;
 }
 
+.entity-title > div,
+.search-head > div {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.detail-title,
+.vault-title,
+.uhero-title,
+.search-head h1,
+.tl-title,
+.ep-overview {
+  overflow-wrap: anywhere;
+}
+
 .entity-title .uhero-kicker {
   margin-bottom: 2px;
 }
@@ -5650,7 +5702,7 @@ a.person:active .person-face {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 12px;
+  gap: 4px 14px;
   margin: 14px 0 0;
   color: var(--muted);
   font-size: 13.5px;

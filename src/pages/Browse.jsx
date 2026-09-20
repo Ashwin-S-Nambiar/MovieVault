@@ -143,9 +143,9 @@ function BrowseView({ kind, id }) {
               <h1 className="vault-title">
                 {name ?? <span className="skeleton ghost-heading" />}
               </h1>
-              <p className="section-sub">
+              <p className="section-sub inline-meta">
                 {meta.length ? (
-                  meta.join(' · ')
+                  meta.map((value) => <span key={value}>{value}</span>)
                 ) : (
                   <span className="skeleton ghost-line ghost-sm" />
                 )}

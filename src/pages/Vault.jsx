@@ -55,9 +55,7 @@ export default function Vault() {
     counts.movie && plural(counts.movie, 'film'),
     counts.tv && `${counts.tv} series`,
     counts.anime && `${counts.anime} anime`,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  ].filter(Boolean);
 
   return (
     <main className="route">
@@ -65,9 +63,9 @@ export default function Vault() {
       <div className="page">
         <header className="vault-head">
           <h1 className="vault-title">Your vault</h1>
-          <p className="section-sub">
+          <p className="section-sub inline-meta">
             {vault.length
-              ? summary
+              ? summary.map((value) => <span key={value}>{value}</span>)
               : 'Everything you want to watch, in one place.'}
           </p>
 

@@ -31,9 +31,15 @@ function SearchDock() {
   const pill = usePillTransition();
   return (
     <div className="search-dock">
-      <Link to="/search" className="search-pill" style={pill} viewTransition>
+      <Link
+        to="/search"
+        className="search-pill"
+        style={pill}
+        aria-label="Search movies, series and anime"
+        viewTransition
+      >
         <IconSearch stroke={1.8} />
-        <span className="grow">Movies, series and anime</span>
+        <span className="grow">Search titles…</span>
         <kbd className="kbd">/</kbd>
       </Link>
     </div>

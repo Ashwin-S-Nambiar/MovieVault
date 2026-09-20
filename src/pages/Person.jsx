@@ -302,7 +302,11 @@ function PersonView({ id }) {
               )}
               <h1 className="uhero-title">{person.name}</h1>
               {facts.length > 0 && (
-                <p className="phero-facts">{facts.join(' · ')}</p>
+                <p className="phero-facts inline-meta">
+                  {facts.map((fact) => (
+                    <span key={fact}>{fact}</span>
+                  ))}
+                </p>
               )}
               {unique.size > 0 && (
                 <dl className="stats">
