@@ -5319,12 +5319,6 @@ a.link-card:active {
   will-change: transform;
 }
 
-:root:active-view-transition .search-pill[style*="search-pill"] {
-  border-color: transparent;
-  background: none;
-  box-shadow: none;
-}
-
 ::view-transition-group(search-pill) {
   overflow: hidden;
   border-radius: 999px;
