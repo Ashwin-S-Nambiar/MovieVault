@@ -9,12 +9,12 @@ const HOLDERS = '.case, .sleeve, .pull-cover, .cover-body';
 const SWING_MS = 400;
 const LEAVE_MS = 150;
 const FLY_MS = 560;
-const FLY_AT = { open: 260, close: 90 };
-const LAND_MS = 620;
+const FLY_AT = 260;
+const LAND_MS = 540;
 
 const SWING = 'cubic-bezier(0.5, 0, 0.2, 1)';
 const FLY = 'cubic-bezier(0.32, 0.72, 0, 1)';
-const LAND = 'cubic-bezier(0.3, 0.1, 0.1, 1)';
+const LAND = 'cubic-bezier(0.23, 1, 0.32, 1)';
 const STEER = 'cubic-bezier(0.25, 0.8, 0.25, 1)';
 
 export const flightStore = createStore(null);
@@ -48,10 +48,10 @@ const writePending = (value) => {
 
 const viewport = () => window.innerWidth;
 
-export function markHero(key, source, rect, sk = 1) {
+export function markHero(key, source, rect) {
   writePending(
     key
-      ? { key, source, rect, sk, viewport: viewport(), idx: historyIndex() }
+      ? { key, source, rect, viewport: viewport(), idx: historyIndex() }
       : null,
   );
 }
@@ -138,7 +138,7 @@ const animate = (f, el, keyframes, options) => {
 };
 
 function swing(f, opening) {
-  const { ocase, cover, disc } = f.parts;
+  const { ocase, cover, disc, inner } = f.parts;
   const timing = { duration: SWING_MS, easing: SWING };
   f.caseFrames = (pw) =>
     opening
@@ -162,6 +162,23 @@ function swing(f, opening) {
       ? { duration: SWING_MS + 200, delay: 80, easing: FLY }
       : { duration: SWING_MS * 0.6, easing: 'ease' },
   );
+  animate(
+    f,
+    inner,
+    opening
+      ? [
+          { opacity: 0 },
+          { opacity: 0, offset: 0.4, easing: 'ease-out' },
+          { opacity: 1, offset: 0.85 },
+          { opacity: 1 },
+        ]
+      : [
+          { opacity: 1, easing: 'ease-in' },
+          { opacity: 0, offset: 0.35 },
+          { opacity: 0 },
+        ],
+    { duration: SWING_MS },
+  );
 }
 
 function veil(f, entering) {
@@ -181,8 +198,7 @@ function veil(f, entering) {
   );
 }
 
-const flyDelay = (f) =>
-  Math.max(0, f.startedAt + FLY_AT[f.dir] - performance.now());
+const flyDelay = (f) => Math.max(0, f.startedAt + FLY_AT - performance.now());
 
 const offBy = (a, b) =>
   Math.max(
@@ -199,6 +215,7 @@ function settle(f) {
   window.clearTimeout(f.fallback);
   if (flight === f) {
     flight = null;
+    delete document.documentElement.dataset.flight;
     flushSync(() => flightStore.set(null));
   }
 }
@@ -232,12 +249,6 @@ function travel(f, keyframes, timing) {
     () => {},
   );
 }
-
-const flyTiming = (f) => ({
-  duration: f.dir === 'open' ? FLY_MS : LAND_MS,
-  delay: flyDelay(f),
-  easing: f.dir === 'open' ? FLY : LAND,
-});
 
 function steer(f, to, off) {
   if (off < 0.5) return;
@@ -281,6 +292,7 @@ function begin(state) {
     startedAt: performance.now(),
     ...state,
   };
+  document.documentElement.dataset.flight = state.dir;
   flushSync(() =>
     flightStore.set({ id: flight.id, item: state.item, dir: state.dir }),
   );
@@ -333,7 +345,7 @@ export function launchHero(el, item, source, event) {
   }
   const away = el ? rectOf(el) : null;
   const rest = el ? rectOf(el.closest('.reel-item, .sleeve') ?? el) : null;
-  markHero(item.key, source, rest, el ? skOf(el) : 1);
+  markHero(item.key, source, rest);
   if (!el || !navigateTo || reducedMotion()) return false;
   event?.preventDefault();
   const hovered = el.classList.contains('case') && el.matches(':hover');
@@ -368,14 +380,7 @@ export function departHero(el, item, leave) {
       ? pending.rect
       : null;
   const home = layoutBox(el);
-  const f = begin({
-    dir: 'close',
-    item,
-    home,
-    guess,
-    guessSk: guess ? (pending.sk ?? 1) : 1,
-    pw: home.width / 2,
-  });
+  const f = begin({ dir: 'close', item, home, guess, pw: home.width / 2 });
   f.hidden.push(hide(el));
   f.timer = window.setTimeout(leave, LEAVE_MS);
   f.fallback = window.setTimeout(
@@ -396,25 +401,16 @@ export function attachFlight(id, node) {
     ocase: node.querySelector('.ocase'),
     cover: node.querySelector('.ocase-cover'),
     disc: node.querySelector('.disc'),
+    inner: node.querySelector('.ocase-inner > div'),
   };
   place(f, f.home);
-  swing(f, f.dir === 'open');
   veil(f, false);
   if (f.dir === 'open') {
+    swing(f, true);
     travel(
       f,
       [{ transform: boxToBox(f.home, f.from) }, { transform: 'none' }],
-      flyTiming(f),
-    );
-  } else if (f.guess) {
-    shade(f, caseAround(f.guess), f.guessSk);
-    travel(
-      f,
-      [
-        { transform: 'none' },
-        { transform: boxToBox(f.home, caseAround(f.guess)) },
-      ],
-      flyTiming(f),
+      { duration: FLY_MS, delay: flyDelay(f), easing: FLY },
     );
   }
 }
@@ -481,20 +477,16 @@ export function takeHero(el, key, source) {
   requestAnimationFrame(() => {
     if (flight !== f || !f.parts) return;
     if (!el.isConnected) return vanish(f);
-    const target = rectOf(el);
-    shade(f, caseAround(target), skOf(el));
-    if (!f.guess) {
-      travel(
-        f,
-        [
-          { transform: 'none' },
-          { transform: boxToBox(f.home, caseAround(target)) },
-        ],
-        flyTiming(f),
-      );
-    } else {
-      steer(f, boxToBox(f.home, caseAround(target)), offBy(target, f.guess));
-    }
+    // Going back is a popstate, which React renders synchronously; the case holds still
+    // under the veil through that commit and only starts moving once the target is known.
+    const target = caseAround(rectOf(el));
+    shade(f, target, skOf(el));
+    swing(f, false);
+    travel(
+      f,
+      [{ transform: 'none' }, { transform: boxToBox(f.home, target) }],
+      { duration: LAND_MS, easing: LAND },
+    );
     f.settledOn = true;
     if (f.landed) release(f);
   });

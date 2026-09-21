@@ -3408,6 +3408,12 @@ a.link-card:active {
 
 .ocase-inner > div {
   position: relative;
+  opacity: 0;
+  transition: opacity 360ms var(--ease-out) 420ms;
+}
+
+.ocase[data-open="true"] .ocase-inner > div {
+  opacity: 1;
 }
 
 .ocase-inner strong {
@@ -5313,10 +5319,24 @@ a.link-card:active {
   transition: none;
 }
 
+.flight .ocase-logo {
+  transition: opacity 360ms ease;
+}
+
 .flight .ocase,
 .flight .ocase-cover,
 .flight .disc {
   will-change: transform;
+}
+
+/* The veil already cross-fades the page under a flight; a second fade just ghosts it. */
+:root[data-flight] .route {
+  animation-duration: 0s;
+}
+
+:root[data-flight]
+  :is(.skeleton, .art-loading, .fade-img[data-state="loading"]) {
+  animation-play-state: paused;
 }
 
 ::view-transition-group(search-pill) {

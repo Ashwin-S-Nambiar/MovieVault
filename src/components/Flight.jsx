@@ -23,7 +23,7 @@ export default function Flight() {
     >
       <div className="flight-veil" />
       <div className="flight-case">
-        <OpenCase item={flight.item} />
+        <OpenCase item={flight.item} open={flight.dir === 'close'} />
       </div>
     </div>
   );
