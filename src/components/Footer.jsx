@@ -131,13 +131,13 @@ export default function Footer() {
 
       <div ref={barRef} className="page footer-bar">
         <p>
-          &copy; {new Date().getFullYear()} Made by{' '}
+          Made by{' '}
           <a
             href="https://ashwin.co.in"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Ashwin S Nambiar
+            Ashwin
           </a>
         </p>
         <p>
