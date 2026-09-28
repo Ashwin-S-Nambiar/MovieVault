@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router';
+import Footer from '../components/Footer';
 import OpenCase from '../components/OpenCase';
 import Topbar from '../components/Topbar';
 import { usePageMeta } from '../lib/meta';
@@ -19,19 +20,22 @@ export default function NotFound({
   }, []);
 
   return (
-    <main className="nf route">
+    <main className="nf-page route">
       <Topbar />
-      <OpenCase open hero={false} style={{ '--pw': '72px' }} />
-      <h1 className="nf-code">404</h1>
-      <p>{message}</p>
-      <div className="detail-actions">
-        <Link to="/" className="btn btn-solid" viewTransition>
-          Back to home
-        </Link>
-        <Link to="/search" className="btn" viewTransition>
-          Search
-        </Link>
+      <div className="nf">
+        <OpenCase open hero={false} style={{ '--pw': '72px' }} />
+        <h1 className="nf-code">404</h1>
+        <p>{message}</p>
+        <div className="detail-actions">
+          <Link to="/" className="btn btn-solid" viewTransition>
+            Back to home
+          </Link>
+          <Link to="/search" className="btn" viewTransition>
+            Search
+          </Link>
+        </div>
       </div>
+      <Footer />
     </main>
   );
 }

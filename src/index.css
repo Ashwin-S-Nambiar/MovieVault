@@ -4834,6 +4834,17 @@ a.link-card:active {
   box-shadow: none;
 }
 
+.nf-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+}
+
+.nf-page > .nf {
+  flex: 1;
+  min-height: 0;
+}
+
 .nf {
   display: grid;
   align-content: center;

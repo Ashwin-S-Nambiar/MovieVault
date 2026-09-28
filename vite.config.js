@@ -1,9 +1,28 @@
+import { copyFile } from 'node:fs/promises';
 import { Agent } from 'node:https';
+import { resolve } from 'node:path';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig, loadEnv } from 'vite';
 
 const agent = new Agent({ keepAlive: true, maxSockets: 8 });
+
+const notFoundPage = () => {
+  let outDir = 'dist';
+  return {
+    name: 'not-found-page',
+    apply: 'build',
+    configResolved(config) {
+      outDir = resolve(config.root, config.build.outDir);
+    },
+    async closeBundle() {
+      await copyFile(
+        resolve(outDir, 'index.html'),
+        resolve(outDir, '404.html'),
+      );
+    },
+  };
+};
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
@@ -17,6 +36,7 @@ export default defineConfig(({ mode }) => {
         name: 'site-url',
         transformIndexHtml: (html) => html.replaceAll('%SITE_URL%', site),
       },
+      notFoundPage(),
     ],
     server: {
       proxy: {
