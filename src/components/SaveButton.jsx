@@ -49,6 +49,7 @@ export default function SaveButton({ item, variant = 'round' }) {
       className="save-btn"
       aria-pressed={saved}
       aria-label={saved ? 'Remove from vault' : 'Save to vault'}
+      data-tip={saved ? 'Remove from vault' : 'Save to vault'}
       onClick={() => toggleSaved(item)}
     >
       <IconBookmarkFilled data-on={saved} />

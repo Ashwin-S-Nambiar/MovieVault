@@ -622,6 +622,7 @@ export default function Search() {
             type="button"
             className="icon-btn"
             aria-label="Filters"
+            data-tip="Filters"
             onClick={() => setFiltersOpen(true)}
           >
             <IconFilter2 stroke={1.8} />

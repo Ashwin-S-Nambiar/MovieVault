@@ -4,6 +4,7 @@ import { createBrowserRouter, Navigate } from 'react-router';
 import { RouterProvider } from 'react-router/dom';
 import './index.css';
 import AppShell from './components/AppShell';
+import { initTips } from './lib/tip.js';
 import Browse from './pages/Browse';
 import Home from './pages/Home';
 import NotFound, { RouteError } from './pages/NotFound';
@@ -41,3 +42,5 @@ createRoot(document.getElementById('root')).render(
     <RouterProvider router={router} />
   </StrictMode>,
 );
+
+initTips();

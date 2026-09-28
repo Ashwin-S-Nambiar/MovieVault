@@ -349,6 +349,7 @@ export default function Universe() {
                       aria-label={
                         isSaved ? `Remove ${p.title}` : `Save ${p.title}`
                       }
+                      data-tip={isSaved ? 'Remove from vault' : 'Save to vault'}
                       onClick={() => toggleSaved(p)}
                     >
                       {isSaved ? (

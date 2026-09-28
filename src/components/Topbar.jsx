@@ -103,6 +103,7 @@ export function SettingsButton() {
       className="icon-btn"
       onClick={() => openSheet('settings')}
       aria-label={problem ? 'Settings, connection problem' : 'Settings'}
+      data-tip={problem ? 'Settings: connection problem' : 'Settings'}
     >
       <IconSettings stroke={1.8} />
       {problem && <span className="icon-btn-dot" />}
@@ -150,6 +151,7 @@ export default function Topbar({ center, end }) {
             to="/vault"
             className="icon-btn nav-vault"
             aria-label={`Your vault, ${count} saved`}
+            data-tip="Your vault"
             viewTransition
           >
             <IconBookmark stroke={1.8} />
