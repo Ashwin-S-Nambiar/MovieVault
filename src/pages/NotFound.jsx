@@ -43,7 +43,7 @@ export default function NotFound({
 export function RouteError() {
   const error = useRouteError();
   const notFound = isRouteErrorResponse(error) && error.status === 404;
-  usePageMeta({ title: notFound ? 'Page not found' : 'Something went wrong' });
+  usePageMeta({ title: notFound ? 'Not found' : 'Something went wrong' });
 
   if (notFound) return <NotFound />;
 
