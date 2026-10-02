@@ -33,7 +33,7 @@ Paths below are relative to `/tmdb`.
 | `/{company or network or keyword}/{id}` | Entity browse page metadata |
 | `/configuration` | Explicit connection recovery only |
 
-`trending()` accepts a window argument but every caller uses the default `week`.
+`trending()` always requests `/trending/all/week`, matching the proxy allowlist.
 No current caller requests `day` or `similar`, so those endpoints are rejected.
 
 Existing appended resources are preserved, with endpoint-specific validation:

@@ -14,8 +14,8 @@ const page = (data, type) => ({
   total: data.total_results,
 });
 
-export async function trending({ window = 'week', signal } = {}) {
-  const data = await tmdb(`/trending/all/${window}`, {}, { signal });
+export async function trending({ signal } = {}) {
+  const data = await tmdb('/trending/all/week', {}, { signal });
   return toItems(data.results).filter(hasPoster);
 }
 

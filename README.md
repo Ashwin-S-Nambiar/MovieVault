@@ -181,7 +181,7 @@ npm run build && npm run preview
 
 a pre-commit hook runs biome on staged files, and ci runs `biome ci`, the proxy tests and the build on every push and pull request.
 
-set `TMDB_API_KEY` in the vercel project's environment too. `/tmdb/` routes through `api/tmdb.js`; `/tmdb-img/` proxies images separately. the development server injects the key server-side through vite's proxy. see the [tmdb proxy audit](docs/tmdb-proxy.md) for the endpoint allowlist, caching policy, request reductions and verification steps.
+set `TMDB_API_KEY` in the vercel project's environment too. the react app calls `/tmdb/*`, which routes through the vercel function in `api/tmdb.js`. the function validates requests and injects `process.env.TMDB_API_KEY` before calling tmdb; the key is never included in the client bundle. `/tmdb-img/` proxies images separately. the development server injects the key server-side through vite's proxy. see the [tmdb proxy audit](docs/tmdb-proxy.md) for the endpoint allowlist, caching policy, request reductions and verification steps.
 
 ## the shape of it
 
