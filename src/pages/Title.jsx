@@ -33,7 +33,6 @@ import {
   pickVideos,
   providerRows,
   releaseDates,
-  trending,
 } from '../lib/catalog';
 import {
   compactMoney,
@@ -445,18 +444,6 @@ function TitleView({ type, id }) {
   const item = query.data?.item ?? location.state?.item ?? null;
 
   useStageScroll(stageRef, !desktop && !reduced);
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: only on the first entry
-  useEffect(() => {
-    if (location.key !== 'default') return;
-    const warm = () => trending().catch(() => {});
-    if ('requestIdleCallback' in window) {
-      const handle = requestIdleCallback(warm, { timeout: 3000 });
-      return () => cancelIdleCallback(handle);
-    }
-    const timer = setTimeout(warm, 1500);
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
     if (transitioning) return;

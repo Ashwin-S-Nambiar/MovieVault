@@ -21,7 +21,9 @@ function initials(name) {
 
 export default function ServicesSheet() {
   const open = useSheet() === 'services';
-  const { region, services, catalog, loading } = useServiceCatalog();
+  const { region, services, catalog, loading } = useServiceCatalog({
+    enabled: open,
+  });
   const [showAll, setShowAll] = useState(false);
   const regions = useQuery('regions', (signal) => getRegions({ signal }), {
     enabled: open,

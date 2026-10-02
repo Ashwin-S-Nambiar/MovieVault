@@ -11,6 +11,7 @@ import { languageStore } from './prefs';
 const BASE_URL = '/tmdb';
 const IMAGE_URL = '/tmdb-img';
 const TTL = 10 * 60 * 1000;
+const REFERENCE_TTL = 24 * 60 * 60 * 1000;
 const MAX_ATTEMPTS = 3;
 const TIMEOUT = 10_000;
 
@@ -43,7 +44,40 @@ function buildUrl(path, params = {}) {
       url.searchParams.set(key, String(value));
     }
   }
+  url.searchParams.sort();
   return url.toString();
+}
+
+const ttl = (url) =>
+  /\/tmdb\/(watch\/providers\/(movie|tv|regions)|genre\/(movie|tv)\/list)$/.test(
+    new URL(url).pathname,
+  )
+    ? REFERENCE_TTL
+    : TTL;
+
+function remember(url, data) {
+  const at = Date.now();
+  cache.set(url, { data, at });
+  const parent = new URL(url);
+  const appended = parent.searchParams.get('append_to_response');
+  if (!appended) return;
+  parent.searchParams.delete('append_to_response');
+  // Appended payloads also satisfy the app's standalone resource requests.
+  // Keep image-language filters only on images, and keep response language
+  // on every key so localized entries never leak into another language.
+  for (const name of appended.split(',')) {
+    const value = data[name];
+    if (!value || typeof value !== 'object' || value.success === false)
+      continue;
+    const child = new URL(parent);
+    child.pathname += `/${name}`;
+    if (name !== 'images') child.searchParams.delete('include_image_language');
+    child.searchParams.sort();
+    cache.set(child.toString(), { data: value, at });
+  }
+  parent.searchParams.delete('include_image_language');
+  parent.searchParams.sort();
+  cache.set(parent.toString(), { data, at });
 }
 
 async function fetchWithRetry(url) {
@@ -101,20 +135,22 @@ window.addEventListener('online', () => {
 });
 
 export function peek(path, params) {
-  const hit = cache.get(buildUrl(path, params));
-  return hit && Date.now() - hit.at < TTL ? hit.data : null;
+  const url = buildUrl(path, params);
+  const hit = cache.get(url);
+  return hit && Date.now() - hit.at < ttl(url) ? hit.data : null;
 }
 
 export function tmdb(path, params, { signal } = {}) {
+  if (signal?.aborted) return Promise.reject(signal.reason);
   const url = buildUrl(path, params);
   const hit = cache.get(url);
-  if (hit && Date.now() - hit.at < TTL) return Promise.resolve(hit.data);
+  if (hit && Date.now() - hit.at < ttl(url)) return Promise.resolve(hit.data);
 
   let pending = inflight.get(url);
   if (!pending) {
     pending = fetchWithRetry(url)
       .then((data) => {
-        cache.set(url, { data, at: Date.now() });
+        remember(url, data);
         return data;
       })
       .finally(() => inflight.delete(url));
@@ -125,9 +161,19 @@ export function tmdb(path, params, { signal } = {}) {
 
   return new Promise((resolve, reject) => {
     if (signal.aborted) return reject(signal.reason);
-    signal.addEventListener('abort', () => reject(signal.reason), {
+    const abort = () => reject(signal.reason);
+    signal.addEventListener('abort', abort, {
       once: true,
     });
-    pending.then(resolve, reject);
+    pending.then(
+      (data) => {
+        signal.removeEventListener('abort', abort);
+        resolve(data);
+      },
+      (error) => {
+        signal.removeEventListener('abort', abort);
+        reject(error);
+      },
+    );
   });
 }

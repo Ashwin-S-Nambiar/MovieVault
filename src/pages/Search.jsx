@@ -530,8 +530,10 @@ export default function Search() {
 
   const trend = useQuery('trending', (signal) => trending({ signal }));
   const genreType = type === 'movie' ? 'movie' : type === 'all' ? 'all' : 'tv';
-  const genreList = useQuery(`genres-${genreType}`, (signal) =>
-    getGenres(genreType, { signal }),
+  const genreList = useQuery(
+    `genres-${genreType}`,
+    (signal) => getGenres(genreType, { signal }),
+    { enabled: filtersOpen || genreNames.length > 0 },
   );
   const genreIds = genreNames
     .map((name) => genreList.data?.find((g) => g.name === name)?.id)
