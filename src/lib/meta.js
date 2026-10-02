@@ -1,8 +1,9 @@
 import { useEffect } from 'react';
+import { useLocation } from 'react-router';
 import { img } from './tmdb';
 
 const SITE = 'MovieVault';
-const ORIGIN = import.meta.env.VITE_SITE_URL ?? '';
+const ORIGIN = 'https://movievault.ashwin.co.in';
 
 export const DEFAULT_DESCRIPTION =
   'Find where to stream any film, series or anime, follow whole universes in release order, and keep a vault of what to watch next.';
@@ -27,12 +28,15 @@ const clip = (text, max = 160) =>
 export const backdropImage = (path) => (path ? img(path, 'w1280') : null);
 
 export function usePageMeta({ title, description, image, type = 'website' }) {
+  const { pathname } = useLocation();
   useEffect(() => {
     const fullTitle = title
       ? `${title} · ${SITE}`
       : `${SITE} · Where to stream anything`;
     const desc = clip(description || DEFAULT_DESCRIPTION);
-    const url = `${ORIGIN || window.location.origin}${window.location.pathname}`;
+    const path =
+      pathname === '/index.html' ? '/' : pathname.replace(/\/$/, '') || '/';
+    const url = `${ORIGIN}${path}`;
     document.title = fullTitle;
     setMeta('name', 'description', desc);
     setMeta('property', 'og:title', fullTitle);
@@ -51,5 +55,5 @@ export function usePageMeta({ title, description, image, type = 'website' }) {
       document.head.append(canonical);
     }
     canonical.href = url;
-  }, [title, description, image, type]);
+  }, [title, description, image, type, pathname]);
 }

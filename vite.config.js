@@ -27,17 +27,8 @@ const notFoundPage = () => {
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const site = (env.VITE_SITE_URL ?? '').replace(/\/$/, '');
   return {
-    plugins: [
-      react(),
-      tailwindcss(),
-      {
-        name: 'site-url',
-        transformIndexHtml: (html) => html.replaceAll('%SITE_URL%', site),
-      },
-      notFoundPage(),
-    ],
+    plugins: [react(), tailwindcss(), notFoundPage()],
     server: {
       proxy: {
         '/tmdb-img': {
