@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://movievault.ashwin.co.in">
-    <img src="./assets/readme/hero.svg" width="100%" alt="MovieVault: where to stream anything. trending titles turn on a ring of dvd cases, drawn with the same geometry the live reel uses, and the one you tap flies open into its page">
+    <img src="./docs/screenshots/MovieVault.webp" width="100%" alt="the home page: trending films and series standing on a ring of dvd cases, the one in front larger and facing you">
   </a>
 </p>
 
@@ -9,16 +9,12 @@
   &nbsp;·&nbsp;
   <a href="#what-it-does">what it does</a>
   &nbsp;·&nbsp;
-  <a href="#the-reel-is-maths-not-a-dependency">the reel</a>
+  <a href="#the-design">the design</a>
   &nbsp;·&nbsp;
   <a href="#running-it">running it</a>
 </p>
 
 <br>
-
-<p align="center">
-  <img src="./docs/screenshots/MovieVault.webp" width="100%" alt="the home page: trending films and series standing on a ring of dvd cases, the one in front larger and facing you">
-</p>
 
 the source of **[movievault.ashwin.co.in](https://movievault.ashwin.co.in)**. search any film, series, anime or person, see which of your services a title streams on tonight, follow a whole franchise in release order, and keep a vault of what to watch next.
 
@@ -95,11 +91,82 @@ every other navigation goes through the view transitions api, through react rout
 
 ## requests are honest about failing
 
-there is no data fetching library either. `useQuery` is 99 lines.
+there is no data fetching library either. a small `useQuery` hook handles the page state, backed by the tmdb client's request cache.
 
-- **a cache that remembers.** results live for ten minutes in memory and in `sessionStorage`, so going back paints at once. results stay on screen while new ones load, so nothing flashes empty.
+- **a cache that remembers.** page results live for ten minutes in memory and in `sessionStorage`, so going back paints at once. reference lists such as providers, regions and genres are cached for a day, and data already returned with a title fills the matching client cache entries. results stay on screen while new ones load, so nothing flashes empty.
 - **retries that back off.** a failed request tries three times, waiting 400 ms and then 1 s, plus jitter. a rejected key or a 404 does not retry, because it will not get better.
 - **a pill only when it is true.** the app watches the requests it really makes, not a ping. the status pill only appears when tmdb is unreachable, you are offline, or the key is wrong, and its retry button replays every query that failed.
+
+## the design
+
+- **restraint.** a warm off-white ground, near-black ink, one red for saving, and pastel chips for browsing.
+- **one family.** geist for everything, geist mono for small numbers like years.
+- **phones first.** a search dock that rides above the keyboard, sheets you drag to dismiss, 44 px touch targets and safe-area padding, scaling up to a two-column detail page and a wider ring.
+- **calm loading.** skeletons match the real layout and share one synchronised sweep, and images fade in rather than pop.
+- **accessible.** keyboard navigation throughout, focus held inside dialogs, and `prefers-reduced-motion` respected everywhere.
+
+## the stack
+
+| layer | choices |
+| --- | --- |
+| framework | [react 19](https://react.dev/) · [react router 8](https://reactrouter.com/) data router, for view transitions and scroll restoration |
+| styling | [tailwind css 4](https://tailwindcss.com/) for the reset, then one hand-written, token-based stylesheet · [tabler icons](https://tabler.io/icons) |
+| data | [tmdb api](https://developer.themoviedb.org/docs/getting-started) for titles, providers, collections, credits, seasons and videos · availability from [justwatch](https://www.justwatch.com/) |
+| tooling | [vite 8](https://vite.dev/) · [biome](https://biomejs.dev/) · a pre-commit hook · github actions |
+
+no animation library, no data-fetching library, no state library. the reel, the flight, the sheets, the toasts, the cache and the stores are small modules in `src/lib` and `src/components`.
+
+## running it
+
+you'll need node 20.19+ on the 20.x line, or node 22.12+, and a free [tmdb api key](https://www.themoviedb.org/settings/api).
+
+```sh
+git clone https://github.com/Ashwin-S-Nambiar/MovieVault.git
+cd MovieVault
+npm install
+```
+
+put the key in a `.env` at the root:
+
+```env
+TMDB_API_KEY=your_api_key_here
+```
+
+```sh
+npm run dev        # http://localhost:5173
+npm run check      # lint, format and import order
+npm test           # proxy security and endpoint compatibility
+npm run check:fix  # apply the safe fixes
+npm run build && npm run preview
+```
+
+a pre-commit hook runs biome on staged files, and ci runs `biome ci`, the proxy tests and the build on every push and pull request.
+
+set `TMDB_API_KEY` in the vercel project's environment too. the react app calls `/tmdb/*`, which routes through the vercel function in `api/tmdb.js`. the function validates requests and injects `process.env.TMDB_API_KEY` before calling tmdb; the key is never included in the client bundle. successful responses are cached on vercel with lifetimes matched to the data; failures are not cached. `/tmdb-img/` proxies images separately. the development server injects the key server-side through vite's forwarding proxy, which does not exercise the production handler or its cdn cache. see the [tmdb proxy audit](docs/tmdb-proxy.md) for the endpoint allowlist, caching policy, request reductions and verification steps.
+
+### hosting and indexing
+
+production indexing is configured for `movievault.ashwin.co.in`; vercel sends `noindex, nofollow` on other hosts, including preview deployments. the sitemap lists home and the universes index. search, vault, watchlist and studio, network and keyword browsing routes are marked `noindex`; page canonicals and metadata update in the browser. if you deploy under another domain, update the indexing headers and site urls along with it.
+
+## the shape of it
+
+```
+src/
+  components/  the reel, cases, the flight, services and settings sheets,
+               toasts, the status pill, shelves, cards, the seasons list,
+               the ratings graph, the episode sheet
+  lib/         tmdb client and catalogue, the query cache, health, stores,
+               hooks, the hero flight, episodes and their splits, universes
+  pages/       home, search, title, person, studio, network and tag
+               browsing, vault, universes, universe, not found
+  index.css    tokens, themes, then every component, in one file
+```
+
+## known rough edges
+
+- **mostly one bundle.** the app ships as one chunk, about 145 KB gzipped. only the ratings graph and the episode sheet are split out, and they load when you open them.
+- **no server rendering**, so the page is empty until react mounts.
+- **universes are hand-picked.** the eighteen franchises are a list in [`src/lib/universes.js`](src/lib/universes.js), not something tmdb exposes.
 
 <details>
 <summary><strong>more screenshots</strong></summary>
@@ -135,73 +202,6 @@ there is no data fetching library either. `useQuery` is 99 lines.
 ![home, an anime detail page and anime search on iphones](./docs/screenshots/MovieVault-4.webp)
 
 </details>
-
-## the design
-
-- **restraint.** a warm off-white ground, near-black ink, one red for saving, and pastel chips for browsing.
-- **one family.** geist for everything, geist mono for small numbers like years.
-- **phones first.** a search dock that rides above the keyboard, sheets you drag to dismiss, 44 px touch targets and safe-area padding, scaling up to a two-column detail page and a wider ring.
-- **calm loading.** skeletons match the real layout and share one synchronised sweep, and images fade in rather than pop.
-- **accessible.** keyboard navigation throughout, focus held inside dialogs, and `prefers-reduced-motion` respected everywhere.
-
-## the stack
-
-| layer | choices |
-| --- | --- |
-| framework | [react 19](https://react.dev/) · [react router 8](https://reactrouter.com/) data router, for view transitions and scroll restoration |
-| styling | [tailwind css 4](https://tailwindcss.com/) for the reset, then one hand-written, token-based stylesheet · [tabler icons](https://tabler.io/icons) |
-| data | [tmdb api](https://developer.themoviedb.org/docs/getting-started) for titles, providers, collections, credits, seasons and videos · availability from [justwatch](https://www.justwatch.com/) |
-| tooling | [vite 8](https://vite.dev/) · [biome](https://biomejs.dev/) · a pre-commit hook · github actions |
-
-no animation library, no data-fetching library, no state library. the reel, the flight, the sheets, the toasts, the cache and the stores are small modules in `src/lib` and `src/components`.
-
-## running it
-
-you'll need node 22.22+ and a free [tmdb api key](https://www.themoviedb.org/settings/api).
-
-```sh
-git clone https://github.com/Ashwin-S-Nambiar/MovieVault.git
-cd MovieVault
-npm install
-```
-
-put the key in a `.env` at the root:
-
-```env
-TMDB_API_KEY=your_api_key_here
-```
-
-```sh
-npm run dev        # http://localhost:5173
-npm run check      # lint, format and import order
-npm test           # proxy security and endpoint compatibility
-npm run check:fix  # apply the safe fixes
-npm run build && npm run preview
-```
-
-a pre-commit hook runs biome on staged files, and ci runs `biome ci`, the proxy tests and the build on every push and pull request.
-
-set `TMDB_API_KEY` in the vercel project's environment too. the react app calls `/tmdb/*`, which routes through the vercel function in `api/tmdb.js`. the function validates requests and injects `process.env.TMDB_API_KEY` before calling tmdb; the key is never included in the client bundle. `/tmdb-img/` proxies images separately. the development server injects the key server-side through vite's proxy. see the [tmdb proxy audit](docs/tmdb-proxy.md) for the endpoint allowlist, caching policy, request reductions and verification steps.
-
-## the shape of it
-
-```
-src/
-  components/  the reel, cases, the flight, services and settings sheets,
-               toasts, the status pill, shelves, cards, the seasons list,
-               the ratings graph, the episode sheet
-  lib/         tmdb client and catalogue, the query cache, health, stores,
-               hooks, the hero flight, episodes and their splits, universes
-  pages/       home, search, title, person, studio, network and tag
-               browsing, vault, universes, universe, not found
-  index.css    tokens, themes, then every component, in one file
-```
-
-## known rough edges
-
-- **mostly one bundle.** the app ships as one chunk, about 145 KB gzipped. only the ratings graph and the episode sheet are split out, and they load when you open them.
-- **no server rendering**, so the page is empty until react mounts.
-- **universes are hand-picked.** the eighteen franchises are a list in [`src/lib/universes.js`](src/lib/universes.js), not something tmdb exposes.
 
 ## credit
 
