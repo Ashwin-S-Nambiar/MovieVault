@@ -12,11 +12,13 @@
     "format": "biome format --write",
     "check": "biome check",
     "check:fix": "biome check --write",
-    "prepare": "simple-git-hooks"
+    "prepare": "simple-git-hooks",
+    "postinstall": "node scripts/prepare-og.mjs"
   },
   "dependencies": {
     "@tabler/icons-react": "^3.48.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@vercel/og": "1.0.3",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-router": "^8.4.0",
@@ -36,5 +38,8 @@
   },
   "simple-git-hooks": {
     "pre-commit": "npx --no -- biome check --staged --no-errors-on-unmatched || { echo 'Biome found issues in staged files. Run: npm run check:fix, then git add and commit again.'; exit 1; }"
+  },
+  "engines": {
+    "node": ">=22"
   }
 }

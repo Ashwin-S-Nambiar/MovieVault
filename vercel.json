@@ -10,8 +10,34 @@
       "destination": "https://image.tmdb.org/t/p/:path*"
     },
     {
-      "source": "/(search|vault|watchlist|universes)",
-      "destination": "/index.html"
+      "source": "/:page(search|vault|universes)",
+      "destination": "/share/:page.html"
+    },
+    {
+      "source": "/watchlist",
+      "destination": "/share/vault.html"
+    },
+    {
+      "source": "/:kind(movie|tv)/:id",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(.*([Bb]ot|[Cc]rawler|facebookexternalhit|WhatsApp|[Pp]review|[Ee]mbedly|[Ii]framely).*)"
+        }
+      ],
+      "destination": "/api/page?route=/:kind/:id"
+    },
+    {
+      "source": "/universe/:slug",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(.*([Bb]ot|[Cc]rawler|facebookexternalhit|WhatsApp|[Pp]review|[Ee]mbedly|[Ii]framely).*)"
+        }
+      ],
+      "destination": "/api/page?route=/universe/:slug"
     },
     {
       "source": "/(movie|tv|person|company|network|keyword)/:id",
@@ -73,5 +99,13 @@
         }
       ]
     }
-  ]
+  ],
+  "functions": {
+    "api/page.js": {
+      "includeFiles": "dist/index.html"
+    },
+    "api/og.js": {
+      "includeFiles": "{server/fonts/*.{ttf,txt},public/film.svg,node_modules/@vercel/og/dist/*.{wasm,ttf}}"
+    }
+  }
 }

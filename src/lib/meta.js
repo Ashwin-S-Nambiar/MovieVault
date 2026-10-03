@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router';
+import { routeImage } from './share-image';
 import { img } from './tmdb';
 
 const SITE = 'MovieVault';
@@ -8,9 +9,9 @@ const ORIGIN = 'https://movievault.ashwin.co.in';
 export const DEFAULT_DESCRIPTION =
   'Find where to stream any film, series or anime, follow whole universes in release order, and keep a vault of what to watch next.';
 
-const DEFAULT_IMAGE = `${ORIGIN}/og.jpg`;
+const DEFAULT_IMAGE = `${ORIGIN}/og.jpg?v=2`;
 
-export const pageImage = (name) => `${ORIGIN}/og/${name}.jpg`;
+export const pageImage = (name) => `${ORIGIN}/og/${name}.jpg?v=1`;
 
 function setMeta(attr, key, value) {
   let node = document.head.querySelector(`meta[${attr}="${key}"]`);
@@ -37,16 +38,26 @@ export function usePageMeta({ title, description, image, type = 'website' }) {
     const path =
       pathname === '/index.html' ? '/' : pathname.replace(/\/$/, '') || '/';
     const url = `${ORIGIN}${path}`;
+    const shareImage =
+      routeImage(path) ||
+      (/^\/(person|company|network|keyword)\//.test(path)
+        ? DEFAULT_IMAGE
+        : image || DEFAULT_IMAGE);
     document.title = fullTitle;
     setMeta('name', 'description', desc);
     setMeta('property', 'og:title', fullTitle);
     setMeta('property', 'og:description', desc);
-    setMeta('property', 'og:image', image || DEFAULT_IMAGE);
+    setMeta('property', 'og:image', shareImage);
+    setMeta(
+      'property',
+      'og:image:type',
+      routeImage(path) ? 'image/png' : 'image/jpeg',
+    );
     setMeta('property', 'og:url', url);
     setMeta('property', 'og:type', type);
     setMeta('name', 'twitter:title', fullTitle);
     setMeta('name', 'twitter:description', desc);
-    setMeta('name', 'twitter:image', image || DEFAULT_IMAGE);
+    setMeta('name', 'twitter:image', shareImage);
     setMeta('property', 'og:image:alt', fullTitle);
     let canonical = document.head.querySelector('link[rel="canonical"]');
     if (!canonical) {
