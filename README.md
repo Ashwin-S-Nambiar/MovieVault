@@ -195,7 +195,7 @@ src/
 
 ![picking streaming services in the services sheet](./docs/screenshots/MovieVault-10.webp)
 
-![the settings sheet with appearance and the tmdb connection](./docs/screenshots/MovieVault-11.webp)
+![the settings sheet with theme, title language, watch apps and the tmdb connection](./docs/screenshots/MovieVault-11.webp)
 
 ![the reel in dark mode](./docs/screenshots/MovieVault-9.webp)
 
