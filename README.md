@@ -118,7 +118,7 @@ no animation library, no data-fetching library, no state library. the reel, the 
 
 ## running it
 
-you'll need node 20.19+ on the 20.x line, or node 22.12+, and a free [tmdb api key](https://www.themoviedb.org/settings/api).
+you'll need node 24.x and a free [tmdb api key](https://www.themoviedb.org/settings/api).
 
 ```sh
 git clone https://github.com/Ashwin-S-Nambiar/MovieVault.git
