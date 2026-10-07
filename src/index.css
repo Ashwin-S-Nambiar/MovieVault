@@ -741,6 +741,7 @@ p {
 }
 
 .fade-img[data-state="loading"] {
+  object-position: -200vw 0;
   background-color: var(--skeleton);
   background-image: var(--sweep);
   background-attachment: fixed;
