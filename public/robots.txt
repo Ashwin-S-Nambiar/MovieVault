@@ -1,3 +1,6 @@
+User-agent: Reflectionbot
+Disallow: /
+
 User-agent: *
 Allow: /
 
