@@ -39,6 +39,11 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [react(), tailwindcss(), notFoundPage()],
+    define: {
+      'import.meta.env.VITE_TMDB_API_KEY': JSON.stringify(
+        env.TMDB_API_KEY ?? '',
+      ),
+    },
     server: {
       proxy: {
         '/tmdb-img': {

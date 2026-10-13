@@ -18,7 +18,7 @@
 
 the source of **[movievault.ashwin.co.in](https://movievault.ashwin.co.in)**. search any film, series, anime or person, see which of your services a title streams on tonight, follow a whole franchise in release order, and keep a vault of what to watch next.
 
-it is a react spa with a server-side tmdb proxy on vercel, so the key stays on the server and requests can reach tmdb even where direct access is restricted. the routes are not the interesting part. the interesting parts are the reel, which is a spring solved by hand rather than a dependency, and the case you tap, which is the same case that opens on the next page.
+it is a react spa that calls tmdb directly, except in india, where most isps block tmdb and requests go through a tmdb proxy on vercel instead. the routes are not the interesting part. the interesting parts are the reel, which is a spring solved by hand rather than a dependency, and the case you tap, which is the same case that opens on the next page.
 
 ## what it does
 
@@ -142,7 +142,7 @@ npm run build && npm run preview
 
 a pre-commit hook runs biome on staged files, and ci runs `biome ci`, the proxy tests and the build on every push and pull request.
 
-set `TMDB_API_KEY` in the vercel project's environment too. the react app calls `/tmdb/*`, which routes through the vercel function in `api/tmdb.js`. the function validates requests and injects `process.env.TMDB_API_KEY` before calling tmdb; the key is never included in the client bundle. successful responses are cached on vercel with lifetimes matched to the data; failures are not cached. `/tmdb-img/` proxies images separately. the development server injects the key server-side through vite's forwarding proxy, which does not exercise the production handler or its cdn cache. see the [tmdb proxy audit](docs/tmdb-proxy.md) for the endpoint allowlist, caching policy, request reductions and verification steps.
+set `TMDB_API_KEY` in the vercel project's environment too. the build also embeds it in the client, which calls `api.themoviedb.org` and `image.tmdb.org` directly unless the browser's time zone is india's. there, the app calls `/tmdb/*`, which routes through the vercel function in `api/tmdb.js`, and falls back between the two routes if one fails. the function validates requests and injects `process.env.TMDB_API_KEY` before calling tmdb. successful responses are cached on vercel with lifetimes matched to the data; failures are not cached. `/tmdb-img/` proxies images separately. the development server injects the key server-side through vite's forwarding proxy, which does not exercise the production handler or its cdn cache. see the [tmdb proxy audit](docs/tmdb-proxy.md) for the endpoint allowlist, caching policy, request reductions and verification steps.
 
 ### hosting and indexing
 

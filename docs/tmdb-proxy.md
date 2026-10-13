@@ -1,9 +1,14 @@
 # TMDB proxy audit
 
-The API remains server-side at `api/tmdb.js`, reached through the existing
-`/tmdb/:path*` rewrite. Set `TMDB_API_KEY` in Vercel's environment; never use a
-`VITE_` prefix for this secret. Image traffic uses the separate `/tmdb-img/`
-rewrite and its existing immutable cache.
+The proxy at `api/tmdb.js`, reached through the `/tmdb/:path*` rewrite, serves
+visitors in India, where most ISPs block TMDB. Image traffic uses the separate
+`/tmdb-img/` rewrite and its existing immutable cache.
+
+Elsewhere the client calls TMDB directly. The build embeds `TMDB_API_KEY` as
+`VITE_TMDB_API_KEY`, and `src/lib/tmdb.js` picks the route from the browser's
+time zone: the proxy for `Asia/Kolkata`, TMDB otherwise. A network failure on
+the direct route switches to the proxy, and a 403 from the proxy switches to
+the direct route.
 
 ## Endpoint inventory
 

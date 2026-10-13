@@ -10,6 +10,9 @@ import { languageStore } from './prefs';
 
 const BASE_URL = '/tmdb';
 const IMAGE_URL = '/tmdb-img';
+const DIRECT_URL = 'https://api.themoviedb.org/3';
+const DIRECT_IMAGE_URL = 'https://image.tmdb.org/t/p';
+const KEY = import.meta.env.VITE_TMDB_API_KEY;
 const TTL = 10 * 60 * 1000;
 const REFERENCE_TTL = 24 * 60 * 60 * 1000;
 const MAX_ATTEMPTS = 3;
@@ -18,8 +21,15 @@ const TIMEOUT = 10_000;
 const cache = new Map();
 const inflight = new Map();
 
+// Indian ISPs block TMDB, so only India goes through the proxy.
+let direct =
+  Boolean(KEY) &&
+  !/^Asia\/(Kolkata|Calcutta)$/.test(
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+  );
+
 export const img = (path, size = 'w342') =>
-  path ? `${IMAGE_URL}/${size}${path}` : null;
+  path ? `${direct ? DIRECT_IMAGE_URL : IMAGE_URL}/${size}${path}` : null;
 
 export const logoImg = (path, size = 'w300') =>
   img(path, path?.endsWith('.svg') ? 'original' : size);
@@ -46,6 +56,13 @@ function buildUrl(path, params = {}) {
   }
   url.searchParams.sort();
   return url.toString();
+}
+
+function target(url) {
+  if (!direct) return url;
+  const next = new URL(url);
+  next.searchParams.set('api_key', KEY);
+  return `${DIRECT_URL}${next.pathname.slice(BASE_URL.length)}${next.search}`;
 }
 
 const ttl = (url) =>
@@ -91,9 +108,12 @@ async function fetchWithRetry(url) {
     }
 
     const started = performance.now();
+    const viaDirect = direct;
     let response;
     try {
-      response = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT) });
+      response = await fetch(target(url), {
+        signal: AbortSignal.timeout(TIMEOUT),
+      });
       if (response.ok) {
         const data = await response.json();
         reportSuccess(performance.now() - started);
@@ -101,10 +121,16 @@ async function fetchWithRetry(url) {
       }
     } catch {
       lastError = new TmdbError('Could not reach TMDB', 0);
+      if (viaDirect) direct = false;
       continue;
     }
 
     const { status } = response;
+    if (status === 403 && !viaDirect && KEY) {
+      direct = true;
+      lastError = new TmdbError('TMDB proxy is not available here', status);
+      continue;
+    }
     lastError = new TmdbError(
       status === 401
         ? 'The TMDB API key was rejected'
