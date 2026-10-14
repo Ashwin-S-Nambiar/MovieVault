@@ -1,0 +1,26 @@
+https://movievault-3qh.pages.dev/*
+  X-Robots-Tag: noindex, nofollow
+
+https://:deployment.movievault-3qh.pages.dev/*
+  X-Robots-Tag: noindex, nofollow
+
+/search
+  X-Robots-Tag: noindex, follow
+
+/vault
+  X-Robots-Tag: noindex, follow
+
+/watchlist
+  X-Robots-Tag: noindex, follow
+
+/company/*
+  X-Robots-Tag: noindex, follow
+
+/network/*
+  X-Robots-Tag: noindex, follow
+
+/keyword/*
+  X-Robots-Tag: noindex, follow
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

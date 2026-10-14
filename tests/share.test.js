@@ -1,10 +1,15 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
-import { GET as imageRequest } from '../api/og.js';
 import { artworkData } from '../server/card.js';
 import { pageHtml } from '../server/html.js';
+import { ogImage } from '../server/og.js';
 import { getShareMeta, parseRoute } from '../server/share.js';
+
+const imageRequest = (request) =>
+  ogImage(request, (name) =>
+    readFile(new URL(`../public/${name}`, import.meta.url)),
+  );
 
 test('share routes reject external URLs, malformed IDs and unknown universes', () => {
   for (const path of [

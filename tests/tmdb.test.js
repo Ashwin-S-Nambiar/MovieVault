@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { afterEach, beforeEach, mock, test } from 'node:test';
-import * as proxy from '../api/tmdb.js';
+import * as proxy from '../server/tmdb.js';
 
 const originalKey = process.env.TMDB_API_KEY;
 beforeEach(() => {
@@ -17,11 +17,7 @@ const request = (path, params = {}, method = 'GET') =>
     { method },
   );
 const noCache = (response) => {
-  for (const name of [
-    'Cache-Control',
-    'CDN-Cache-Control',
-    'Vercel-CDN-Cache-Control',
-  ]) {
+  for (const name of ['Cache-Control', 'CDN-Cache-Control']) {
     assert.equal(response.headers.get(name), 'no-store');
   }
 };
@@ -150,11 +146,11 @@ for (const [path, params, ttl] of cases) {
     assert.equal(forwarded.searchParams.get('language'), 'hi-IN');
     for (const [key, value] of Object.entries(params))
       assert.equal(forwarded.searchParams.get(key), String(value));
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     assert.ok(options.signal instanceof AbortSignal);
     if (ttl) {
       assert.match(
-        response.headers.get('Vercel-CDN-Cache-Control'),
+        response.headers.get('CDN-Cache-Control'),
         new RegExp(`^max-age=${ttl}, stale-while-revalidate=\\d+$`),
       );
       assert.equal(

@@ -18,7 +18,7 @@
 
 the source of **[movievault.ashwin.co.in](https://movievault.ashwin.co.in)**. search any film, series, anime or person, see which of your services a title streams on tonight, follow a whole franchise in release order, and keep a vault of what to watch next.
 
-it is a react spa that calls tmdb directly, except in india, where most isps block tmdb and requests go through a tmdb proxy on vercel instead. the routes are not the interesting part. the interesting parts are the reel, which is a spring solved by hand rather than a dependency, and the case you tap, which is the same case that opens on the next page.
+it is a react spa that calls tmdb directly, except in india, where most isps block tmdb and requests go through a tmdb proxy on cloudflare pages instead. the routes are not the interesting part. the interesting parts are the reel, which is a spring solved by hand rather than a dependency, and the case you tap, which is the same case that opens on the next page.
 
 ## what it does
 
@@ -142,11 +142,11 @@ npm run build && npm run preview
 
 a pre-commit hook runs biome on staged files, and ci runs `biome ci`, the proxy tests and the build on every push and pull request.
 
-set `TMDB_API_KEY` in the vercel project's environment too. the build also embeds it in the client, which calls `api.themoviedb.org` and `image.tmdb.org` directly unless the browser's time zone is india's. there, the app calls `/tmdb/*`, which routes through the vercel function in `api/tmdb.js`, and falls back between the two routes if one fails. the function validates requests and injects `process.env.TMDB_API_KEY` before calling tmdb. successful responses are cached on vercel with lifetimes matched to the data; failures are not cached. `/tmdb-img/` proxies images separately. the development server injects the key server-side through vite's forwarding proxy, which does not exercise the production handler or its cdn cache. see the [tmdb proxy audit](docs/tmdb-proxy.md) for the endpoint allowlist, caching policy, request reductions and verification steps.
+set `TMDB_API_KEY` as a secret on the cloudflare pages project too. the build also embeds it in the client, which calls `api.themoviedb.org` and `image.tmdb.org` directly unless the browser's time zone is india's. there, the app calls `/tmdb/*`, which the pages function in `functions/tmdb` hands to the handler in `server/tmdb.js`, and falls back between the two routes if one fails. the handler validates requests and injects the key before calling tmdb. the function only serves visitors in india, and caches successful responses at the edge with lifetimes matched to the data; failures are not cached. `/tmdb-img/` proxies images separately. `functions/` also renders link-preview html for bots on title and universe pages, and the og cards at `/api/og`. the development server injects the key server-side through vite's forwarding proxy, which does not exercise the production handler or its cdn cache. see the [tmdb proxy audit](docs/tmdb-proxy.md) for the endpoint allowlist, caching policy, request reductions and verification steps.
 
 ### hosting and indexing
 
-production indexing is configured for `movievault.ashwin.co.in`; vercel sends `noindex, nofollow` on other hosts, including preview deployments. the sitemap lists home and the universes index. search, vault, watchlist and studio, network and keyword browsing routes are marked `noindex`; page canonicals and metadata update in the browser. if you deploy under another domain, update the indexing headers and site urls along with it.
+production indexing is configured for `movievault.ashwin.co.in`; `public/_headers` sends `noindex, nofollow` on the `pages.dev` hosts, including preview deployments. the sitemap lists home and the universes index. search, vault, watchlist and studio, network and keyword browsing routes are marked `noindex`; page canonicals and metadata update in the browser. if you deploy under another domain, update `public/_headers` and the site urls along with it.
 
 ## the shape of it
 

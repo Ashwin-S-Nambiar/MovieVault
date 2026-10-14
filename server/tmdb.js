@@ -2,7 +2,6 @@ const TIMEOUT = 8_000;
 const NO_STORE = {
   'Cache-Control': 'no-store',
   'CDN-Cache-Control': 'no-store',
-  'Vercel-CDN-Cache-Control': 'no-store',
 };
 const CACHE = {
   reference: 'max-age=86400, stale-while-revalidate=604800',
@@ -239,10 +238,12 @@ export async function GET(request) {
       `https://api.themoviedb.org/3/${path}?${params}`,
       {
         signal,
-        redirect: 'error',
+        redirect: 'manual',
         headers: { Accept: 'application/json' },
       },
     );
+    if (upstream.status >= 300 && upstream.status < 400)
+      throw new Error('Redirect');
     // Read the body within the timeout so a stalled/invalid body cannot become
     // a cached successful response. Preserve TMDB's JSON and HTTP status.
     const data = await upstream.json();
@@ -254,7 +255,7 @@ export async function GET(request) {
         .some((part) => part === 'watch/providers' || part === 'release_dates');
       headers.set('Cache-Control', 'public, max-age=0, must-revalidate');
       headers.set(
-        'Vercel-CDN-Cache-Control',
+        'CDN-Cache-Control',
         CACHE[availability ? 'availability' : category],
       );
     }

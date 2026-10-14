@@ -120,7 +120,7 @@ async function resolveShareMeta(
       `https://api.themoviedb.org/3/${endpoint}?${params}`,
       {
         signal: AbortSignal.timeout(3_000),
-        redirect: 'error',
+        redirect: 'manual',
         headers: { Accept: 'application/json' },
       },
     );

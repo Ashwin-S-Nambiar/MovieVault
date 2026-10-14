@@ -1,9 +1,9 @@
-import { ImageResponse } from '@vercel/og';
-import { artworkData, cardAssets, movieCard } from '../server/card.js';
-import { getShareMeta, parseRoute } from '../server/share.js';
+import { ImageResponse } from '@cf-wasm/og';
 import { routeImage } from '../src/lib/share-image.js';
+import { artworkData, cardAssets, movieCard } from './card.js';
+import { getShareMeta, parseRoute } from './share.js';
 
-export async function GET(request) {
+export async function ogImage(request, load) {
   const url = new URL(request.url);
   const routes = url.searchParams.getAll('route');
   const parsed = routes.length === 1 ? parseRoute(routes[0]) : null;
@@ -27,13 +27,14 @@ export async function GET(request) {
     });
   }
   const [assets, artwork] = await Promise.all([
-    cardAssets(),
+    cardAssets(load),
     artworkData(meta.artwork),
   ]);
   return new ImageResponse(movieCard(meta, { icon: assets.icon, artwork }), {
     width: 1200,
     height: 630,
     fonts: assets.fonts,
+    defaultFont: assets.fonts[0],
     headers: {
       'cache-control': !meta.complete
         ? 'no-store'

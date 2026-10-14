@@ -1,7 +1,7 @@
 # TMDB proxy audit
 
-The proxy at `api/tmdb.js`, reached through the `/tmdb/:path*` rewrite, serves
-visitors in India, where most ISPs block TMDB. Image traffic uses the separate
+The proxy handler at `server/tmdb.js`, served by the Pages Function in
+`functions/tmdb/[[path]].js`, serves visitors in India, where most ISPs block TMDB. Image traffic uses the separate
 `/tmdb-img/` rewrite and its existing immutable cache.
 
 Elsewhere the client calls TMDB directly. The build embeds `TMDB_API_KEY` as
@@ -114,10 +114,10 @@ upstream URL or key.
 
 ## Cache policy
 
-Successful JSON responses use `Vercel-CDN-Cache-Control` to cache on Vercel.
-Browser `Cache-Control` is `public, max-age=0, must-revalidate`; downstream
-`CDN-Cache-Control` is `no-store`. Vercel's targeted header takes precedence,
-following [Vercel's cache-control documentation](https://vercel.com/docs/caching/cache-control-headers).
+Successful JSON responses carry their edge lifetime in `CDN-Cache-Control`. The
+Pages Function stores those responses in the Cloudflare cache with that
+lifetime and strips the header; browsers get `public, max-age=0,
+must-revalidate`, including on cache hits.
 
 | Category | Fresh lifetime | Stale-while-revalidate | Reason |
 | --- | --- | --- | --- |
@@ -130,12 +130,12 @@ following [Vercel's cache-control documentation](https://vercel.com/docs/caching
 | `/configuration` recovery probe | Not cached | None | Must check current upstream reachability/key validity |
 | Validation errors and upstream failures | Not cached | None | Never retain a failed response as a successful cache entry |
 
-Every failure explicitly sends `no-store` on all three cache-control headers.
+Every failure explicitly sends `no-store` on both cache-control headers.
 No client-side bot mitigation, CAPTCHA, auth token or rate limiting was added.
 The allowlist reduces what the proxy can do; it does not stop bots requesting
-valid URLs or varying valid queries. Edge mitigation remains Vercel Firewall's
-responsibility. CDN hits can avoid function invocations; misses, stale
-revalidations and requests rejected inside the function still invoke it.
+valid URLs or varying valid queries. Requests from outside India are rejected
+by the function before reaching the handler. Every request still invokes the
+function; cache hits avoid the upstream call.
 
 ## Verification
 
@@ -149,9 +149,10 @@ revalidations and requests rejected inside the function still invoke it.
   handler with a mocked upstream to check allowlist compatibility.
 
 Vite development uses its existing server-side forwarding proxy, so it does not
-exercise the production handler or Vercel CDN. After deploying, request the same
-`/tmdb/watch/providers/movie?watch_region=IN` URL twice and inspect
-`x-vercel-cache` for MISS followed by HIT (cache location/eviction may affect
-results). Repeat with search and details, including localized/region-specific
+exercise the production handler or the edge cache. `npx wrangler pages dev dist`
+runs the functions locally. After deploying, request the same
+`/tmdb/watch/providers/movie?watch_region=IN` URL twice from India and inspect
+`cf-cache-status` for a HIT on the second request (cache location/eviction may
+affect results). Repeat with search and details, including localized/region-specific
 queries. Do not use a cache-busting query, which the allowlist rejects. No
 production deployment or live CDN hit-rate claim is made by these local checks.

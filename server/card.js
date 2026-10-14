@@ -1,20 +1,24 @@
-import { readFile } from 'node:fs/promises';
 import { createElement as h } from 'react';
 import { clip } from './share.js';
 
 let assets;
-export function cardAssets() {
+export function cardAssets(load) {
   assets ??= Promise.all([
-    readFile(new URL('./fonts/geist-regular.ttf', import.meta.url)),
-    readFile(new URL('./fonts/geist-bold.ttf', import.meta.url)),
-    readFile(new URL('../public/film.svg', import.meta.url)),
-  ]).then(([regular, bold, icon]) => ({
-    fonts: [
-      { name: 'Geist', data: regular, weight: 400, style: 'normal' },
-      { name: 'Geist', data: bold, weight: 700, style: 'normal' },
-    ],
-    icon: `data:image/svg+xml;base64,${icon.toString('base64')}`,
-  }));
+    load('og-fonts/geist-regular.ttf'),
+    load('og-fonts/geist-bold.ttf'),
+    load('film.svg'),
+  ])
+    .then(([regular, bold, icon]) => ({
+      fonts: [
+        { name: 'Geist', data: regular, weight: 400, style: 'normal' },
+        { name: 'Geist', data: bold, weight: 700, style: 'normal' },
+      ],
+      icon: `data:image/svg+xml;base64,${Buffer.from(icon).toString('base64')}`,
+    }))
+    .catch((error) => {
+      assets = null;
+      throw error;
+    });
   return assets;
 }
 
@@ -23,7 +27,7 @@ async function loadArtwork(path, fetcher) {
   try {
     const response = await fetcher(`https://image.tmdb.org/t/p/w780${path}`, {
       signal: AbortSignal.timeout(2_500),
-      redirect: 'error',
+      redirect: 'manual',
     });
     const type = response.headers.get('content-type')?.split(';')[0];
     if (!response.ok || !['image/jpeg', 'image/png'].includes(type))
