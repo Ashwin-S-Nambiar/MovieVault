@@ -2,6 +2,9 @@
 /vault /share/vault 200
 /universes /share/universes 200
 /watchlist /share/vault 200
+/movie/* / 200
+/tv/* / 200
+/universe/* / 200
 /person/:id / 200
 /company/:id / 200
 /network/:id / 200

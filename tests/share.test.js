@@ -25,7 +25,7 @@ test('share routes reject external URLs, malformed IDs and unknown universes', (
   assert.equal(parseRoute('/watchlist').path, '/vault');
 });
 
-test('movie metadata arrives in initial HTML, escaped, with versioned matching OG/Twitter images', async () => {
+test('metadata HTML helper escapes movie data and uses matching versioned OG/Twitter images', async () => {
   let calls = 0;
   const meta = await getShareMeta('/movie/550', {
     key: 'fixture',
