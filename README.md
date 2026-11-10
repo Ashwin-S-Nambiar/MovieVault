@@ -22,17 +22,17 @@ it is a react spa that calls tmdb directly, except in india, where most isps blo
 
 ## what it does
 
-| route | what it is |
-| --- | --- |
-| `/` | the reel of what is trending, and shelves of what is popular on your services |
-| `/search` | one search across films, series, anime and people, with genre, language, length and free-to-watch filters. paste an imdb link and it finds the title |
-| `/movie/:id`, `/tv/:id` | the case, opened: where to watch, cast, crew, trailer, seasons, and what came before and after it |
-| `/universes` | eighteen franchises as a grid of backdrops |
-| `/universe/:slug` | one franchise as a release-order timeline, with one tap to save all of it |
-| `/person/:id` | an actor or director: what they're known for, and every credit in order |
-| `/company/:id`, `/network/:id` | everything from a studio or network, like a24 or hbo |
-| `/keyword/:id` | everything tmdb tags with a theme, like time travel or heist |
-| `/vault` | everything you saved, with where each one streams |
+| route                          | what it is                                                                                                                                           |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`                            | the reel of what is trending, and shelves of what is popular on your services                                                                        |
+| `/search`                      | one search across films, series, anime and people, with genre, language, length and free-to-watch filters. paste an imdb link and it finds the title |
+| `/movie/:id`, `/tv/:id`        | the case, opened: where to watch, cast, crew, trailer, seasons, and what came before and after it                                                    |
+| `/universes`                   | eighteen franchises as a grid of backdrops                                                                                                           |
+| `/universe/:slug`              | one franchise as a release-order timeline, with one tap to save all of it                                                                            |
+| `/person/:id`                  | an actor or director: what they're known for, and every credit in order                                                                              |
+| `/company/:id`, `/network/:id` | everything from a studio or network, like a24 or hbo                                                                                                 |
+| `/keyword/:id`                 | everything tmdb tags with a theme, like time travel or heist                                                                                         |
+| `/vault`                       | everything you saved, with where each one streams                                                                                                    |
 
 ![jurassic park with its case open, the disc showing, beside where it streams and the universe it belongs to](./docs/screenshots/MovieVault-2.webp)
 
@@ -60,7 +60,7 @@ it is a react spa that calls tmdb directly, except in india, where most isps blo
 every case sits on a ring. its angle is its offset from the front times a fixed step, 30° on narrow screens and 22° from 720 px up, and the radius falls out of the case width so neighbours never overlap:
 
 ```js
-radius = gap / (2 * Math.sin(step / 2)) // gap = 1.1 × case width
+radius = gap / (2 * Math.sin(step / 2)); // gap = 1.1 × case width
 ```
 
 the ring's position eases toward its target on a critically damped spring, solved in closed form rather than stepped, so a long frame never makes it overshoot:
@@ -107,12 +107,12 @@ there is no data fetching library either. a small `useQuery` hook handles the pa
 
 ## the stack
 
-| layer | choices |
-| --- | --- |
-| framework | [react 19](https://react.dev/) · [react router 8](https://reactrouter.com/) data router, for view transitions and scroll restoration |
-| styling | [tailwind css 4](https://tailwindcss.com/) for the reset, then one hand-written, token-based stylesheet · [tabler icons](https://tabler.io/icons) |
-| data | [tmdb api](https://developer.themoviedb.org/docs/getting-started) for titles, providers, collections, credits, seasons and videos · availability from [justwatch](https://www.justwatch.com/) |
-| tooling | [vite 8](https://vite.dev/) · [biome](https://biomejs.dev/) · a pre-commit hook · github actions |
+| layer     | choices                                                                                                                                                                                       |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| framework | [react 19](https://react.dev/) · [react router 8](https://reactrouter.com/) data router, for view transitions and scroll restoration                                                          |
+| styling   | [tailwind css 4](https://tailwindcss.com/) for the reset, then one hand-written, token-based stylesheet · [tabler icons](https://tabler.io/icons)                                             |
+| data      | [tmdb api](https://developer.themoviedb.org/docs/getting-started) for titles, providers, collections, credits, seasons and videos · availability from [justwatch](https://www.justwatch.com/) |
+| tooling   | [vite 8](https://vite.dev/) · [biome](https://biomejs.dev/) · a pre-commit hook · github actions                                                                                              |
 
 no animation library, no data-fetching library, no state library. the reel, the flight, the sheets, the toasts, the cache and the stores are small modules in `src/lib` and `src/components`.
 

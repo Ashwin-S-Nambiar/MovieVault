@@ -16,27 +16,27 @@ Derived from every request builder in `src/lib/catalog.js`,
 `src/lib/episodes.js`, and `src/lib/tmdb.js`, and their route/component callers.
 Paths below are relative to `/tmdb`.
 
-| Paths | Consumers |
-| --- | --- |
-| `/trending/all/week` | Home reel and Search spines/landing |
-| `/discover/movie`, `/discover/tv` | Home shelves, Search filters, studio/network/keyword browsing, keyword universes |
-| `/movie/now_playing` | Home cinemas shelf |
-| `/search/multi` | Search and connected TV title matching |
-| `/find/{tt or nm IMDb ID}` | Pasted IMDb links/IDs in Search |
-| `/genre/{movie or tv}/list` | Search genre filters |
-| `/watch/providers/{movie or tv}` | Streaming service picker and selected-service toolbar logos |
-| `/watch/providers/regions` | Region picker |
-| `/{movie or tv}/{id}` | Title detail/prefetch; basic details for saved TV episode dates and connected-title verification |
-| `/{movie or tv}/{id}/watch/providers` | Visible title cards and active reel caption |
-| `/movie/{id}/release_dates` | Release badges for recent movies without streaming availability |
-| `/{movie or tv}/{id}/images` | Disc/title logos |
-| `/tv/{id}/season/{number}` | Expanded seasons; season 0 (specials) is supported |
-| `/tv/{id}/season/{number}/episode/{number}` | Episode sheet |
-| `/tv/episode_group/{group ID}` | Anime/long-season episode guides and ratings |
-| `/collection/{id}` | Connected movies and collection universes |
-| `/person/{id}` | Person pages |
-| `/{company or network or keyword}/{id}` | Entity browse page metadata |
-| `/configuration` | Explicit connection recovery only |
+| Paths                                       | Consumers                                                                                        |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `/trending/all/week`                        | Home reel and Search spines/landing                                                              |
+| `/discover/movie`, `/discover/tv`           | Home shelves, Search filters, studio/network/keyword browsing, keyword universes                 |
+| `/movie/now_playing`                        | Home cinemas shelf                                                                               |
+| `/search/multi`                             | Search and connected TV title matching                                                           |
+| `/find/{tt or nm IMDb ID}`                  | Pasted IMDb links/IDs in Search                                                                  |
+| `/genre/{movie or tv}/list`                 | Search genre filters                                                                             |
+| `/watch/providers/{movie or tv}`            | Streaming service picker and selected-service toolbar logos                                      |
+| `/watch/providers/regions`                  | Region picker                                                                                    |
+| `/{movie or tv}/{id}`                       | Title detail/prefetch; basic details for saved TV episode dates and connected-title verification |
+| `/{movie or tv}/{id}/watch/providers`       | Visible title cards and active reel caption                                                      |
+| `/movie/{id}/release_dates`                 | Release badges for recent movies without streaming availability                                  |
+| `/{movie or tv}/{id}/images`                | Disc/title logos                                                                                 |
+| `/tv/{id}/season/{number}`                  | Expanded seasons; season 0 (specials) is supported                                               |
+| `/tv/{id}/season/{number}/episode/{number}` | Episode sheet                                                                                    |
+| `/tv/episode_group/{group ID}`              | Anime/long-season episode guides and ratings                                                     |
+| `/collection/{id}`                          | Connected movies and collection universes                                                        |
+| `/person/{id}`                              | Person pages                                                                                     |
+| `/{company or network or keyword}/{id}`     | Entity browse page metadata                                                                      |
+| `/configuration`                            | Explicit connection recovery only                                                                |
 
 `trending()` always requests `/trending/all/week`, matching the proxy allowlist.
 No current caller requests `day` or `similar`, so those endpoints are rejected.
@@ -119,16 +119,16 @@ Pages Function stores those responses in the Cloudflare cache with that
 lifetime and strips the header; browsers get `public, max-age=0,
 must-revalidate`, including on cache hits.
 
-| Category | Fresh lifetime | Stale-while-revalidate | Reason |
-| --- | --- | --- | --- |
-| Provider catalogs, regions, genre lists | 24 hours | 7 days | Relatively stable reference metadata |
-| Movie/TV/person/collection/entity details, images, seasons, episodes, episode groups, IMDb lookups | 1 hour | 6 hours | Metadata changes, but rarely minute to minute |
-| Title availability and movie release dates | 30 minutes | 1 hour | Regional availability and release dates need fresher data |
-| Detail bundles containing providers or release dates | 30 minutes | 1 hour | Apply the shortest policy needed by bundled resources |
-| Trending, discover, now-playing | 5 minutes | 15 minutes | Frequently changing rankings and catalogs |
-| Search | 1 minute | 2 minutes | High query variety and changing results |
-| `/configuration` recovery probe | Not cached | None | Must check current upstream reachability/key validity |
-| Validation errors and upstream failures | Not cached | None | Never retain a failed response as a successful cache entry |
+| Category                                                                                           | Fresh lifetime | Stale-while-revalidate | Reason                                                     |
+| -------------------------------------------------------------------------------------------------- | -------------- | ---------------------- | ---------------------------------------------------------- |
+| Provider catalogs, regions, genre lists                                                            | 24 hours       | 7 days                 | Relatively stable reference metadata                       |
+| Movie/TV/person/collection/entity details, images, seasons, episodes, episode groups, IMDb lookups | 1 hour         | 6 hours                | Metadata changes, but rarely minute to minute              |
+| Title availability and movie release dates                                                         | 30 minutes     | 1 hour                 | Regional availability and release dates need fresher data  |
+| Detail bundles containing providers or release dates                                               | 30 minutes     | 1 hour                 | Apply the shortest policy needed by bundled resources      |
+| Trending, discover, now-playing                                                                    | 5 minutes      | 15 minutes             | Frequently changing rankings and catalogs                  |
+| Search                                                                                             | 1 minute       | 2 minutes              | High query variety and changing results                    |
+| `/configuration` recovery probe                                                                    | Not cached     | None                   | Must check current upstream reachability/key validity      |
+| Validation errors and upstream failures                                                            | Not cached     | None                   | Never retain a failed response as a successful cache entry |
 
 Every failure explicitly sends `no-store` on both cache-control headers.
 No client-side bot mitigation, CAPTCHA, auth token or rate limiting was added.
